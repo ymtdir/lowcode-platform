@@ -47,11 +47,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   // ログイン済みユーザーが認証ページにアクセスした場合
-  if (
-    (request.nextUrl.pathname === '/login' ||
-      request.nextUrl.pathname.startsWith('/auth/login')) &&
-    user
-  ) {
+  if (request.nextUrl.pathname.startsWith('/login') && user) {
     const url = request.nextUrl.clone();
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);

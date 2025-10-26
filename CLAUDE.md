@@ -181,12 +181,14 @@ const records = await prisma.record.findMany({ where: { tableId: id } });
 ```
 lowcode-platform/
 ├── app/                          # Next.js App Router
-│   ├── (auth)/
-│   │   ├── login/
-│   │   │   └── page.tsx
-│   │   ├── register/
-│   │   │   └── page.tsx
-│   │   └── layout.tsx
+│   ├── login/
+│   │   ├── page.tsx
+│   │   └── actions.ts
+│   ├── error/
+│   │   └── page.tsx
+│   ├── auth/
+│   │   └── confirm/
+│   │       └── route.ts
 │   │
 │   ├── (dashboard)/
 │   │   ├── page.tsx
