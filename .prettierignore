@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+
+# Coverage reports
+coverage/
+
+# Static assets
+public/
+
+# TypeScript build cache
+*.tsbuildinfo
+
+# Log files
+*.log
+
+# Lock files
+*.lock
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Environment files
+.env*
+.vercel/
+
+# IDE / OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
