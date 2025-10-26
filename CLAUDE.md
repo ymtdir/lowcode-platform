@@ -80,16 +80,16 @@ export default function TablesPage() {
 
 ```typescript
 // app/tables/actions.ts
-"use server";
+'use server';
 
 export async function createTable(formData: FormData) {
-  const name = formData.get("name") as string;
+  const name = formData.get('name') as string;
 
   const table = await prisma.table.create({
     data: { name, schema: {} },
   });
 
-  revalidatePath("/tables");
+  revalidatePath('/tables');
   return table;
 }
 ```
@@ -416,35 +416,35 @@ features/table/
 
 ```typescript
 // shadcn/uiコンポーネント
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 // 機能別コンポーネント
-import { getTables, createTable } from "@/features/table/api";
-import { TableList, TableCard } from "@/features/table/components";
+import { getTables, createTable } from '@/features/table/api';
+import { TableList, TableCard } from '@/features/table/components';
 
 // レイアウト
-import { Header } from "@/features/layout/components";
+import { Header } from '@/features/layout/components';
 
 // ユーティリティ
-import { cn } from "@/lib/utils/cn";
-import { prisma } from "@/lib/prisma";
+import { cn } from '@/lib/utils/cn';
+import { prisma } from '@/lib/prisma';
 ```
 
 #### 4. 各機能ディレクトリに`index.ts`を配置
 
 ```typescript
 // features/table/api/index.ts
-export * from "./get-tables";
-export * from "./get-table-by-id";
-export * from "./create-table";
-export * from "./update-table";
-export * from "./delete-table";
+export * from './get-tables';
+export * from './get-table-by-id';
+export * from './create-table';
+export * from './update-table';
+export * from './delete-table';
 
 // features/table/components/index.ts
-export * from "./TableList";
-export * from "./TableCard";
-export * from "./FieldEditor";
+export * from './TableList';
+export * from './TableCard';
+export * from './FieldEditor';
 ```
 
 これにより、インポートがシンプルになる。
@@ -1050,11 +1050,14 @@ enum ScriptType {
 - 細かい実装の詳細は書かず、何をするかの方針のみ記載
 
 **例（enhancement）**:
+
 ```markdown
 ## 概要
+
 プロジェクト開発を開始するための初期環境をセットアップします。
 
 ## 詳細
+
 - Next.js プロジェクトのセットアップ
 - shadcn/ui の導入
 - ESLint & Prettier の設定
@@ -1071,19 +1074,24 @@ enum ScriptType {
 - 過去の PR とトーンを合わせる
 
 **例**:
+
 ```markdown
 ## 概要
+
 プロジェクトの開発環境を構築し、開発を開始するための基盤を整備しました。
 
 ## 実装内容
+
 - **Next.js 環境構築**: App Router を使用したプロジェクトを生成
 - **shadcn/ui の導入**: UI コンポーネントライブラリをセットアップ
 - **ESLint & Prettier 導入**: コードフォーマッターと Linter の統合設定
 
 ## 動作確認
-- ✅ Next.js の開発サーバーが起動することを確認
-- ✅ ESLint/Prettier が正常に動作することを確認
+
+- [x] Next.js の開発サーバーが起動することを確認
+- [x] ESLint/Prettier が正常に動作することを確認
 
 ## 関連 Issue
+
 Closes #1
 ```
