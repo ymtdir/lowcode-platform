@@ -1,9 +1,9 @@
 ---
 name: enhancement_template
 about: 新機能追加用のテンプレートです
-title: ""
+title: ''
 labels: enhancement
-assignees: ""
+assignees: ''
 ---
 
 ## 概要

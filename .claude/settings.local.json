@@ -1,11 +1,7 @@
 {
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": [
-    "github"
-  ],
+  "enabledMcpjsonServers": ["github"],
   "permissions": {
-    "allow": [
-      "mcp__github__list_pull_requests"
-    ]
+    "allow": ["mcp__github__list_pull_requests"]
   }
 }
