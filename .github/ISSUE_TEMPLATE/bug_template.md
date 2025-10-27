@@ -1,9 +1,9 @@
 ---
 name: bug_template
 about: 不具合修正用のテンプレートです
-title: ""
+title: ''
 labels: bug
-assignees: ""
+assignees: ''
 ---
 
 ## 概要
