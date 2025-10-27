@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useFormState } from 'react-dom';
-import { login } from './actions';
+import { useActionState } from 'react';
+import { login, loginWithGoogle } from './actions';
 import {
   Card,
   CardAction,
@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export default function LoginPage() {
-  const [state, formAction] = useFormState(login, {});
+  const [state, formAction] = useActionState(login, {});
   return (
     <div className="flex min-h-screen items-center justify-center">
       <Card className="w-full max-w-sm">
@@ -65,10 +65,12 @@ export default function LoginPage() {
               <Button type="submit" className="w-full">
                 ログイン
               </Button>
-              <Button variant="outline" className="w-full">
-                Googleでログイン
-              </Button>
             </div>
+          </form>
+          <form action={loginWithGoogle} className="mt-4">
+            <Button type="submit" variant="outline" className="w-full">
+              Googleでログイン
+            </Button>
           </form>
         </CardContent>
         <CardFooter className="flex-col gap-2"></CardFooter>

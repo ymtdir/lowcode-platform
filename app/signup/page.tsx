@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useFormState } from 'react-dom';
-import { signup } from './actions';
+import { useActionState } from 'react';
+import { signup, signupWithGoogle } from './actions';
 import {
   Card,
   CardAction,
@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export default function SignupPage() {
-  const [state, formAction] = useFormState(signup, {});
+  const [state, formAction] = useActionState(signup, {});
   return (
     <div className="flex min-h-screen items-center justify-center">
       <Card className="w-full max-w-sm">
@@ -57,10 +57,12 @@ export default function SignupPage() {
               <Button type="submit" className="w-full">
                 新規登録
               </Button>
-              <Button variant="outline" className="w-full">
-                Googleで登録
-              </Button>
             </div>
+          </form>
+          <form action={signupWithGoogle} className="mt-4">
+            <Button type="submit" variant="outline" className="w-full">
+              Googleで登録
+            </Button>
           </form>
         </CardContent>
         <CardFooter className="flex-col gap-2"></CardFooter>

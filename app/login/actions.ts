@@ -29,3 +29,23 @@ export async function login(
   revalidatePath('/', 'layout');
   redirect('/dashboard');
 }
+
+export async function loginWithGoogle() {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+    },
+  });
+
+  if (error) {
+    console.error('Google認証エラー:', error.message);
+    redirect('/error');
+  }
+
+  if (data.url) {
+    redirect(data.url);
+  }
+}
