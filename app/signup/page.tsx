@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { login } from './actions';
+import { signup } from './actions';
 import {
   Card,
   CardAction,
@@ -13,23 +13,23 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-export default function LoginPage() {
+export default function SignupPage() {
   return (
     <div className="flex min-h-screen items-center justify-center">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>アカウントにログイン</CardTitle>
+          <CardTitle>アカウントを作成</CardTitle>
           <CardDescription>
-            メールアドレスを入力してログインしてください
+            メールアドレスを入力して新規登録してください
           </CardDescription>
           <CardAction>
-            <Link href="/signup">
-              <Button variant="link">新規登録</Button>
+            <Link href="/login">
+              <Button variant="link">ログイン</Button>
             </Link>
           </CardAction>
         </CardHeader>
         <CardContent>
-          <form action={login}>
+          <form action={signup}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
                 <Label htmlFor="email">メールアドレス</Label>
@@ -42,22 +42,14 @@ export default function LoginPage() {
                 />
               </div>
               <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">パスワード</Label>
-                  <a
-                    href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    パスワードをお忘れですか？
-                  </a>
-                </div>
+                <Label htmlFor="password">パスワード</Label>
                 <Input id="password" name="password" type="password" required />
               </div>
               <Button type="submit" className="w-full">
-                ログイン
+                新規登録
               </Button>
               <Button variant="outline" className="w-full">
-                Googleでログイン
+                Googleで登録
               </Button>
             </div>
           </form>
