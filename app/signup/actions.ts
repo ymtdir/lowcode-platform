@@ -6,11 +6,16 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 
-export async function signup(formData: FormData) {
+type FormState = {
+  error?: string;
+};
+
+export async function signup(
+  _prevState: FormState,
+  formData: FormData
+): Promise<FormState> {
   const supabase = await createClient();
 
-  // type-casting here for convenience
-  // in practice, you should validate your inputs
   const data = {
     email: formData.get('email') as string,
     password: formData.get('password') as string,
@@ -18,19 +23,13 @@ export async function signup(formData: FormData) {
 
   const { data: authData, error } = await supabase.auth.signUp(data);
 
-  console.log('SignUp response:', { authData, error });
-
   if (error) {
-    console.error('Supabase signup error:', error);
-    redirect('/error');
+    console.error('サインアップエラー:', error.message);
+    return { error: 'アカウントの作成に失敗しました' };
   }
 
   // Supabase Authでユーザー作成成功後、Prismaにもレコードを作成
   if (authData.user) {
-    console.log('Creating user in Prisma:', {
-      id: authData.user.id,
-      email: authData.user.email,
-    });
     try {
       await prisma.user.create({
         data: {
@@ -39,13 +38,10 @@ export async function signup(formData: FormData) {
           role: 'MEMBER',
         },
       });
-      console.log('User created successfully in Prisma');
     } catch (error) {
-      console.error('Prisma User creation error:', error);
-      redirect('/error');
+      console.error('ユーザー情報の保存エラー:', error);
+      return { error: 'ユーザー情報の保存に失敗しました' };
     }
-  } else {
-    console.log('No user in authData - email confirmation might be required');
   }
 
   revalidatePath('/', 'layout');

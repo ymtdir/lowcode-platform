@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useFormState } from 'react-dom';
 import { login } from './actions';
 import {
   Card,
@@ -14,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export default function LoginPage() {
+  const [state, formAction] = useFormState(login, {});
   return (
     <div className="flex min-h-screen items-center justify-center">
       <Card className="w-full max-w-sm">
@@ -29,8 +33,13 @@ export default function LoginPage() {
           </CardAction>
         </CardHeader>
         <CardContent>
-          <form action={login}>
+          <form action={formAction}>
             <div className="flex flex-col gap-6">
+              {state.error && (
+                <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
+                  {state.error}
+                </div>
+              )}
               <div className="grid gap-2">
                 <Label htmlFor="email">メールアドレス</Label>
                 <Input
