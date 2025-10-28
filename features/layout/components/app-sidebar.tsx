@@ -29,6 +29,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+import { logout } from '@/app/logout/actions';
+
 const mainMenuItems = [
   {
     title: 'Home',
@@ -54,17 +56,6 @@ const mainMenuItems = [
     title: 'Settings',
     url: '#',
     icon: Settings,
-  },
-];
-
-const userMenuItems = [
-  {
-    title: 'Account',
-    icon: UserCog,
-  },
-  {
-    title: 'Sign out',
-    icon: LogOut,
   },
 ];
 
@@ -119,12 +110,21 @@ export function AppSidebar({ userName }: AppSidebarProps) {
                 side="top"
                 className="w-[--radix-popper-anchor-width]"
               >
-                {userMenuItems.map((item) => (
-                  <DropdownMenuItem key={item.title}>
-                    <item.icon />
-                    <span>{item.title}</span>
-                  </DropdownMenuItem>
-                ))}
+                <DropdownMenuItem>
+                  <UserCog />
+                  <span>Account</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <form action={logout} className="w-full">
+                    <button
+                      type="submit"
+                      className="flex w-full cursor-default items-center gap-2 px-2 py-1.5 text-sm outline-none"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>ログアウト</span>
+                    </button>
+                  </form>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>
