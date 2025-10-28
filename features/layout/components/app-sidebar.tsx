@@ -16,7 +16,7 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -75,9 +75,20 @@ type AppSidebarProps = {
 export function AppSidebar({ userName }: AppSidebarProps) {
   return (
     <Sidebar>
+      <SidebarHeader>
+        <div className="flex items-center gap-2 p-1">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
+            <span className="text-base font-bold text-primary-foreground">
+              L
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-base font-semibold">Lowcode Platform</span>
+          </div>
+        </div>
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainMenuItems.map((item) => (
