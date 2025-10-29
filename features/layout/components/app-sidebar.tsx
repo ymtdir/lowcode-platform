@@ -6,8 +6,6 @@ import {
   Settings,
   ChevronUp,
   User2,
-  UserCog,
-  LogOut,
 } from 'lucide-react';
 
 import {
@@ -25,11 +23,10 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-import { logout } from '@/app/logout/actions';
+import { UserMenu } from './user-menu';
 
 const mainMenuItems = [
   {
@@ -106,25 +103,8 @@ export function AppSidebar({ userName }: AppSidebarProps) {
                   <ChevronUp className="ml-auto" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
-              <DropdownMenuContent
-                side="top"
-                className="w-[--radix-popper-anchor-width]"
-              >
-                <DropdownMenuItem>
-                  <UserCog />
-                  <span>Account</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <form action={logout} className="w-full">
-                    <button
-                      type="submit"
-                      className="flex w-full cursor-default items-center gap-2 px-2 py-1.5 text-sm outline-none"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      <span>ログアウト</span>
-                    </button>
-                  </form>
-                </DropdownMenuItem>
+              <DropdownMenuContent side="top">
+                <UserMenu />
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>
