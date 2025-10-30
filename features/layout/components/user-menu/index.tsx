@@ -1,16 +1,36 @@
+import { ChevronUp, User2 } from 'lucide-react';
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { SidebarMenuButton } from '@/components/ui/sidebar';
+
 import { AccountSettingsItem } from './account-settings-item';
 import { LogoutItem } from './logout-item';
 
-export function UserMenu() {
+type UserMenuProps = {
+  userName: string;
+};
+
+export function UserMenu({ userName }: UserMenuProps) {
   return (
-    <>
-      <AccountSettingsItem />
-      <LogoutItem />
-    </>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <SidebarMenuButton>
+          <User2 /> {userName}
+          <ChevronUp className="ml-auto" />
+        </SidebarMenuButton>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent side="top">
+        <AccountSettingsItem />
+        <LogoutItem />
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
-// 個別エクスポート（必要に応じて使用可能）
 export { AccountSettingsDialog } from './account-settings-dialog';
 export { AccountSettingsItem } from './account-settings-item';
 export { LogoutItem } from './logout-item';

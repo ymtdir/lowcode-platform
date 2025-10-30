@@ -1,14 +1,4 @@
 import {
-  Home,
-  Users,
-  Building,
-  Calendar,
-  Settings,
-  ChevronUp,
-  User2,
-} from 'lucide-react';
-
-import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -16,45 +6,11 @@ import {
   SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-
 import { UserMenu } from './user-menu';
-
-const mainMenuItems = [
-  {
-    title: 'Home',
-    url: '#',
-    icon: Home,
-  },
-  {
-    title: 'Users',
-    url: '#',
-    icon: Users,
-  },
-  {
-    title: 'Groups',
-    url: '#',
-    icon: Building,
-  },
-  {
-    title: 'Calendar',
-    url: '#',
-    icon: Calendar,
-  },
-  {
-    title: 'Settings',
-    url: '#',
-    icon: Settings,
-  },
-];
+import { MainMenu, mainMenuItems } from './main-menu';
 
 type AppSidebarProps = {
   userName: string;
@@ -78,35 +34,14 @@ export function AppSidebar({ userName }: AppSidebarProps) {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {mainMenuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
+            <MainMenu items={mainMenuItems} />
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton>
-                  <User2 /> {userName}
-                  <ChevronUp className="ml-auto" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent side="top">
-                <UserMenu />
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <UserMenu userName={userName} />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
