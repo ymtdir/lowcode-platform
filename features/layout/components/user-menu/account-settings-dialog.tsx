@@ -4,21 +4,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { ThemeToggle } from '@/features/theme/components/theme-toggle';
+import { ThemeSelector } from '@/features/theme/components/theme-selector';
 
 export function AccountSettingsDialog() {
   return (
-    <DialogContent>
+    <DialogContent className="bg-card">
       <DialogHeader>
         <DialogTitle>アカウント設定</DialogTitle>
         <DialogDescription>
           アカウント設定の内容をここに表示します。
         </DialogDescription>
       </DialogHeader>
-      <div className="space-y-4 py-4">
-        <div className="space-y-2">
+      <div className="py-2">
+        <div className="flex items-center justify-between">
           <h3 className="text-sm font-medium">テーマ</h3>
-          <ThemeToggle />
+          <ThemeSelector />
         </div>
       </div>
     </DialogContent>
