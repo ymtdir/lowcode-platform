@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 import {
@@ -110,7 +110,7 @@ export function ColorSelector() {
           }}
         />
         <span>{currentColor?.label ?? 'ニュートラル'}</span>
-        <ChevronDown className="h-4 w-4" />
+        <ChevronRight className="h-4 w-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent side="right">
         {colors.map((colorItem) => (

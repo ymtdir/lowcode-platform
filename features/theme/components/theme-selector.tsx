@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, MonitorSmartphone, Moon, Sun } from 'lucide-react';
+import { ChevronRight, MonitorSmartphone, Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 import {
@@ -27,7 +27,7 @@ export function ThemeSelector() {
       <DropdownMenuTrigger className="flex items-center bg-card gap-2 text-sm ">
         <CurrentIcon className="h-4 w-4" />
         <span>{currentTheme?.label ?? 'システム'}</span>
-        <ChevronDown className="h-4 w-4" />
+        <ChevronRight className="h-4 w-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent side="right">
         {themes.map(({ value, label, icon: Icon }) => (
