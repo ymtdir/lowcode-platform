@@ -5,6 +5,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ThemeSelector } from '@/features/theme/components/theme-selector';
+import { ColorSelector } from '@/features/theme/components/color-selector';
 
 export function AccountSettingsDialog() {
   return (
@@ -15,10 +16,14 @@ export function AccountSettingsDialog() {
           アカウント設定の内容をここに表示します。
         </DialogDescription>
       </DialogHeader>
-      <div className="py-2">
+      <div className="space-y-4 py-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-medium">テーマ</h3>
           <ThemeSelector />
+        </div>
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-medium">カラー</h3>
+          <ColorSelector />
         </div>
       </div>
     </DialogContent>
