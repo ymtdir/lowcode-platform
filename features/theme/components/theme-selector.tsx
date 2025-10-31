@@ -29,7 +29,7 @@ export function ThemeSelector() {
         <span>{currentTheme?.label ?? 'システム'}</span>
         <ChevronDown className="h-4 w-4" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent side="bottom">
+      <DropdownMenuContent side="right">
         {themes.map(({ value, label, icon: Icon }) => (
           <DropdownMenuItem key={value} onClick={() => setTheme(value)}>
             <Icon className="h-4 w-4" />
