@@ -1,9 +1,17 @@
 'use client';
 
 import { UserCog } from 'lucide-react';
-import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { AccountSettingsDialog } from './account-settings-dialog';
+import { Separator } from '@/components/ui/separator';
+import { ThemeSelector } from '@/features/theme/components/theme-selector';
+import { ColorSelector } from '@/features/theme/components/color-selector';
 
 export function AccountSettingsItem() {
   return (
@@ -14,7 +22,22 @@ export function AccountSettingsItem() {
           <span>アカウント設定</span>
         </DropdownMenuItem>
       </DialogTrigger>
-      <AccountSettingsDialog />
+      <DialogContent className="bg-card">
+        <DialogHeader>
+          <DialogTitle>アカウント設定</DialogTitle>
+          <Separator className="my-4" />
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium">テーマ</h3>
+            <ThemeSelector />
+          </div>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium">カラー</h3>
+            <ColorSelector />
+          </div>
+        </div>
+      </DialogContent>
     </Dialog>
   );
 }

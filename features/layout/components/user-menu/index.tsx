@@ -31,6 +31,5 @@ export function UserMenu({ userName }: UserMenuProps) {
   );
 }
 
-export { AccountSettingsDialog } from './account-settings-dialog';
 export { AccountSettingsItem } from './account-settings-item';
 export { LogoutItem } from './logout-item';
