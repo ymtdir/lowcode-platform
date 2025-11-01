@@ -49,12 +49,7 @@ export function CreateUserButton() {
             )}
             <div className="grid gap-2">
               <Label htmlFor="name">名前</Label>
-              <Input
-                id="name"
-                name="name"
-                placeholder="山田 太郎"
-                required
-              />
+              <Input id="name" name="name" placeholder="山田 太郎" required />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="email">メールアドレス</Label>
