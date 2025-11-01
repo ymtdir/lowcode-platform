@@ -13,17 +13,23 @@ export async function login(
   _prevState: FormState,
   formData: FormData
 ): Promise<FormState> {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  const data = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
-  };
+    const data = {
+      email: formData.get('email') as string,
+      password: formData.get('password') as string,
+    };
 
-  const { error } = await supabase.auth.signInWithPassword(data);
+    const { error } = await supabase.auth.signInWithPassword(data);
 
-  if (error) {
-    return { error: 'メールアドレスまたはパスワードが正しくありません' };
+    if (error) {
+      console.error('ログインエラー:', error.message);
+      return { error: 'メールアドレスまたはパスワードが正しくありません' };
+    }
+  } catch (error) {
+    console.error('ログインエラー:', error);
+    return { error: 'ログインに失敗しました' };
   }
 
   revalidatePath('/', 'layout');
@@ -31,21 +37,30 @@ export async function login(
 }
 
 export async function loginWithGoogle() {
-  const supabase = await createClient();
+  let redirectUrl: string | null = null;
 
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/callback`,
-    },
-  });
+  try {
+    const supabase = await createClient();
 
-  if (error) {
-    console.error('Google認証エラー:', error.message);
-    redirect('/error');
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/callback`,
+      },
+    });
+
+    if (error) {
+      console.error('Google認証エラー:', error.message);
+      redirectUrl = '/error';
+    } else if (data.url) {
+      redirectUrl = data.url;
+    }
+  } catch (error) {
+    console.error('Google認証エラー:', error);
+    redirectUrl = '/error';
   }
 
-  if (data.url) {
-    redirect(data.url);
+  if (redirectUrl) {
+    redirect(redirectUrl);
   }
 }

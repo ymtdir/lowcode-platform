@@ -4,7 +4,13 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 
 export async function logout() {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
+  try {
+    const supabase = await createClient();
+    await supabase.auth.signOut();
+  } catch (error) {
+    console.error('ログアウトエラー:', error);
+    // ログアウトは失敗してもログイン画面にリダイレクト
+  }
+
   redirect('/login');
 }

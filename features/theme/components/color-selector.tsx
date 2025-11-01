@@ -110,7 +110,7 @@ export function ColorSelector() {
           }}
         />
         <span>{currentColor?.label ?? 'ニュートラル'}</span>
-        <ChevronRight className="h-4 w-4" />
+        <ChevronRight />
       </DropdownMenuTrigger>
       <DropdownMenuContent side="right">
         {colors.map((colorItem) => (

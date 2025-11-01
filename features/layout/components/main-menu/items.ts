@@ -5,12 +5,12 @@ import type { MainMenuItem } from '../../types';
 export const mainMenuItems: MainMenuItem[] = [
   {
     title: 'Home',
-    url: '#',
+    url: '/',
     icon: Home,
   },
   {
     title: 'Users',
-    url: '#',
+    url: '/users',
     icon: Users,
   },
   {

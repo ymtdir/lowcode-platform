@@ -25,14 +25,14 @@ export function ThemeSelector() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center bg-card gap-2 text-sm ">
-        <CurrentIcon className="h-4 w-4" />
+        <CurrentIcon />
         <span>{currentTheme?.label ?? 'システム'}</span>
-        <ChevronRight className="h-4 w-4" />
+        <ChevronRight />
       </DropdownMenuTrigger>
       <DropdownMenuContent side="right">
         {themes.map(({ value, label, icon: Icon }) => (
           <DropdownMenuItem key={value} onClick={() => setTheme(value)}>
-            <Icon className="h-4 w-4" />
+            <Icon />
             <span>{label}</span>
           </DropdownMenuItem>
         ))}

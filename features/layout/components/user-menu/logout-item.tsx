@@ -10,7 +10,7 @@ export function LogoutItem() {
           type="submit"
           className="flex items-center gap-2 py-1.5 text-sm outline-none"
         >
-          <LogOut className="h-4 w-4" />
+          <LogOut />
           <span>ログアウト</span>
         </button>
       </form>

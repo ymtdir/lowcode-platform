@@ -41,18 +41,31 @@ export default function SignupPage() {
                 </div>
               )}
               <div className="grid gap-2">
+                <Label htmlFor="name">名前</Label>
+                <Input id="name" name="name" placeholder="username" required />
+              </div>
+              <div className="grid gap-2">
                 <Label htmlFor="email">メールアドレス</Label>
                 <Input
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="example@mail.com"
+                  placeholder="user@example.com"
                   required
                 />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">パスワード</Label>
                 <Input id="password" name="password" type="password" required />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="confirmPassword">パスワード（確認）</Label>
+                <Input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  required
+                />
               </div>
               <Button type="submit" className="w-full">
                 新規登録
