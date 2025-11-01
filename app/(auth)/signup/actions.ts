@@ -54,16 +54,18 @@ export async function signup(
         },
       });
     }
-
-    revalidatePath('/', 'layout');
-    redirect('/');
   } catch (error) {
     console.error('サインアップエラー:', error);
     return { error: 'アカウントの作成に失敗しました' };
   }
+
+  revalidatePath('/', 'layout');
+  redirect('/');
 }
 
 export async function signupWithGoogle() {
+  let redirectUrl: string | null = null;
+
   try {
     const supabase = await createClient();
 
@@ -76,14 +78,16 @@ export async function signupWithGoogle() {
 
     if (error) {
       console.error('Google認証エラー:', error.message);
-      redirect('/error');
-    }
-
-    if (data.url) {
-      redirect(data.url);
+      redirectUrl = '/error';
+    } else if (data.url) {
+      redirectUrl = data.url;
     }
   } catch (error) {
     console.error('Google認証エラー:', error);
-    redirect('/error');
+    redirectUrl = '/error';
+  }
+
+  if (redirectUrl) {
+    redirect(redirectUrl);
   }
 }

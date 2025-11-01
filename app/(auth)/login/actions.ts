@@ -27,16 +27,18 @@ export async function login(
       console.error('ログインエラー:', error.message);
       return { error: 'メールアドレスまたはパスワードが正しくありません' };
     }
-
-    revalidatePath('/', 'layout');
-    redirect('/');
   } catch (error) {
     console.error('ログインエラー:', error);
     return { error: 'ログインに失敗しました' };
   }
+
+  revalidatePath('/', 'layout');
+  redirect('/');
 }
 
 export async function loginWithGoogle() {
+  let redirectUrl: string | null = null;
+
   try {
     const supabase = await createClient();
 
@@ -49,14 +51,16 @@ export async function loginWithGoogle() {
 
     if (error) {
       console.error('Google認証エラー:', error.message);
-      redirect('/error');
-    }
-
-    if (data.url) {
-      redirect(data.url);
+      redirectUrl = '/error';
+    } else if (data.url) {
+      redirectUrl = data.url;
     }
   } catch (error) {
     console.error('Google認証エラー:', error);
-    redirect('/error');
+    redirectUrl = '/error';
+  }
+
+  if (redirectUrl) {
+    redirect(redirectUrl);
   }
 }
