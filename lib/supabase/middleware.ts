@@ -39,17 +39,23 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // 認証が必要なページ（/dashboard配下）
-  if (!user && request.nextUrl.pathname.startsWith('/dashboard')) {
+  const { pathname } = request.nextUrl;
+
+  // 認証ページのパス
+  const authPaths = ['/login', '/signup', '/logout', '/callback', '/confirm'];
+  const isAuthPage = authPaths.some((path) => pathname.startsWith(path));
+
+  // 未認証ユーザーが保護されたページ（認証ページ以外のすべて）にアクセスした場合
+  if (!user && !isAuthPage) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);
   }
 
-  // ログイン済みユーザーが認証ページにアクセスした場合
-  if (request.nextUrl.pathname.startsWith('/login') && user) {
+  // 認証済みユーザーが認証ページにアクセスした場合、ルートパスへリダイレクト
+  if (user && isAuthPage) {
     const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
+    url.pathname = '/';
     return NextResponse.redirect(url);
   }
 

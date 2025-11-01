@@ -1,6 +1,6 @@
 import { LogOut } from 'lucide-react';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { logout } from '@/app/logout/actions';
+import { logout } from '@/app/(auth)/logout/actions';
 
 export function LogoutItem() {
   return (
