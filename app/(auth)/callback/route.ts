@@ -47,5 +47,5 @@ export async function GET(request: Request) {
   }
 
   // ダッシュボードにリダイレクト
-  return NextResponse.redirect(`${origin}/dashboard`);
+  return NextResponse.redirect(`${origin}/`);
 }
