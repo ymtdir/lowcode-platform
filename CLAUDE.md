@@ -181,18 +181,18 @@ const records = await prisma.record.findMany({ where: { tableId: id } });
 ```
 lowcode-platform/
 ├── app/                          # Next.js App Router
-│   ├── login/
-│   │   ├── page.tsx
-│   │   └── actions.ts
-│   ├── error/
-│   │   └── page.tsx
-│   ├── auth/
-│   │   └── confirm/
-│   │       └── route.ts
+│   ├── (public)/                 # 認証不要（将来的にLP等を配置）
+│   │   └── layout.tsx
 │   │
-│   ├── (dashboard)/
-│   │   ├── page.tsx
-│   │   ├── tables/
+│   ├── (protected)/              # 認証必須（アプリケーションのメイン機能）
+│   │   ├── layout.tsx            # サイドバー付きレイアウト
+│   │   ├── page.tsx              # ホーム画面（/）
+│   │   │
+│   │   ├── users/                # ユーザー管理（/users）
+│   │   │   ├── page.tsx
+│   │   │   └── loading.tsx
+│   │   │
+│   │   ├── tables/               # テーブル管理（/tables）
 │   │   │   ├── page.tsx
 │   │   │   ├── loading.tsx
 │   │   │   ├── create/
@@ -221,14 +221,28 @@ lowcode-platform/
 │   │   │       └── settings/
 │   │   │           └── page.tsx
 │   │   │
-│   │   ├── settings/
-│   │   │   ├── page.tsx
-│   │   │   ├── users/
-│   │   │   │   └── page.tsx
-│   │   │   └── groups/
-│   │   │       └── page.tsx
+│   │   ├── groups/               # グループ管理（/groups）
+│   │   │   └── page.tsx
 │   │   │
-│   │   └── layout.tsx
+│   │   └── settings/             # アプリケーション設定（/settings）
+│   │       └── page.tsx
+│   │
+│   ├── (auth)/                   # 認証プロセス
+│   │   ├── login/                # ログイン（/login）
+│   │   │   ├── page.tsx
+│   │   │   └── actions.ts
+│   │   ├── signup/               # サインアップ（/signup）
+│   │   │   ├── page.tsx
+│   │   │   └── actions.ts
+│   │   ├── logout/               # ログアウト（/logout）
+│   │   │   └── actions.ts
+│   │   ├── callback/             # OAuth コールバック（/callback）
+│   │   │   └── route.ts
+│   │   └── confirm/              # メール確認（/confirm）
+│   │       └── route.ts
+│   │
+│   ├── error/                    # エラー画面（/error）
+│   │   └── page.tsx
 │   │
 │   ├── api/                      # API Routes（必要最小限）
 │   │   ├── webhooks/
@@ -238,8 +252,7 @@ lowcode-platform/
 │   │   └── external/
 │   │       └── route.ts
 │   │
-│   ├── layout.tsx
-│   ├── page.tsx
+│   ├── layout.tsx                # ルートレイアウト
 │   └── globals.css
 │
 ├── components/                   # shadcn/ui コンポーネント
