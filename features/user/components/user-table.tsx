@@ -16,6 +16,7 @@ import {
 import { ChevronDown } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { CreateUserButton } from './create-user-button';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -68,7 +69,7 @@ export function UserTable({ users, columns }: UserTableProps) {
 
   return (
     <div className="w-full">
-      <div className="flex items-center px-6 py-4">
+      <div className="flex items-center justify-between px-6 py-4">
         <Input
           placeholder="メールアドレスで検索..."
           value={(table.getColumn('email')?.getFilterValue() as string) ?? ''}
@@ -77,35 +78,38 @@ export function UserTable({ users, columns }: UserTableProps) {
           }
           className="max-w-sm"
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              項目 <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                    onSelect={(e) => {
-                      e.preventDefault();
-                    }}
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                項目 <ChevronDown />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
+                      onSelect={(e) => {
+                        e.preventDefault();
+                      }}
+                    >
+                      {column.id}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <CreateUserButton />
+        </div>
       </div>
       <div className="overflow-hidden border-y">
         <Table className="table-fixed">

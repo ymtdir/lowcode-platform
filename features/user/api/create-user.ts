@@ -1,20 +1,19 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
-
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { prisma } from '@/lib/prisma';
 
 type FormState = {
   error?: string;
+  success?: boolean;
 };
 
-export async function signup(
+export async function createUser(
   _prevState: FormState,
   formData: FormData
 ): Promise<FormState> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const name = formData.get('name') as string;
   const email = formData.get('email') as string;
@@ -34,11 +33,15 @@ export async function signup(
     password,
   };
 
-  const { data: authData, error } = await supabase.auth.signUp(data);
+  const { data: authData, error } = await supabase.auth.admin.createUser({
+    email: data.email,
+    password: data.password,
+    email_confirm: true,
+  });
 
   if (error) {
-    console.error('サインアップエラー:', error.message);
-    return { error: 'アカウントの作成に失敗しました' };
+    console.error('ユーザー作成エラー:', error.message);
+    return { error: 'ユーザーの作成に失敗しました' };
   }
 
   // Supabase Authでユーザー作成成功後、Prismaにもレコードを作成
@@ -58,26 +61,7 @@ export async function signup(
     }
   }
 
-  revalidatePath('/', 'layout');
-  redirect('/');
-}
+  revalidatePath('/users');
 
-export async function signupWithGoogle() {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
-    },
-  });
-
-  if (error) {
-    console.error('Google認証エラー:', error.message);
-    redirect('/error');
-  }
-
-  if (data.url) {
-    redirect(data.url);
-  }
+  return { success: true };
 }
