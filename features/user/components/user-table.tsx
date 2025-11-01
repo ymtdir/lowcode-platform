@@ -17,6 +17,7 @@ import { ChevronDown } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { CreateUserButton } from './create-user-button';
+import { BulkDeleteButton } from './bulk-delete-button';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -66,6 +67,13 @@ export function UserTable({ users, columns }: UserTableProps) {
       rowSelection,
     },
   });
+
+  const selectedRows = table.getFilteredSelectedRowModel().rows;
+  const selectedUserIds = selectedRows.map((row) => row.original.id);
+
+  const handleDeleteComplete = () => {
+    table.resetRowSelection();
+  };
 
   return (
     <div className="w-full">
@@ -165,10 +173,14 @@ export function UserTable({ users, columns }: UserTableProps) {
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 px-6 py-4">
-        {table.getFilteredSelectedRowModel().rows.length > 0 && (
-          <div className="text-muted-foreground flex-1 text-sm">
-            {table.getFilteredSelectedRowModel().rows.length} /{' '}
-            {table.getFilteredRowModel().rows.length} 行を選択中
+        {selectedRows.length > 0 && (
+          <div className="text-muted-foreground flex flex-1 items-center gap-2 text-sm">
+            {selectedRows.length} / {table.getFilteredRowModel().rows.length}{' '}
+            行を選択中
+            <BulkDeleteButton
+              selectedUserIds={selectedUserIds}
+              onDeleteComplete={handleDeleteComplete}
+            />
           </div>
         )}
         <div className="space-x-2">
