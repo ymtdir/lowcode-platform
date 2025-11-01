@@ -16,9 +16,23 @@ export async function signup(
 ): Promise<FormState> {
   const supabase = await createClient();
 
+  const name = formData.get('name') as string;
+  const email = formData.get('email') as string;
+  const password = formData.get('password') as string;
+  const confirmPassword = formData.get('confirmPassword') as string;
+
+  if (!name || name.trim() === '') {
+    return { error: '名前を入力してください' };
+  }
+
+  // パスワード確認の検証
+  if (password !== confirmPassword) {
+    return { error: 'パスワードが一致しません' };
+  }
+
   const data = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
+    email,
+    password,
   };
 
   const { data: authData, error } = await supabase.auth.signUp(data);
@@ -34,6 +48,7 @@ export async function signup(
       await prisma.user.create({
         data: {
           id: authData.user.id,
+          name: name,
           email: authData.user.email!,
           role: 'MEMBER',
         },
@@ -45,7 +60,7 @@ export async function signup(
   }
 
   revalidatePath('/', 'layout');
-  redirect('/dashboard');
+  redirect('/');
 }
 
 export async function signupWithGoogle() {
