@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { EditUserItem } from './edit-user-item';
 import type { User } from '../types';
 
 export const columns: ColumnDef<User>[] = [
@@ -80,6 +81,8 @@ export const columns: ColumnDef<User>[] = [
     id: 'actions',
     enableHiding: false,
     cell: ({ row }) => {
+      const user = row.original;
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -89,7 +92,7 @@ export const columns: ColumnDef<User>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="bottom">
-            <DropdownMenuItem>編集</DropdownMenuItem>
+            <EditUserItem user={user} />
             <DropdownMenuItem className="text-destructive">
               削除
             </DropdownMenuItem>
