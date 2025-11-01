@@ -18,7 +18,7 @@ export function AccountSettingsItem() {
     <Dialog>
       <DialogTrigger asChild>
         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-          <UserCog className="h-4 w-4" />
+          <UserCog />
           <span>アカウント設定</span>
         </DropdownMenuItem>
       </DialogTrigger>
