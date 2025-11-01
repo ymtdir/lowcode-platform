@@ -7,10 +7,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { EditUserItem } from './edit-user-item';
+import { DeleteUserItem } from './delete-user-item';
 import type { User } from '../types';
 
 export const columns: ColumnDef<User>[] = [
@@ -93,9 +93,7 @@ export const columns: ColumnDef<User>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent side="bottom">
             <EditUserItem user={user} />
-            <DropdownMenuItem className="text-destructive">
-              削除
-            </DropdownMenuItem>
+            <DeleteUserItem user={user} />
           </DropdownMenuContent>
         </DropdownMenu>
       );
