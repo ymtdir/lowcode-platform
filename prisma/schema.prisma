@@ -16,6 +16,20 @@ model User {
   updatedAt DateTime @updatedAt
 }
 
+model Group {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  parentId    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  parent      Group?   @relation("GroupHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children    Group[]  @relation("GroupHierarchy")
+
+  @@index([parentId])
+}
+
 enum UserRole {
   ADMIN
   MEMBER
