@@ -15,7 +15,7 @@ export const mainMenuItems: MainMenuItem[] = [
   },
   {
     title: 'Groups',
-    url: '#',
+    url: '/groups',
     icon: Building,
   },
   {
