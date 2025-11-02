@@ -16,6 +16,7 @@ import {
 import { ChevronDown } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { CreateGroupButton } from './create-group-button';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -110,6 +111,7 @@ export function GroupTable({ groups, columns }: GroupTableProps) {
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
+          <CreateGroupButton groups={groups} />
         </div>
       </div>
       <div className="overflow-hidden border-y">
