@@ -8,6 +8,13 @@ export async function getGroups(): Promise<Group[]> {
     orderBy: {
       createdAt: 'desc',
     },
+    include: {
+      parent: {
+        select: {
+          name: true,
+        },
+      },
+    },
   });
 
   return groups;

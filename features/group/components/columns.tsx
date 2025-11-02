@@ -61,8 +61,8 @@ export const columns: ColumnDef<Group>[] = [
     accessorKey: 'parentId',
     header: '親グループ',
     cell: ({ row }) => {
-      const parentId = row.getValue('parentId') as string | null;
-      return <div>{parentId ? parentId : 'なし'}</div>;
+      const group = row.original;
+      return <div>{group.parent?.name || '-'}</div>;
     },
     meta: { width: 'w-[20%]' },
   },

@@ -5,4 +5,7 @@ export type Group = {
   parentId: string | null;
   createdAt: Date;
   updatedAt: Date;
+  parent?: {
+    name: string;
+  } | null;
 };
