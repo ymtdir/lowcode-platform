@@ -126,7 +126,11 @@ export function CreateGroupButton({ groups }: CreateGroupButtonProps) {
         <DialogHeader>
           <DialogTitle>グループを追加</DialogTitle>
         </DialogHeader>
-        <CreateGroupContent key={resetKey} groups={groups} onClose={handleClose} />
+        <CreateGroupContent
+          key={resetKey}
+          groups={groups}
+          onClose={handleClose}
+        />
       </DialogContent>
     </Dialog>
   );

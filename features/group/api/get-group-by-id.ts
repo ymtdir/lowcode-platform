@@ -1,16 +1,14 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import type { Group } from '../types';
 
-export async function getGroups(): Promise<Group[]> {
-  const groups = await prisma.group.findMany({
-    orderBy: {
-      createdAt: 'desc',
-    },
+export async function getGroupById(groupId: string) {
+  const group = await prisma.group.findUnique({
+    where: { id: groupId },
     include: {
       parent: {
         select: {
+          id: true,
           name: true,
         },
       },
@@ -28,13 +26,8 @@ export async function getGroups(): Promise<Group[]> {
           createdAt: 'asc',
         },
       },
-      _count: {
-        select: {
-          members: true,
-        },
-      },
     },
   });
 
-  return groups;
+  return group;
 }

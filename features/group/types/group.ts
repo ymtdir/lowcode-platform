@@ -8,4 +8,15 @@ export type Group = {
   parent?: {
     name: string;
   } | null;
+  members?: {
+    id: string;
+    user: {
+      id: string;
+      email: string;
+      name: string | null;
+    };
+  }[];
+  _count?: {
+    members: number;
+  };
 };

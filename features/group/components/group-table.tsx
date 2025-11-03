@@ -35,12 +35,19 @@ import {
 } from '@/components/ui/table';
 import type { Group } from '../types';
 
-type GroupTableProps = {
-  groups: Group[];
+type User = {
+  id: string;
+  email: string;
+  name: string | null;
 };
 
-export function GroupTable({ groups }: GroupTableProps) {
-  const columns = createColumns(groups);
+type GroupTableProps = {
+  groups: Group[];
+  users: User[];
+};
+
+export function GroupTable({ groups, users }: GroupTableProps) {
+  const columns = createColumns(groups, users);
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []

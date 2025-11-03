@@ -11,9 +11,19 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { EditGroupItem } from './edit-group-item';
 import { DeleteGroupItem } from './delete-group-item';
+import { ManageMembersItem } from './manage-members-item';
 import type { Group } from '../types';
 
-export const createColumns = (allGroups: Group[]): ColumnDef<Group>[] => [
+type User = {
+  id: string;
+  email: string;
+  name: string | null;
+};
+
+export const createColumns = (
+  allGroups: Group[],
+  allUsers: User[]
+): ColumnDef<Group>[] => [
   {
     id: 'select',
     header: ({ table }) => (
@@ -51,13 +61,13 @@ export const createColumns = (allGroups: Group[]): ColumnDef<Group>[] => [
       );
     },
     cell: ({ row }) => <div>{row.getValue('name')}</div>,
-    meta: { width: 'w-[25%]' },
+    meta: { width: 'w-[15%]' },
   },
   {
     accessorKey: 'description',
     header: '説明',
     cell: ({ row }) => <div>{row.getValue('description') || '-'}</div>,
-    meta: { width: 'w-[30%]' },
+    meta: { width: 'w-[20%]' },
   },
   {
     accessorKey: 'parentId',
@@ -66,7 +76,16 @@ export const createColumns = (allGroups: Group[]): ColumnDef<Group>[] => [
       const group = row.original;
       return <div>{group.parent?.name || '-'}</div>;
     },
-    meta: { width: 'w-[20%]' },
+    meta: { width: 'w-[15%]' },
+  },
+  {
+    accessorKey: 'members',
+    header: 'メンバー数',
+    cell: ({ row }) => {
+      const group = row.original;
+      return <div>{group._count?.members || 0}人</div>;
+    },
+    meta: { width: 'w-[15%]' },
   },
   {
     accessorKey: 'createdAt',
@@ -93,6 +112,7 @@ export const createColumns = (allGroups: Group[]): ColumnDef<Group>[] => [
           </DropdownMenuTrigger>
           <DropdownMenuContent side="bottom">
             <EditGroupItem group={group} allGroups={allGroups} />
+            <ManageMembersItem group={group} allUsers={allUsers} />
             <DeleteGroupItem group={group} />
           </DropdownMenuContent>
         </DropdownMenu>

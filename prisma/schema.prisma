@@ -14,6 +14,8 @@ model User {
   role      UserRole @default(MEMBER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  groupMembers GroupMember[]
 }
 
 model Group {
@@ -24,10 +26,25 @@ model Group {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  parent      Group?   @relation("GroupHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
-  children    Group[]  @relation("GroupHierarchy")
+  parent      Group?        @relation("GroupHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children    Group[]       @relation("GroupHierarchy")
+  members     GroupMember[]
 
   @@index([parentId])
+}
+
+model GroupMember {
+  id        String   @id @default(uuid())
+  userId    String
+  groupId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+  @@index([userId])
+  @@index([groupId])
 }
 
 enum UserRole {
