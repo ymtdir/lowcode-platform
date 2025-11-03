@@ -1,5 +1,5 @@
 import { getGroups } from '@/features/group/api';
-import { GroupTable, columns } from '@/features/group/components';
+import { GroupTable } from '@/features/group/components';
 
 export default async function GroupsPage() {
   const groups = await getGroups();
@@ -12,7 +12,7 @@ export default async function GroupsPage() {
         </div>
       </div>
 
-      <GroupTable groups={groups} columns={columns} />
+      <GroupTable groups={groups} />
     </div>
   );
 }

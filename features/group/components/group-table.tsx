@@ -17,6 +17,7 @@ import { ChevronDown } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { CreateGroupButton } from './create-group-button';
+import { createColumns } from './columns';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -36,10 +37,10 @@ import type { Group } from '../types';
 
 type GroupTableProps = {
   groups: Group[];
-  columns: ColumnDef<Group>[];
 };
 
-export function GroupTable({ groups, columns }: GroupTableProps) {
+export function GroupTable({ groups }: GroupTableProps) {
+  const columns = createColumns(groups);
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []

@@ -24,7 +24,7 @@ model Group {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  parent      Group?   @relation("GroupHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  parent      Group?   @relation("GroupHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
   children    Group[]  @relation("GroupHierarchy")
 
   @@index([parentId])

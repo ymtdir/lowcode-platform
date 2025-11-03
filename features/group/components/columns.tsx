@@ -9,9 +9,11 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { EditGroupItem } from './edit-group-item';
+import { DeleteGroupItem } from './delete-group-item';
 import type { Group } from '../types';
 
-export const columns: ColumnDef<Group>[] = [
+export const createColumns = (allGroups: Group[]): ColumnDef<Group>[] => [
   {
     id: 'select',
     header: ({ table }) => (
@@ -90,7 +92,8 @@ export const columns: ColumnDef<Group>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="bottom">
-            {/* TODO: EditGroupItem と DeleteGroupItem を実装 */}
+            <EditGroupItem group={group} allGroups={allGroups} />
+            <DeleteGroupItem group={group} />
           </DropdownMenuContent>
         </DropdownMenu>
       );
