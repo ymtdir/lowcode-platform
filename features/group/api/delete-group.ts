@@ -17,8 +17,7 @@ export async function deleteGroup(groupId: string): Promise<DeleteResult> {
 
     if (childGroups.length > 0) {
       return {
-        error:
-          '子グループが存在するため削除できません。<br>先に子グループを削除してください。',
+        error: '子グループが存在するため削除できません。',
       };
     }
 

@@ -45,6 +45,24 @@ type EditGroupContentProps = {
 
 const NONE_VALUE = '__none__';
 
+// 子孫グループIDを再帰的に収集する
+function collectDescendantIds(groupId: string, allGroups: Group[]): string[] {
+  const descendantIds: string[] = [];
+
+  // 直接の子グループを取得
+  const children = allGroups.filter((g) => g.parentId === groupId);
+
+  for (const child of children) {
+    // 子のIDを追加
+    descendantIds.push(child.id);
+    // 再帰的に子の子孫も取得
+    const childDescendants = collectDescendantIds(child.id, allGroups);
+    descendantIds.push(...childDescendants);
+  }
+
+  return descendantIds;
+}
+
 function EditGroupContent({
   group,
   allGroups,
@@ -73,7 +91,9 @@ function EditGroupContent({
   }, [state, group.name, onClose]);
 
   // 自分自身と子孫グループを除外したグループリスト
-  const availableGroups = allGroups.filter((g) => g.id !== group.id);
+  const descendantIds = collectDescendantIds(group.id, allGroups);
+  const excludedIds = new Set([group.id, ...descendantIds]);
+  const availableGroups = allGroups.filter((g) => !excludedIds.has(g.id));
 
   return (
     <form action={formAction}>
@@ -106,10 +126,10 @@ function EditGroupContent({
             <Label htmlFor="parentId">親グループ</Label>
             <Select value={parentId} onValueChange={setParentId}>
               <SelectTrigger>
-                <SelectValue placeholder="-" />
+                <SelectValue placeholder="なし" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={NONE_VALUE}>-</SelectItem>
+                <SelectItem value={NONE_VALUE}>なし</SelectItem>
                 {availableGroups.map((g) => (
                   <SelectItem key={g.id} value={g.id}>
                     {g.name}
