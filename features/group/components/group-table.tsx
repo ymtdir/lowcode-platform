@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import {
-  ColumnDef,
   ColumnFiltersState,
   flexRender,
   getCoreRowModel,
@@ -17,6 +16,7 @@ import { ChevronDown } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { CreateGroupButton } from './create-group-button';
+import { BulkDeleteButton } from './bulk-delete-button';
 import { createColumns } from './columns';
 import {
   DropdownMenu,
@@ -70,6 +70,11 @@ export function GroupTable({ groups }: GroupTableProps) {
   });
 
   const selectedRows = table.getFilteredSelectedRowModel().rows;
+  const selectedGroupIds = selectedRows.map((row) => row.original.id);
+
+  const handleDeleteComplete = () => {
+    table.resetRowSelection();
+  };
 
   return (
     <div className="w-full">
@@ -173,6 +178,10 @@ export function GroupTable({ groups }: GroupTableProps) {
           <div className="text-muted-foreground flex flex-1 items-center gap-2 text-sm">
             {selectedRows.length} / {table.getFilteredRowModel().rows.length}{' '}
             行を選択中
+            <BulkDeleteButton
+              selectedGroupIds={selectedGroupIds}
+              onDeleteComplete={handleDeleteComplete}
+            />
           </div>
         )}
         <div className="space-x-2">
