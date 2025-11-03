@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import {
-  ColumnDef,
   ColumnFiltersState,
   flexRender,
   getCoreRowModel,
@@ -18,6 +17,7 @@ import { ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreateUserButton } from './create-user-button';
 import { BulkDeleteButton } from './bulk-delete-button';
+import { createColumns } from './columns';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -37,10 +37,10 @@ import type { User } from '../types';
 
 type UserTableProps = {
   users: User[];
-  columns: ColumnDef<User>[];
 };
 
-export function UserTable({ users, columns }: UserTableProps) {
+export function UserTable({ users }: UserTableProps) {
+  const columns = createColumns();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []

@@ -13,7 +13,7 @@ import { EditUserItem } from './edit-user-item';
 import { DeleteUserItem } from './delete-user-item';
 import type { User } from '../types';
 
-export const columns: ColumnDef<User>[] = [
+export const createColumns = (): ColumnDef<User>[] => [
   {
     id: 'select',
     header: ({ table }) => (
