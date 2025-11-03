@@ -1,5 +1,5 @@
 import { getUsers } from '@/features/user/api';
-import { UserTable, columns } from '@/features/user/components';
+import { UserTable } from '@/features/user/components';
 
 export default async function UsersPage() {
   const users = await getUsers();
@@ -12,7 +12,7 @@ export default async function UsersPage() {
         </div>
       </div>
 
-      <UserTable users={users} columns={columns} />
+      <UserTable users={users} />
     </div>
   );
 }

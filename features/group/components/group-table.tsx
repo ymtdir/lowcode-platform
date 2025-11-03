@@ -15,7 +15,7 @@ import {
 import { ChevronDown } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { CreateUserButton } from './create-user-button';
+import { CreateGroupButton } from './create-group-button';
 import { BulkDeleteButton } from './bulk-delete-button';
 import { createColumns } from './columns';
 import {
@@ -33,14 +33,21 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import type { User } from '../types';
+import type { Group } from '../types';
 
-type UserTableProps = {
+type User = {
+  id: string;
+  email: string;
+  name: string | null;
+};
+
+type GroupTableProps = {
+  groups: Group[];
   users: User[];
 };
 
-export function UserTable({ users }: UserTableProps) {
-  const columns = createColumns();
+export function GroupTable({ groups, users }: GroupTableProps) {
+  const columns = createColumns(groups, users);
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -51,7 +58,7 @@ export function UserTable({ users }: UserTableProps) {
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
-    data: users,
+    data: groups,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -70,7 +77,7 @@ export function UserTable({ users }: UserTableProps) {
   });
 
   const selectedRows = table.getFilteredSelectedRowModel().rows;
-  const selectedUserIds = selectedRows.map((row) => row.original.id);
+  const selectedGroupIds = selectedRows.map((row) => row.original.id);
 
   const handleDeleteComplete = () => {
     table.resetRowSelection();
@@ -80,10 +87,10 @@ export function UserTable({ users }: UserTableProps) {
     <div className="w-full">
       <div className="flex items-center justify-between px-6 py-4">
         <Input
-          placeholder="メールアドレスで検索..."
-          value={(table.getColumn('email')?.getFilterValue() as string) ?? ''}
+          placeholder="グループ名で検索..."
+          value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
-            table.getColumn('email')?.setFilterValue(event.target.value)
+            table.getColumn('name')?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
@@ -117,7 +124,7 @@ export function UserTable({ users }: UserTableProps) {
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
-          <CreateUserButton />
+          <CreateGroupButton groups={groups} />
         </div>
       </div>
       <div className="overflow-hidden border-y">
@@ -179,7 +186,7 @@ export function UserTable({ users }: UserTableProps) {
             {selectedRows.length} / {table.getFilteredRowModel().rows.length}{' '}
             行を選択中
             <BulkDeleteButton
-              selectedUserIds={selectedUserIds}
+              selectedGroupIds={selectedGroupIds}
               onDeleteComplete={handleDeleteComplete}
             />
           </div>

@@ -13,23 +13,87 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus } from 'lucide-react';
+import { toast } from 'sonner';
 import { createUser } from '../api/create-user';
+
+type CreateUserContentProps = {
+  onClose: () => void;
+};
+
+function CreateUserContent({ onClose }: CreateUserContentProps) {
+  const [state, formAction] = useActionState(createUser, {});
+
+  // 成功・エラー時の処理
+  useEffect(() => {
+    if (state.error) {
+      toast.error('ユーザーの作成に失敗しました', {
+        description: state.error,
+      });
+    } else if (state.success) {
+      toast.success('ユーザーを作成しました');
+      onClose();
+    }
+  }, [state, onClose]);
+
+  return (
+    <form action={formAction}>
+      <div className="grid gap-4 py-4">
+        <div className="grid gap-2">
+          <Label htmlFor="name">名前</Label>
+          <Input id="name" name="name" placeholder="山田 太郎" required />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="email">メールアドレス</Label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="user@example.com"
+            required
+          />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="password">パスワード</Label>
+          <Input id="password" name="password" type="password" required />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="confirmPassword">パスワード（確認）</Label>
+          <Input
+            id="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            required
+          />
+        </div>
+      </div>
+      <DialogFooter>
+        <Button type="button" variant="outline" onClick={onClose}>
+          キャンセル
+        </Button>
+        <Button type="submit">作成</Button>
+      </DialogFooter>
+    </form>
+  );
+}
 
 export function CreateUserButton() {
   const [open, setOpen] = useState(false);
-  const [state, formAction] = useActionState(createUser, {});
+  const [resetKey, setResetKey] = useState(0);
 
-  // 成功時にダイアログを閉じる
-  useEffect(() => {
-    if (state.success && open) {
-      // 次のレンダリングサイクルで実行
-      const timer = setTimeout(() => setOpen(false), 100);
-      return () => clearTimeout(timer);
+  // ダイアログが閉じられたときに状態をリセット
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      setResetKey((prev) => prev + 1);
     }
-  }, [state.success, open]);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button>
           <Plus />
@@ -40,57 +104,7 @@ export function CreateUserButton() {
         <DialogHeader>
           <DialogTitle>ユーザーを追加</DialogTitle>
         </DialogHeader>
-        <form action={formAction}>
-          <div className="grid gap-4 py-4">
-            {state.error && (
-              <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
-                {state.error}
-              </div>
-            )}
-            <div className="grid gap-2">
-              <Label htmlFor="name">名前</Label>
-              <Input
-                id="name"
-                name="name"
-                placeholder="山田 太郎"
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="email">メールアドレス</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="user@example.com"
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password">パスワード</Label>
-              <Input id="password" name="password" type="password" required />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="confirmPassword">パスワード（確認）</Label>
-              <Input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setOpen(false)}
-            >
-              キャンセル
-            </Button>
-            <Button type="submit">作成</Button>
-          </DialogFooter>
-        </form>
+        <CreateUserContent key={resetKey} onClose={handleClose} />
       </DialogContent>
     </Dialog>
   );

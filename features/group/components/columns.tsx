@@ -9,11 +9,21 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { EditUserItem } from './edit-user-item';
-import { DeleteUserItem } from './delete-user-item';
-import type { User } from '../types';
+import { EditGroupItem } from './edit-group-item';
+import { DeleteGroupItem } from './delete-group-item';
+import { ManageMembersItem } from './manage-members-item';
+import type { Group } from '../types';
 
-export const createColumns = (): ColumnDef<User>[] => [
+type User = {
+  id: string;
+  email: string;
+  name: string | null;
+};
+
+export const createColumns = (
+  allGroups: Group[],
+  allUsers: User[]
+): ColumnDef<Group>[] => [
   {
     id: 'select',
     header: ({ table }) => (
@@ -38,39 +48,48 @@ export const createColumns = (): ColumnDef<User>[] => [
     meta: { width: 'w-[10%]' },
   },
   {
-    accessorKey: 'email',
+    accessorKey: 'name',
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-          メールアドレス
+          グループ名
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
-    cell: ({ row }) => <div className="lowercase">{row.getValue('email')}</div>,
-    meta: { width: 'w-[30%]' },
-  },
-  {
-    accessorKey: 'name',
-    header: '名前',
-    cell: ({ row }) => <div>{row.getValue('name') || 'Unknown'}</div>,
+    cell: ({ row }) => <div>{row.getValue('name')}</div>,
     meta: { width: 'w-[15%]' },
   },
   {
-    accessorKey: 'role',
-    header: 'ロール',
+    accessorKey: 'description',
+    header: '説明',
+    cell: ({ row }) => <div>{row.getValue('description') || '-'}</div>,
+    meta: { width: 'w-[20%]' },
+  },
+  {
+    accessorKey: 'parentId',
+    header: '親グループ',
     cell: ({ row }) => {
-      const role = row.getValue('role') as string;
-      return <div>{role === 'ADMIN' ? '管理者' : 'メンバー'}</div>;
+      const group = row.original;
+      return <div>{group.parent?.name || '-'}</div>;
+    },
+    meta: { width: 'w-[15%]' },
+  },
+  {
+    accessorKey: 'members',
+    header: 'メンバー数',
+    cell: ({ row }) => {
+      const group = row.original;
+      return <div>{group._count?.members || 0}人</div>;
     },
     meta: { width: 'w-[15%]' },
   },
   {
     accessorKey: 'createdAt',
-    header: '登録日',
+    header: '作成日',
     cell: ({ row }) => {
       const date = row.getValue('createdAt') as Date;
       return <div>{new Date(date).toLocaleDateString('ja-JP')}</div>;
@@ -81,7 +100,7 @@ export const createColumns = (): ColumnDef<User>[] => [
     id: 'actions',
     enableHiding: false,
     cell: ({ row }) => {
-      const user = row.original;
+      const group = row.original;
 
       return (
         <DropdownMenu>
@@ -92,12 +111,13 @@ export const createColumns = (): ColumnDef<User>[] => [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="bottom">
-            <EditUserItem user={user} />
-            <DeleteUserItem user={user} />
+            <EditGroupItem group={group} allGroups={allGroups} />
+            <ManageMembersItem group={group} allUsers={allUsers} />
+            <DeleteGroupItem group={group} />
           </DropdownMenuContent>
         </DropdownMenu>
       );
     },
-    meta: { width: 'w-[15%]' },
+    meta: { width: 'w-[10%]' },
   },
 ];
