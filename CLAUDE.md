@@ -553,6 +553,7 @@ features/
 ```
 
 **命名規則**:
+
 - ディレクトリ: `__tests__`（複数形）
 - ファイル: `*.test.ts` または `*.spec.ts`
 
@@ -587,6 +588,7 @@ export default createJestConfig(config);
 ```
 
 **設定のポイント**:
+
 - `next/jest`を使用してNext.jsの設定を自動読み込み
 - `testEnvironment: 'node'`でServer Actions向けの軽量な環境
 - `clearMocks: true`でテスト間の独立性を確保

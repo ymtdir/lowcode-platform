@@ -10,6 +10,7 @@ const config: Config = {
   testEnvironment: 'node',
   clearMocks: true,
   coverageDirectory: 'coverage',
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
   },
