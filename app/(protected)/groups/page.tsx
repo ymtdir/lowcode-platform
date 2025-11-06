@@ -2,6 +2,8 @@ import { getGroups } from '@/features/group/api';
 import { getUsers } from '@/features/user/api';
 import { GroupTable } from '@/features/group/components';
 
+export const dynamic = 'force-dynamic';
+
 export default async function GroupsPage() {
   const [groups, users] = await Promise.all([getGroups(), getUsers()]);
 
