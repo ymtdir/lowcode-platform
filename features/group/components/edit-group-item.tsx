@@ -71,10 +71,10 @@ function EditGroupContent({
   const [parentId, setParentId] = useState<string>(
     group.parentId || NONE_VALUE
   );
-  const [state, formAction] = useActionState(
-    updateGroup.bind(null, group.id),
-    {}
-  );
+  const [state, formAction] = useActionState<
+    { error?: string; success?: boolean },
+    FormData
+  >((prevState, formData) => updateGroup(group.id, prevState, formData), {});
 
   // 更新結果を監視
   useEffect(() => {

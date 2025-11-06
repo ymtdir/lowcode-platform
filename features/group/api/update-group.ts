@@ -3,16 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 
-type FormState = {
-  error?: string;
-  success?: boolean;
-};
-
 // 循環参照をチェックする関数
-async function checkCircularReference(
-  groupId: string,
-  newParentId: string
-): Promise<boolean> {
+async function checkCircularReference(groupId: string, newParentId: string) {
   const visited = new Set<string>();
   let currentId = newParentId;
 
@@ -37,11 +29,10 @@ async function checkCircularReference(
     });
 
     // 親が存在しない場合はルートに到達（循環なし）
-    if (!parent) {
+    if (!parent || !parent.parentId) {
       return false;
     }
 
-    // parentIdがnullの場合もルートに到達（循環なし）
     currentId = parent.parentId;
   }
 
@@ -50,9 +41,9 @@ async function checkCircularReference(
 
 export async function updateGroup(
   groupId: string,
-  _prevState: FormState,
+  _prevState: unknown,
   formData: FormData
-): Promise<FormState> {
+) {
   const name = formData.get('name') as string;
   const description = formData.get('description') as string;
   const parentId = formData.get('parentId') as string;
