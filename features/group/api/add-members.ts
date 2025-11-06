@@ -3,17 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 
-type Result = {
-  success?: boolean;
-  error?: string;
-  successCount?: number;
-  errorCount?: number;
-};
-
-export async function addMembers(
-  groupId: string,
-  userIds: string[]
-): Promise<Result> {
+export async function addMembers(groupId: string, userIds: string[]) {
   try {
     if (userIds.length === 0) {
       return { error: 'ユーザーが選択されていません' };
@@ -27,9 +17,12 @@ export async function addMembers(
           in: userIds,
         },
       },
+      select: { userId: true },
     });
 
-    const existingUserIds = new Set(existingMembers.map((m) => m.userId));
+    const existingUserIds = new Set(
+      existingMembers.map((m: { userId: string }) => m.userId)
+    );
     const newUserIds = userIds.filter((id) => !existingUserIds.has(id));
 
     if (newUserIds.length === 0) {

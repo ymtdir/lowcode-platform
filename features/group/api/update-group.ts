@@ -14,7 +14,7 @@ async function checkCircularReference(
   newParentId: string
 ): Promise<boolean> {
   const visited = new Set<string>();
-  let currentId: string | null = newParentId;
+  let currentId = newParentId;
 
   while (currentId) {
     // 訪問済みのノードに到達した場合は循環参照
@@ -31,11 +31,10 @@ async function checkCircularReference(
     visited.add(currentId);
 
     // 次の親を取得
-    const parent: { parentId: string | null } | null =
-      await prisma.group.findUnique({
-        where: { id: currentId },
-        select: { parentId: true },
-      });
+    const parent = await prisma.group.findUnique({
+      where: { id: currentId },
+      select: { parentId: true },
+    });
 
     // 親が存在しない場合はルートに到達（循環なし）
     if (!parent) {
