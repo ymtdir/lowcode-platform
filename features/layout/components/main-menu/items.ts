@@ -4,27 +4,27 @@ import type { MainMenuItem } from '../../types';
 
 export const mainMenuItems: MainMenuItem[] = [
   {
-    title: 'Home',
+    title: 'ホーム',
     url: '/',
     icon: Home,
   },
   {
-    title: 'Users',
-    url: '/users',
-    icon: Users,
-  },
-  {
-    title: 'Groups',
-    url: '/groups',
-    icon: Building,
-  },
-  {
-    title: 'Calendar',
+    title: 'カレンダー',
     url: '#',
     icon: Calendar,
   },
   {
-    title: 'Settings',
+    title: 'ユーザー',
+    url: '/users',
+    icon: Users,
+  },
+  {
+    title: 'グループ',
+    url: '/groups',
+    icon: Building,
+  },
+  {
+    title: '設定',
     url: '#',
     icon: Settings,
   },

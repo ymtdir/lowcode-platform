@@ -2,8 +2,6 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
@@ -11,6 +9,7 @@ import {
 
 import { UserMenu } from './user-menu';
 import { MainMenu, mainMenuItems } from './main-menu';
+import { WorkspaceMenu } from './workspace-menu';
 
 type AppSidebarProps = {
   userName: string;
@@ -32,11 +31,8 @@ export function AppSidebar({ userName }: AppSidebarProps) {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <MainMenu items={mainMenuItems} />
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <MainMenu items={mainMenuItems} />
+        <WorkspaceMenu />
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
