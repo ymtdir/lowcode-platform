@@ -10,5 +10,5 @@ export async function getUsers(): Promise<User[]> {
     },
   });
 
-  return users;
+  return users as User[];
 }
