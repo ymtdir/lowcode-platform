@@ -1,10 +1,8 @@
-import { UserRole } from '@prisma/client';
+import type { User as PrismaUser, GroupMember } from '@prisma/client';
 
-export type User = {
-  id: string;
-  email: string;
-  name: string | null;
-  role: UserRole;
-  createdAt: Date;
-  updatedAt: Date;
+export type User = PrismaUser & {
+  groupMembers?: GroupMember[];
+  _count?: {
+    groupMembers: number;
+  };
 };

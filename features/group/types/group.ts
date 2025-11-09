@@ -1,21 +1,12 @@
-export type Group = {
-  id: string;
-  name: string;
-  description: string | null;
-  parentId: string | null;
-  createdAt: Date;
-  updatedAt: Date;
+import type { Group as PrismaGroup, GroupMember, User } from '@prisma/client';
+
+export type Group = PrismaGroup & {
   parent?: {
     name: string;
   } | null;
-  members?: {
-    id: string;
-    user: {
-      id: string;
-      email: string;
-      name: string | null;
-    };
-  }[];
+  members?: (GroupMember & {
+    user: Pick<User, 'id' | 'email' | 'name'>;
+  })[];
   _count?: {
     members: number;
   };
