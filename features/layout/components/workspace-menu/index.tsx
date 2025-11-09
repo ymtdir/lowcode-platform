@@ -1,31 +1,26 @@
 'use client';
 
-import { Plus } from 'lucide-react';
 import {
   SidebarGroup,
-  SidebarGroupAction,
   SidebarGroupLabel,
   SidebarMenu,
 } from '@/components/ui/sidebar';
 
 import { WorkspaceItems } from './items';
+import { CreateWorkspaceButton } from '@/features/folder/components';
+import type { Folder } from '@/features/folder/types';
 
-export function WorkspaceMenu() {
+type WorkspaceMenuProps = {
+  folders: Folder[];
+};
+
+export function WorkspaceMenu({ folders }: WorkspaceMenuProps) {
   return (
     <SidebarGroup>
       <SidebarGroupLabel>ワークスペース</SidebarGroupLabel>
-      <SidebarGroupAction
-        title="フォルダまたはテーブルを追加"
-        onClick={() => {
-          // TODO: フォルダまたはテーブル作成ダイアログを開く
-          console.log('新規作成ボタンがクリックされました');
-        }}
-      >
-        <Plus />
-        <span className="sr-only">フォルダまたはテーブルを追加</span>
-      </SidebarGroupAction>
+      <CreateWorkspaceButton />
       <SidebarMenu>
-        <WorkspaceItems />
+        <WorkspaceItems folders={folders} />
       </SidebarMenu>
     </SidebarGroup>
   );

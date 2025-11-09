@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronRight, Folder, Table } from 'lucide-react';
+import { ChevronRight, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
 import {
   SidebarMenuButton,
@@ -13,78 +13,66 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import type { Folder as FolderType } from '@/features/folder/types';
 
-// TODO: 将来的にはDBから取得
-type WorkspaceItem = {
-  id: string;
-  name: string;
-  type: 'folder' | 'table';
-  parentId: string | null;
-  url: string;
+type WorkspaceItemsProps = {
+  folders: FolderType[];
 };
 
-// type WorkspaceItemsProps = {
-//   // TODO: 将来的にはpropsでフォルダとテーブルのデータを受け取る
-//   // folders: WorkspaceItem[];
-//   // tables: WorkspaceItem[];
-// };
-
-export function WorkspaceItems() {
-  // TODO: 将来的にはDBからルートフォルダとルートテーブル（parentId === null）を取得
-  // 仮のモックデータ
-  const rootItems: WorkspaceItem[] = [
-    {
-      id: 'mock-1',
-      name: 'サンプルフォルダ（モック）',
-      type: 'folder',
-      parentId: null,
-      url: '#',
-    },
-  ];
+export function WorkspaceItems({ folders }: WorkspaceItemsProps) {
+  if (folders.length === 0) {
+    return (
+      <div className="px-2 py-4">
+        <p className="text-sm text-muted-foreground">
+          ワークスペースがありません
+        </p>
+      </div>
+    );
+  }
 
   return (
     <>
-      {rootItems.map((item) => {
-        // フォルダの場合は開閉可能
-        if (item.type === 'folder') {
-          return (
-            <Collapsible
-              key={item.id}
-              defaultOpen
-              className="group/collapsible"
-            >
-              <SidebarMenuItem>
+      {folders.map((folder) => {
+        return (
+          <Collapsible
+            key={folder.id}
+            defaultOpen
+            className="group/collapsible"
+          >
+            <SidebarMenuItem>
+              <div className="flex w-full items-center">
+                <SidebarMenuButton asChild className="flex-1">
+                  <Link href={`/${folder.id}`}>
+                    <LayoutDashboard />
+                    <span>{folder.name}</span>
+                  </Link>
+                </SidebarMenuButton>
                 <CollapsibleTrigger asChild>
-                  <SidebarMenuButton>
-                    <Folder />
-                    <span>{item.name}</span>
-                    <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                  <SidebarMenuButton className="h-auto w-auto p-1 hover:bg-transparent">
+                    <ChevronRight className="cursor-pointer h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <SidebarMenuSub>
-                    <SidebarMenuSubItem>
-                      <span className="text-sm text-muted-foreground">
-                        フォルダ内のアイテムがここに表示されます
-                      </span>
-                    </SidebarMenuSubItem>
-                  </SidebarMenuSub>
-                </CollapsibleContent>
-              </SidebarMenuItem>
-            </Collapsible>
-          );
-        }
-
-        // テーブルの場合は通常のリンク
-        return (
-          <SidebarMenuItem key={item.id}>
-            <SidebarMenuButton asChild>
-              <Link href={item.url}>
-                <Table />
-                <span>{item.name}</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+              </div>
+              <CollapsibleContent>
+                <SidebarMenuSub>
+                  {folder.children && folder.children.length > 0 ? (
+                    folder.children.map((child: FolderType) => {
+                      return (
+                        <SidebarMenuSubItem key={child.id}>
+                          <Link href={`/${child.id}`}>
+                            <LayoutDashboard className="mr-2 h-4 w-4" />
+                            <span>{child.name}</span>
+                          </Link>
+                        </SidebarMenuSubItem>
+                      );
+                    })
+                  ) : (
+                    <SidebarMenuSubItem></SidebarMenuSubItem>
+                  )}
+                </SidebarMenuSub>
+              </CollapsibleContent>
+            </SidebarMenuItem>
+          </Collapsible>
         );
       })}
     </>
