@@ -69,7 +69,7 @@ export async function createFolder(
       },
     });
 
-    revalidatePath('/');
+    revalidatePath('/', 'layout');
     return { success: true };
   } catch (error) {
     console.error('ワークスペース作成エラー:', error);

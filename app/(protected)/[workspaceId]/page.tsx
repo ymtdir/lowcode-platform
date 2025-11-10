@@ -1,4 +1,5 @@
 import { getFolderById } from '@/features/folder/api';
+import { CreateItemButton } from '@/features/folder/components';
 import { notFound } from 'next/navigation';
 
 type WorkspacePageProps = {
@@ -16,16 +17,14 @@ export default async function WorkspacePage({ params }: WorkspacePageProps) {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">{workspace.name}</h1>
-        <p className="text-sm text-muted-foreground mt-2">
-          作成者: {workspace.createdBy.name || workspace.createdBy.email}
-        </p>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{workspace.name}</h1>
+        <CreateItemButton workspaceId={workspaceId} />
       </div>
 
       <div className="grid gap-4">
         <div className="rounded-lg border p-4">
-          <h2 className="text-xl font-semibold mb-4">ワークスペース情報</h2>
+          <h2 className="text-lg font-semibold mb-4">ワークスペース情報</h2>
           <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <dt className="text-sm font-medium text-muted-foreground">
@@ -33,6 +32,9 @@ export default async function WorkspacePage({ params }: WorkspacePageProps) {
               </dt>
               <dd className="mt-1 text-sm">{workspace.id}</dd>
             </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              作成者: {workspace.createdBy.name || workspace.createdBy.email}
+            </p>
             <div>
               <dt className="text-sm font-medium text-muted-foreground">
                 子フォルダ数
@@ -62,7 +64,7 @@ export default async function WorkspacePage({ params }: WorkspacePageProps) {
 
         {workspace.children && workspace.children.length > 0 && (
           <div className="rounded-lg border p-4">
-            <h2 className="text-xl font-semibold mb-4">子フォルダ</h2>
+            <h2 className="text-lg font-semibold mb-4">子フォルダ</h2>
             <div className="grid gap-2">
               {workspace.children.map((child) => (
                 <div
