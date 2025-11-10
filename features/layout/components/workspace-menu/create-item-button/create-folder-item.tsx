@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useActionState, useEffect } from 'react';
-import { Plus } from 'lucide-react';
+import { Folder } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -10,43 +10,51 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { SidebarGroupAction } from '@/components/ui/sidebar';
 import { toast } from 'sonner';
-import { createFolder } from '../api/create-folder';
+import { createFolder } from '@/features/folder/api/create-folder';
 
-type CreateWorkspaceContentProps = {
+type CreateFolderItemProps = {
+  workspaceId: string;
+};
+
+type CreateFolderContentProps = {
+  workspaceId: string;
   onClose: () => void;
 };
 
-function CreateWorkspaceContent({ onClose }: CreateWorkspaceContentProps) {
+function CreateFolderContent({
+  workspaceId,
+  onClose,
+}: CreateFolderContentProps) {
   const [state, formAction] = useActionState(createFolder, {});
 
   // 成功・エラー時の処理
   useEffect(() => {
     if (state.error) {
-      toast.error('ワークスペースの作成に失敗しました', {
+      toast.error('フォルダの作成に失敗しました', {
         description: state.error,
       });
     } else if (state.success) {
-      toast.success('ワークスペースを作成しました');
+      toast.success('フォルダを作成しました');
       onClose();
     }
   }, [state, onClose]);
 
   return (
     <form action={formAction}>
-      <input type="hidden" name="parentId" value="" />
+      <input type="hidden" name="parentId" value={workspaceId} />
 
       <div className="grid gap-4 py-4">
         <div className="grid gap-2">
-          <Label htmlFor="name">ワークスペース名</Label>
+          <Label htmlFor="name">フォルダ名</Label>
           <Input
             id="name"
             name="name"
-            placeholder="ワークスペース名を入力"
+            placeholder="フォルダ名を入力"
             autoFocus
             required
           />
@@ -63,7 +71,7 @@ function CreateWorkspaceContent({ onClose }: CreateWorkspaceContentProps) {
   );
 }
 
-export function CreateWorkspaceButton() {
+export function CreateFolderItem({ workspaceId }: CreateFolderItemProps) {
   const [open, setOpen] = useState(false);
   const [resetKey, setResetKey] = useState(0);
 
@@ -81,23 +89,29 @@ export function CreateWorkspaceButton() {
 
   return (
     <>
-      <SidebarGroupAction
-        title="フォルダまたはテーブルを追加"
-        onClick={() => setOpen(true)}
+      <DropdownMenuItem
+        onSelect={(e) => {
+          e.preventDefault();
+          setOpen(true);
+        }}
       >
-        <Plus className="cursor-pointer" />
-        <span className="sr-only">フォルダまたはテーブルを追加</span>
-      </SidebarGroupAction>
+        <Folder className="mr-2 h-4 w-4" />
+        フォルダを追加
+      </DropdownMenuItem>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>ワークスペースを作成</DialogTitle>
+            <DialogTitle>フォルダを作成</DialogTitle>
             <DialogDescription>
-              新しいワークスペースを作成します
+              新しいフォルダを作成します
             </DialogDescription>
           </DialogHeader>
-          <CreateWorkspaceContent key={resetKey} onClose={handleClose} />
+          <CreateFolderContent
+            key={resetKey}
+            workspaceId={workspaceId}
+            onClose={handleClose}
+          />
         </DialogContent>
       </Dialog>
     </>
