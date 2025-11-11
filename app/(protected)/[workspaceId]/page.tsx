@@ -19,16 +19,15 @@ export default async function WorkspacePage({ params }: WorkspacePageProps) {
     <div className="container mx-auto p-6">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">{workspace.name}</h1>
-        <CreateItemButton workspaceId={workspaceId} />
       </div>
 
       <div className="grid gap-4">
         <div className="rounded-lg border p-4">
-          <h2 className="text-lg font-semibold mb-4">ワークスペース情報</h2>
+          <h2 className="text-lg font-semibold mb-4">フォルダ情報</h2>
           <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <dt className="text-sm font-medium text-muted-foreground">
-                ワークスペースID
+                フォルダID
               </dt>
               <dd className="mt-1 text-sm">{workspace.id}</dd>
             </div>

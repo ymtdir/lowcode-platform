@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -17,9 +18,13 @@ type WorkspaceMenuProps = {
 export function WorkspaceMenu({ folders }: WorkspaceMenuProps) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="group/workspace hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors cursor-pointer">
-        ワークスペース
-        <CreateItemButton workspaceId="" variant="workspace" />
+      <SidebarGroupLabel asChild>
+        <div className="flex items-center w-full group/workspace hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors cursor-pointer">
+          <Link href="/workspace" className="flex-1">
+            <span>ワークスペース</span>
+          </Link>
+          <CreateItemButton workspaceId="" />
+        </div>
       </SidebarGroupLabel>
       <SidebarMenu>
         <WorkspaceItems folders={folders} />

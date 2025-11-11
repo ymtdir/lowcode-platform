@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronRight, LayoutDashboard, Folder } from 'lucide-react';
+import { ChevronRight, Folder } from 'lucide-react';
 import Link from 'next/link';
 import {
   SidebarMenuButton,
@@ -11,6 +11,7 @@ import {
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
 import { CreateItemButton } from './create-item-button';
+import { EditItemButton } from './edit-item-button';
 import type { Folder as FolderType } from '@/features/folder/types';
 
 type FolderItemProps = {
@@ -36,7 +37,7 @@ export function FolderItem({ folder, level = 0 }: FolderItemProps) {
               }}
               className="flex items-center justify-center shrink-0 rounded hover:bg-primary/10 cursor-pointer"
             >
-              <LayoutDashboard className="size-4 group-hover/item:hidden" />
+              <Folder className="size-4 group-hover/item:hidden" />
               <ChevronRight
                 className={`size-4 hidden group-hover/item:block transition-transform duration-200 ${
                   isOpen ? 'rotate-90' : ''
@@ -46,6 +47,7 @@ export function FolderItem({ folder, level = 0 }: FolderItemProps) {
             <Link href={`/${folder.id}`} className="flex-1">
               <span>{folder.name}</span>
             </Link>
+            <EditItemButton folderId={folder.id} folderName={folder.name} />
             <CreateItemButton workspaceId={folder.id} />
           </div>
         </SidebarMenuButton>
@@ -83,6 +85,7 @@ export function FolderItem({ folder, level = 0 }: FolderItemProps) {
           <Link href={`/${folder.id}`} className="flex-1">
             <span>{folder.name}</span>
           </Link>
+          <EditItemButton folderId={folder.id} folderName={folder.name} />
           <CreateItemButton workspaceId={folder.id} />
         </div>
       </SidebarMenuSubButton>
