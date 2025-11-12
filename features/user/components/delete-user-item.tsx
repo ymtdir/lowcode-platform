@@ -20,9 +20,13 @@ import type { User } from '../types';
 
 type DeleteUserItemProps = {
   user: User;
+  onOpenChange: (open: boolean) => void;
 };
 
-export function DeleteUserItem({ user }: DeleteUserItemProps) {
+export function DeleteUserItem({
+  user,
+  onOpenChange: onDropdownOpenChange,
+}: DeleteUserItemProps) {
   const [open, setOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -45,8 +49,15 @@ export function DeleteUserItem({ user }: DeleteUserItemProps) {
     }
   };
 
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      onDropdownOpenChange(false);
+    }
+  };
+
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
+    <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogTrigger asChild>
         <DropdownMenuItem
           className="text-destructive hover:text-destructive focus:text-destructive cursor-pointer"

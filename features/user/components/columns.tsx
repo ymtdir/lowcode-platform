@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,7 @@ export const createColumns = (): ColumnDef<User>[] => [
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
+        className="cursor-pointer"
       />
     ),
     cell: ({ row }) => (
@@ -31,6 +33,7 @@ export const createColumns = (): ColumnDef<User>[] => [
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Select row"
+        className="cursor-pointer"
       />
     ),
     enableSorting: false,
@@ -44,6 +47,7 @@ export const createColumns = (): ColumnDef<User>[] => [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          className="cursor-pointer"
         >
           メールアドレス
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -82,18 +86,20 @@ export const createColumns = (): ColumnDef<User>[] => [
     enableHiding: false,
     cell: ({ row }) => {
       const user = row.original;
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const [open, setOpen] = useState(false);
 
       return (
-        <DropdownMenu>
+        <DropdownMenu open={open} onOpenChange={setOpen}>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
               <span className="sr-only">メニューを開く</span>
               <MoreHorizontal />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="bottom">
-            <EditUserItem user={user} />
-            <DeleteUserItem user={user} />
+            <EditUserItem user={user} onOpenChange={setOpen} />
+            <DeleteUserItem user={user} onOpenChange={setOpen} />
           </DropdownMenuContent>
         </DropdownMenu>
       );

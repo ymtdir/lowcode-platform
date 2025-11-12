@@ -19,6 +19,7 @@ import { createFolder } from '@/features/folder/api/create-folder';
 
 type CreateFolderItemProps = {
   workspaceId: string;
+  onOpenChange: (open: boolean) => void;
 };
 
 type CreateFolderContentProps = {
@@ -62,34 +63,45 @@ function CreateFolderContent({
       </div>
 
       <DialogFooter>
-        <Button type="button" variant="outline" onClick={onClose}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onClose}
+          className="cursor-pointer"
+        >
           キャンセル
         </Button>
-        <Button type="submit">作成</Button>
+        <Button type="submit" className="cursor-pointer">
+          作成
+        </Button>
       </DialogFooter>
     </form>
   );
 }
 
-export function CreateFolderItem({ workspaceId }: CreateFolderItemProps) {
+export function CreateFolderItem({
+  workspaceId,
+  onOpenChange: onDropdownOpenChange,
+}: CreateFolderItemProps) {
   const [open, setOpen] = useState(false);
   const [resetKey, setResetKey] = useState(0);
 
-  // ダイアログが閉じられたときに状態をリセット
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
     if (!isOpen) {
       setResetKey((prev) => prev + 1);
+      onDropdownOpenChange(false);
     }
   };
 
   const handleClose = () => {
-    setOpen(false);
+    handleOpenChange(false);
   };
 
   return (
     <>
       <DropdownMenuItem
+        className="cursor-pointer"
         onSelect={(e) => {
           e.preventDefault();
           setOpen(true);
@@ -100,7 +112,7 @@ export function CreateFolderItem({ workspaceId }: CreateFolderItemProps) {
       </DropdownMenuItem>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent>
+        <DialogContent className="[&>button]:cursor-pointer">
           <DialogHeader>
             <DialogTitle>フォルダを作成</DialogTitle>
             <DialogDescription>新しいフォルダを作成します</DialogDescription>

@@ -8,7 +8,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import {
@@ -35,6 +34,7 @@ import type { Group } from '../types';
 type EditGroupItemProps = {
   group: Group;
   allGroups: Group[];
+  onOpenChange: (open: boolean) => void;
 };
 
 type EditGroupContentProps = {
@@ -145,48 +145,61 @@ function EditGroupContent({
           </div>
         </CardContent>
         <CardFooter className="border-t px-6 py-4">
-          <Button type="submit">保存</Button>
+          <Button type="submit" className="cursor-pointer">
+            保存
+          </Button>
         </CardFooter>
       </Card>
     </form>
   );
 }
 
-export function EditGroupItem({ group, allGroups }: EditGroupItemProps) {
+export function EditGroupItem({
+  group,
+  allGroups,
+  onOpenChange: onDropdownOpenChange,
+}: EditGroupItemProps) {
   const [open, setOpen] = useState(false);
   const [resetKey, setResetKey] = useState(0);
 
-  // ダイアログが閉じられたときに状態をリセット
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
     if (!isOpen) {
       setResetKey((prev) => prev + 1);
+      onDropdownOpenChange(false);
     }
   };
 
   const handleClose = () => {
-    setOpen(false);
+    handleOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-          <Pencil />
-          編集
-        </DropdownMenuItem>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[480px]">
-        <DialogHeader>
-          <DialogTitle>グループ情報を編集</DialogTitle>
-        </DialogHeader>
-        <EditGroupContent
-          key={resetKey}
-          group={group}
-          allGroups={allGroups}
-          onClose={handleClose}
-        />
-      </DialogContent>
-    </Dialog>
+    <>
+      <DropdownMenuItem
+        className="cursor-pointer"
+        onSelect={(e) => {
+          e.preventDefault();
+          setOpen(true);
+        }}
+      >
+        <Pencil />
+        編集
+      </DropdownMenuItem>
+
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="sm:max-w-[480px] [&>button]:cursor-pointer">
+          <DialogHeader>
+            <DialogTitle>グループ情報を編集</DialogTitle>
+          </DialogHeader>
+          <EditGroupContent
+            key={resetKey}
+            group={group}
+            allGroups={allGroups}
+            onClose={handleClose}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

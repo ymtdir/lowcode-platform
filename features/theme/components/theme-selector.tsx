@@ -24,14 +24,18 @@ export function ThemeSelector() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center bg-card gap-2 text-sm ">
+      <DropdownMenuTrigger className="flex items-center bg-card gap-2 text-sm cursor-pointer">
         <CurrentIcon />
         <span>{currentTheme?.label ?? 'システム'}</span>
         <ChevronRight />
       </DropdownMenuTrigger>
       <DropdownMenuContent side="right">
         {themes.map(({ value, label, icon: Icon }) => (
-          <DropdownMenuItem key={value} onClick={() => setTheme(value)}>
+          <DropdownMenuItem
+            key={value}
+            onClick={() => setTheme(value)}
+            className="cursor-pointer"
+          >
             <Icon />
             <span>{label}</span>
           </DropdownMenuItem>

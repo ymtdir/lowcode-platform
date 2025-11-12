@@ -28,7 +28,9 @@ export default function SignupPage() {
           </CardDescription>
           <CardAction>
             <Link href="/login">
-              <Button variant="link">ログイン</Button>
+              <Button variant="link" className="cursor-pointer">
+                ログイン
+              </Button>
             </Link>
           </CardAction>
         </CardHeader>
@@ -67,13 +69,17 @@ export default function SignupPage() {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full cursor-pointer">
                 新規登録
               </Button>
             </div>
           </form>
           <form action={signupWithGoogle} className="mt-4">
-            <Button type="submit" variant="outline" className="w-full">
+            <Button
+              type="submit"
+              variant="outline"
+              className="w-full cursor-pointer"
+            >
               Googleで登録
             </Button>
           </form>

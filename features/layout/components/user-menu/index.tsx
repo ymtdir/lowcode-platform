@@ -18,7 +18,7 @@ export function UserMenu({ userName }: UserMenuProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <SidebarMenuButton>
+        <SidebarMenuButton className="cursor-pointer">
           <User2 /> {userName}
           <ChevronUp className="ml-auto" />
         </SidebarMenuButton>

@@ -6,17 +6,22 @@ import { toast } from 'sonner';
 
 type CreateTableItemProps = {
   workspaceId: string;
+  onOpenChange: (open: boolean) => void;
 };
 
-export function CreateTableItem({ workspaceId }: CreateTableItemProps) {
+export function CreateTableItem({
+  workspaceId,
+  onOpenChange: onDropdownOpenChange,
+}: CreateTableItemProps) {
   const handleClick = () => {
     toast.info('テーブル作成機能は未実装です', {
       description: `workspaceId: ${workspaceId}`,
     });
+    onDropdownOpenChange(false);
   };
 
   return (
-    <DropdownMenuItem onSelect={handleClick}>
+    <DropdownMenuItem className="cursor-pointer" onSelect={handleClick}>
       <Table />
       テーブルを追加
     </DropdownMenuItem>

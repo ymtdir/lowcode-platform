@@ -28,6 +28,7 @@ import type { User } from '../types';
 
 type EditUserItemProps = {
   user: User;
+  onOpenChange: (open: boolean) => void;
 };
 
 type EditUserContentProps = {
@@ -76,8 +77,12 @@ function EditUserContent({ user, onClose }: EditUserContentProps) {
   return (
     <Tabs defaultValue="profile">
       <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="profile">プロフィール</TabsTrigger>
-        <TabsTrigger value="password">パスワード</TabsTrigger>
+        <TabsTrigger value="profile" className="cursor-pointer">
+          プロフィール
+        </TabsTrigger>
+        <TabsTrigger value="password" className="cursor-pointer">
+          パスワード
+        </TabsTrigger>
       </TabsList>
       <TabsContent value="profile">
         <form action={profileAction}>
@@ -112,7 +117,9 @@ function EditUserContent({ user, onClose }: EditUserContentProps) {
               </div>
             </CardContent>
             <CardFooter className="flex justify-between">
-              <Button type="submit">保存</Button>
+              <Button type="submit" className="cursor-pointer">
+                保存
+              </Button>
             </CardFooter>
           </Card>
         </form>
@@ -149,7 +156,9 @@ function EditUserContent({ user, onClose }: EditUserContentProps) {
               </div>
             </CardContent>
             <CardFooter className="flex justify-between">
-              <Button type="submit">保存</Button>
+              <Button type="submit" className="cursor-pointer">
+                保存
+              </Button>
             </CardFooter>
           </Card>
         </form>
@@ -158,37 +167,46 @@ function EditUserContent({ user, onClose }: EditUserContentProps) {
   );
 }
 
-export function EditUserItem({ user }: EditUserItemProps) {
+export function EditUserItem({
+  user,
+  onOpenChange: onDropdownOpenChange,
+}: EditUserItemProps) {
   const [open, setOpen] = useState(false);
   const [resetKey, setResetKey] = useState(0);
 
-  // ダイアログが閉じられたときに状態をリセット
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
     if (!isOpen) {
-      // ダイアログが閉じられた時にkeyを変更してコンポーネントを再マウント
       setResetKey((prev) => prev + 1);
+      onDropdownOpenChange(false);
     }
   };
 
   const handleClose = () => {
-    setOpen(false);
+    handleOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-          <Pencil />
-          編集
-        </DropdownMenuItem>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>ユーザー情報を編集</DialogTitle>
-        </DialogHeader>
-        <EditUserContent key={resetKey} user={user} onClose={handleClose} />
-      </DialogContent>
-    </Dialog>
+    <>
+      <DropdownMenuItem
+        className="cursor-pointer"
+        onSelect={(e) => {
+          e.preventDefault();
+          setOpen(true);
+        }}
+      >
+        <Pencil />
+        編集
+      </DropdownMenuItem>
+
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="sm:max-w-[500px] [&>button]:cursor-pointer">
+          <DialogHeader>
+            <DialogTitle>ユーザー情報を編集</DialogTitle>
+          </DialogHeader>
+          <EditUserContent key={resetKey} user={user} onClose={handleClose} />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

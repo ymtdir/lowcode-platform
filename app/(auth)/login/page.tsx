@@ -28,7 +28,9 @@ export default function LoginPage() {
           </CardDescription>
           <CardAction>
             <Link href="/signup">
-              <Button variant="link">新規登録</Button>
+              <Button variant="link" className="cursor-pointer">
+                新規登録
+              </Button>
             </Link>
           </CardAction>
         </CardHeader>
@@ -62,13 +64,17 @@ export default function LoginPage() {
                 </div>
                 <Input id="password" name="password" type="password" required />
               </div>
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full cursor-pointer">
                 ログイン
               </Button>
             </div>
           </form>
           <form action={loginWithGoogle} className="mt-4">
-            <Button type="submit" variant="outline" className="w-full">
+            <Button
+              type="submit"
+              variant="outline"
+              className="w-full cursor-pointer"
+            >
               Googleでログイン
             </Button>
           </form>

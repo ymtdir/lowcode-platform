@@ -102,7 +102,7 @@ export function ColorSelector() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center bg-card gap-2 text-sm ">
+      <DropdownMenuTrigger className="flex items-center bg-card gap-2 text-sm cursor-pointer">
         <div
           className="h-3 w-3 rounded-full"
           style={{
@@ -117,6 +117,7 @@ export function ColorSelector() {
           <DropdownMenuItem
             key={colorItem.value}
             onClick={() => setColor(colorItem.value as Color)}
+            className="cursor-pointer"
           >
             <div
               className="h-3 w-3 rounded-full"

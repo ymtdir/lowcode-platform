@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import {
   DropdownMenu,
@@ -14,8 +15,10 @@ type CreateItemButtonProps = {
 };
 
 export function CreateItemButton({ workspaceId }: CreateItemButtonProps) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <button
           type="button"
@@ -29,8 +32,8 @@ export function CreateItemButton({ workspaceId }: CreateItemButtonProps) {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" sideOffset={4}>
-        <CreateFolderItem workspaceId={workspaceId} />
-        <CreateTableItem workspaceId={workspaceId} />
+        <CreateFolderItem workspaceId={workspaceId} onOpenChange={setOpen} />
+        <CreateTableItem workspaceId={workspaceId} onOpenChange={setOpen} />
       </DropdownMenuContent>
     </DropdownMenu>
   );
