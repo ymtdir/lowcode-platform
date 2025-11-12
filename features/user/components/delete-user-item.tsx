@@ -49,10 +49,10 @@ export function DeleteUserItem({ user }: DeleteUserItemProps) {
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
         <DropdownMenuItem
-          className="text-destructive! hover:text-destructive! focus:text-destructive!"
+          className="text-destructive hover:text-destructive focus:text-destructive cursor-pointer"
           onSelect={(e) => e.preventDefault()}
         >
-          <Trash2 className="text-destructive!" />
+          <Trash2 className="text-destructive" />
           削除
         </DropdownMenuItem>
       </AlertDialogTrigger>
@@ -71,10 +71,14 @@ export function DeleteUserItem({ user }: DeleteUserItemProps) {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>
+          <AlertDialogCancel disabled={isDeleting} className="cursor-pointer">
             キャンセル
           </AlertDialogCancel>
-          <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+          <AlertDialogAction
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60 cursor-pointer"
+          >
             {isDeleting ? '削除中...' : '削除'}
           </AlertDialogAction>
         </AlertDialogFooter>
