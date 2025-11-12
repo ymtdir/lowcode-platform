@@ -35,7 +35,7 @@ export const createColumns = (
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
-        className="cursor-pointer"
+       
       />
     ),
     cell: ({ row }) => (
@@ -43,7 +43,7 @@ export const createColumns = (
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Select row"
-        className="cursor-pointer"
+       
       />
     ),
     enableSorting: false,
@@ -57,7 +57,7 @@ export const createColumns = (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="cursor-pointer"
+         
         >
           グループ名
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -111,7 +111,7 @@ export const createColumns = (
       return (
         <DropdownMenu open={open} onOpenChange={setOpen}>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
+            <Button variant="ghost" className="h-8 w-8 p-0 ">
               <span className="sr-only">メニューを開く</span>
               <MoreHorizontal />
             </Button>

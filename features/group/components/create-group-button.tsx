@@ -69,19 +69,13 @@ function CreateGroupContent({ groups, onClose }: CreateGroupContentProps) {
         <div className="grid gap-2">
           <Label htmlFor="parentId">親グループ</Label>
           <Select value={parentId} onValueChange={setParentId}>
-            <SelectTrigger className="cursor-pointer">
+            <SelectTrigger>
               <SelectValue placeholder="なし" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={NONE_VALUE} className="cursor-pointer">
-                なし
-              </SelectItem>
+              <SelectItem value={NONE_VALUE}>なし</SelectItem>
               {groups.map((group) => (
-                <SelectItem
-                  key={group.id}
-                  value={group.id}
-                  className="cursor-pointer"
-                >
+                <SelectItem key={group.id} value={group.id}>
                   {group.name}
                 </SelectItem>
               ))}
@@ -95,17 +89,10 @@ function CreateGroupContent({ groups, onClose }: CreateGroupContentProps) {
         </div>
       </div>
       <DialogFooter>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onClose}
-          className="cursor-pointer"
-        >
+        <Button type="button" variant="outline" onClick={onClose}>
           キャンセル
         </Button>
-        <Button type="submit" className="cursor-pointer">
-          作成
-        </Button>
+        <Button type="submit">作成</Button>
       </DialogFooter>
     </form>
   );
@@ -130,12 +117,12 @@ export function CreateGroupButton({ groups }: CreateGroupButtonProps) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button className="cursor-pointer">
+        <Button>
           <Plus />
           新規作成
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] [&>button]:cursor-pointer">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>グループを追加</DialogTitle>
         </DialogHeader>

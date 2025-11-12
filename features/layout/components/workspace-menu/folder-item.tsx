@@ -35,7 +35,7 @@ export function FolderItem({ folder, level = 0 }: FolderItemProps) {
                 e.stopPropagation();
                 setIsOpen(!isOpen);
               }}
-              className="flex items-center justify-center shrink-0 rounded hover:bg-primary/10 cursor-pointer"
+              className="flex items-center justify-center shrink-0 rounded hover:bg-primary/10 "
             >
               <Folder className="size-4 group-hover/item:hidden" />
               <ChevronRight
@@ -73,7 +73,7 @@ export function FolderItem({ folder, level = 0 }: FolderItemProps) {
               e.stopPropagation();
               setIsOpen(!isOpen);
             }}
-            className="flex items-center justify-center shrink-0 rounded hover:bg-primary/10 cursor-pointer"
+            className="flex items-center justify-center shrink-0 rounded hover:bg-primary/10 "
           >
             <Folder className="size-4 group-hover/item:hidden" />
             <ChevronRight

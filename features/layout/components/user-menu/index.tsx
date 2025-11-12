@@ -18,12 +18,12 @@ export function UserMenu({ userName }: UserMenuProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <SidebarMenuButton className="cursor-pointer">
+        <SidebarMenuButton>
           <User2 /> {userName}
           <ChevronUp className="ml-auto" />
         </SidebarMenuButton>
       </DropdownMenuTrigger>
-      <DropdownMenuContent side="top">
+      <DropdownMenuContent side="top" className="py-1.5">
         <AccountSettingsItem />
         <LogoutItem />
       </DropdownMenuContent>

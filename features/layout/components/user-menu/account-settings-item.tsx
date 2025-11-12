@@ -17,15 +17,12 @@ export function AccountSettingsItem() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <DropdownMenuItem
-          onSelect={(e) => e.preventDefault()}
-          className="cursor-pointer"
-        >
+        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
           <UserCog />
           <span>アカウント設定</span>
         </DropdownMenuItem>
       </DialogTrigger>
-      <DialogContent className="bg-card [&>button]:cursor-pointer">
+      <DialogContent className="bg-card">
         <DialogHeader>
           <DialogTitle>アカウント設定</DialogTitle>
           <Separator className="my-4" />

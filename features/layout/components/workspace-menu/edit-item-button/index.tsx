@@ -27,7 +27,7 @@ export function EditItemButton({ folderId, folderName }: EditItemButtonProps) {
             e.preventDefault();
             e.stopPropagation();
           }}
-          className="opacity-0 group-hover/item:opacity-100 pointer-events-none group-hover/item:pointer-events-auto flex items-center justify-center size-5 shrink-0 rounded hover:bg-primary/10 cursor-pointer transition-opacity outline-none focus:outline-none"
+          className="opacity-0 group-hover/item:opacity-100 pointer-events-none group-hover/item:pointer-events-auto flex items-center justify-center size-5 shrink-0 rounded hover:bg-primary/10  transition-opacity outline-none focus:outline-none"
         >
           <Ellipsis className="size-4" />
         </button>

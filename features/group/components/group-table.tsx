@@ -97,7 +97,7 @@ export function GroupTable({ groups, users }: GroupTableProps) {
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="cursor-pointer">
+              <Button variant="outline">
                 項目 <ChevronDown />
               </Button>
             </DropdownMenuTrigger>
@@ -109,7 +109,7 @@ export function GroupTable({ groups, users }: GroupTableProps) {
                   return (
                     <DropdownMenuCheckboxItem
                       key={column.id}
-                      className="capitalize cursor-pointer"
+                      className="capitalize "
                       checked={column.getIsVisible()}
                       onCheckedChange={(value) =>
                         column.toggleVisibility(!!value)
@@ -197,7 +197,7 @@ export function GroupTable({ groups, users }: GroupTableProps) {
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            className="cursor-pointer"
+           
           >
             前へ
           </Button>
@@ -206,7 +206,7 @@ export function GroupTable({ groups, users }: GroupTableProps) {
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-            className="cursor-pointer"
+           
           >
             次へ
           </Button>

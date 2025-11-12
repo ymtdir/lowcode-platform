@@ -145,9 +145,7 @@ function EditGroupContent({
           </div>
         </CardContent>
         <CardFooter className="border-t px-6 py-4">
-          <Button type="submit" className="cursor-pointer">
-            保存
-          </Button>
+          <Button type="submit">保存</Button>
         </CardFooter>
       </Card>
     </form>
@@ -177,7 +175,6 @@ export function EditGroupItem({
   return (
     <>
       <DropdownMenuItem
-        className="cursor-pointer"
         onSelect={(e) => {
           e.preventDefault();
           setOpen(true);
@@ -188,7 +185,7 @@ export function EditGroupItem({
       </DropdownMenuItem>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-[480px] [&>button]:cursor-pointer">
+        <DialogContent className="sm:max-w-[480px]">
           <DialogHeader>
             <DialogTitle>グループ情報を編集</DialogTitle>
           </DialogHeader>

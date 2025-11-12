@@ -67,17 +67,10 @@ function CreateUserContent({ onClose }: CreateUserContentProps) {
         </div>
       </div>
       <DialogFooter>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onClose}
-          className="cursor-pointer"
-        >
+        <Button type="button" variant="outline" onClick={onClose}>
           キャンセル
         </Button>
-        <Button type="submit" className="cursor-pointer">
-          作成
-        </Button>
+        <Button type="submit">作成</Button>
       </DialogFooter>
     </form>
   );
@@ -102,12 +95,12 @@ export function CreateUserButton() {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button className="cursor-pointer">
+        <Button>
           <Plus />
           新規作成
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] [&>button]:cursor-pointer">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>ユーザーを追加</DialogTitle>
         </DialogHeader>

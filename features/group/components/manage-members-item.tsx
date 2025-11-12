@@ -137,7 +137,6 @@ export function ManageMembersItem({
   return (
     <>
       <DropdownMenuItem
-        className="cursor-pointer"
         onSelect={(e) => {
           e.preventDefault();
           setOpen(true);
@@ -148,7 +147,7 @@ export function ManageMembersItem({
       </DropdownMenuItem>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-[600px] [&>button]:cursor-pointer">
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>{group.name} のメンバー管理</DialogTitle>
           </DialogHeader>
@@ -188,7 +187,7 @@ export function ManageMembersItem({
                           />
                           <Label
                             htmlFor={`user-${user.id}`}
-                            className="flex-1 cursor-pointer text-sm font-normal"
+                            className="flex-1  text-sm font-normal"
                           >
                             <div>
                               <p>{user.name || user.email}</p>
@@ -205,7 +204,7 @@ export function ManageMembersItem({
                     <Button
                       onClick={handleAddMembers}
                       disabled={selectedUserIds.size === 0 || isAdding}
-                      className="w-full cursor-pointer"
+                      className="w-full "
                     >
                       <UserPlus />
                       {isAdding
@@ -256,7 +255,7 @@ export function ManageMembersItem({
                           />
                           <Label
                             htmlFor={`member-${member.user.id}`}
-                            className="flex-1 cursor-pointer text-sm font-normal"
+                            className="flex-1  text-sm font-normal"
                           >
                             <div>
                               <p>{member.user.name || member.user.email}</p>
@@ -274,7 +273,7 @@ export function ManageMembersItem({
                       onClick={handleRemoveMembers}
                       disabled={selectedMemberIds.size === 0 || isRemoving}
                       variant="destructive"
-                      className="w-full cursor-pointer"
+                      className="w-full "
                     >
                       <UserMinus />
                       {isRemoving

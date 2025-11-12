@@ -19,7 +19,7 @@ export function WorkspaceMenu({ folders }: WorkspaceMenuProps) {
   return (
     <SidebarGroup>
       <SidebarGroupLabel asChild>
-        <div className="flex items-center w-full group/workspace hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors cursor-pointer">
+        <div className="flex items-center w-full group/workspace hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors ">
           <Link href="/workspace" className="flex-1">
             <span>ワークスペース</span>
           </Link>

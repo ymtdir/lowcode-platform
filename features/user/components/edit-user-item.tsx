@@ -76,12 +76,8 @@ function EditUserContent({ user, onClose }: EditUserContentProps) {
   return (
     <Tabs defaultValue="profile">
       <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="profile" className="cursor-pointer">
-          プロフィール
-        </TabsTrigger>
-        <TabsTrigger value="password" className="cursor-pointer">
-          パスワード
-        </TabsTrigger>
+        <TabsTrigger value="profile">プロフィール</TabsTrigger>
+        <TabsTrigger value="password">パスワード</TabsTrigger>
       </TabsList>
       <TabsContent value="profile">
         <form action={profileAction}>
@@ -116,9 +112,7 @@ function EditUserContent({ user, onClose }: EditUserContentProps) {
               </div>
             </CardContent>
             <CardFooter className="flex justify-between">
-              <Button type="submit" className="cursor-pointer">
-                保存
-              </Button>
+              <Button type="submit">保存</Button>
             </CardFooter>
           </Card>
         </form>
@@ -155,9 +149,7 @@ function EditUserContent({ user, onClose }: EditUserContentProps) {
               </div>
             </CardContent>
             <CardFooter className="flex justify-between">
-              <Button type="submit" className="cursor-pointer">
-                保存
-              </Button>
+              <Button type="submit">保存</Button>
             </CardFooter>
           </Card>
         </form>
@@ -188,7 +180,6 @@ export function EditUserItem({
   return (
     <>
       <DropdownMenuItem
-        className="cursor-pointer"
         onSelect={(e) => {
           e.preventDefault();
           setOpen(true);
@@ -199,7 +190,7 @@ export function EditUserItem({
       </DropdownMenuItem>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-[500px] [&>button]:cursor-pointer">
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>ユーザー情報を編集</DialogTitle>
           </DialogHeader>

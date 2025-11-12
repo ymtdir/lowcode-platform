@@ -21,7 +21,7 @@ export function CreateTableItem({
   };
 
   return (
-    <DropdownMenuItem className="cursor-pointer" onSelect={handleClick}>
+    <DropdownMenuItem onSelect={handleClick}>
       <Table />
       テーブルを追加
     </DropdownMenuItem>

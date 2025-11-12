@@ -63,17 +63,10 @@ function CreateFolderContent({
       </div>
 
       <DialogFooter>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onClose}
-          className="cursor-pointer"
-        >
+        <Button type="button" variant="outline" onClick={onClose}>
           キャンセル
         </Button>
-        <Button type="submit" className="cursor-pointer">
-          作成
-        </Button>
+        <Button type="submit">作成</Button>
       </DialogFooter>
     </form>
   );
@@ -101,7 +94,6 @@ export function CreateFolderItem({
   return (
     <>
       <DropdownMenuItem
-        className="cursor-pointer"
         onSelect={(e) => {
           e.preventDefault();
           setOpen(true);
@@ -112,7 +104,7 @@ export function CreateFolderItem({
       </DropdownMenuItem>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="[&>button]:cursor-pointer">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>フォルダを作成</DialogTitle>
             <DialogDescription>新しいフォルダを作成します</DialogDescription>

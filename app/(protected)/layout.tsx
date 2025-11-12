@@ -25,7 +25,7 @@ export default async function ProtectedLayout({
     <SidebarProvider>
       <AppSidebar userName={userName} />
       <main>
-        <SidebarTrigger className="m-4 cursor-pointer" />
+        <SidebarTrigger className="m-4" />
         {children}
       </main>
     </SidebarProvider>
