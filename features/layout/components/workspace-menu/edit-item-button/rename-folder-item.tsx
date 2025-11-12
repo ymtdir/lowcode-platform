@@ -19,6 +19,7 @@ import { renameFolder } from '@/features/folder/api';
 type RenameFolderItemProps = {
   folderId: string;
   currentName: string;
+  onOpenChange: (open: boolean) => void;
 };
 
 type RenameContentProps = {
@@ -75,10 +76,15 @@ function RenameContent({ folderId, currentName, onClose }: RenameContentProps) {
           variant="outline"
           onClick={onClose}
           disabled={isSubmitting}
+          className="cursor-pointer"
         >
           キャンセル
         </Button>
-        <Button type="submit" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="cursor-pointer"
+        >
           {isSubmitting ? '変更中...' : '変更'}
         </Button>
       </DialogFooter>
@@ -89,6 +95,7 @@ function RenameContent({ folderId, currentName, onClose }: RenameContentProps) {
 export function RenameFolderItem({
   folderId,
   currentName,
+  onOpenChange: onDropdownOpenChange,
 }: RenameFolderItemProps) {
   const [open, setOpen] = useState(false);
   const [resetKey, setResetKey] = useState(0);
@@ -97,16 +104,18 @@ export function RenameFolderItem({
     setOpen(isOpen);
     if (!isOpen) {
       setResetKey((prev) => prev + 1);
+      onDropdownOpenChange(false);
     }
   };
 
   const handleClose = () => {
-    setOpen(false);
+    handleOpenChange(false);
   };
 
   return (
     <>
       <DropdownMenuItem
+        className="cursor-pointer"
         onSelect={(e) => {
           e.preventDefault();
           setOpen(true);
@@ -117,7 +126,7 @@ export function RenameFolderItem({
       </DropdownMenuItem>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent>
+        <DialogContent className="[&>button]:cursor-pointer">
           <DialogHeader>
             <DialogTitle>フォルダ名を変更</DialogTitle>
           </DialogHeader>

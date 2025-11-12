@@ -21,11 +21,13 @@ import { deleteFolder } from '@/features/folder/api';
 type DeleteFolderItemProps = {
   folderId: string;
   folderName: string;
+  onOpenChange: (open: boolean) => void;
 };
 
 export function DeleteFolderItem({
   folderId,
   folderName,
+  onOpenChange: onDropdownOpenChange,
 }: DeleteFolderItemProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -51,8 +53,15 @@ export function DeleteFolderItem({
     }
   };
 
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      onDropdownOpenChange(false);
+    }
+  };
+
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
+    <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogTrigger asChild>
         <DropdownMenuItem
           className="text-destructive hover:text-destructive focus:text-destructive cursor-pointer"

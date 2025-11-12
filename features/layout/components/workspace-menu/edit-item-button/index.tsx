@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Ellipsis } from 'lucide-react';
 import {
   DropdownMenu,
@@ -15,8 +16,10 @@ type EditItemButtonProps = {
 };
 
 export function EditItemButton({ folderId, folderName }: EditItemButtonProps) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <button
           type="button"
@@ -30,8 +33,16 @@ export function EditItemButton({ folderId, folderName }: EditItemButtonProps) {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" sideOffset={4}>
-        <RenameFolderItem folderId={folderId} currentName={folderName} />
-        <DeleteFolderItem folderId={folderId} folderName={folderName} />
+        <RenameFolderItem
+          folderId={folderId}
+          currentName={folderName}
+          onOpenChange={setOpen}
+        />
+        <DeleteFolderItem
+          folderId={folderId}
+          folderName={folderName}
+          onOpenChange={setOpen}
+        />
       </DropdownMenuContent>
     </DropdownMenu>
   );
