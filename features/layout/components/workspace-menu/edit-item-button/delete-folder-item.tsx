@@ -58,7 +58,7 @@ export function DeleteFolderItem({
           className="text-destructive hover:text-destructive focus:text-destructive cursor-pointer"
           onSelect={(e) => e.preventDefault()}
         >
-          <Trash2 className="mr-2 h-4 w-4 text-destructive" />
+          <Trash2 className="text-destructive" />
           削除
         </DropdownMenuItem>
       </AlertDialogTrigger>

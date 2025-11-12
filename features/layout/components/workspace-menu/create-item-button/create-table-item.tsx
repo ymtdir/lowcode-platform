@@ -17,7 +17,7 @@ export function CreateTableItem({ workspaceId }: CreateTableItemProps) {
 
   return (
     <DropdownMenuItem onSelect={handleClick}>
-      <Table className="mr-2 h-4 w-4" />
+      <Table />
       テーブルを追加
     </DropdownMenuItem>
   );

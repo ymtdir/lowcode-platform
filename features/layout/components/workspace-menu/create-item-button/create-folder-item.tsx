@@ -95,7 +95,7 @@ export function CreateFolderItem({ workspaceId }: CreateFolderItemProps) {
           setOpen(true);
         }}
       >
-        <Folder className="mr-2 h-4 w-4" />
+        <Folder />
         フォルダを追加
       </DropdownMenuItem>
 
@@ -103,9 +103,7 @@ export function CreateFolderItem({ workspaceId }: CreateFolderItemProps) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>フォルダを作成</DialogTitle>
-            <DialogDescription>
-              新しいフォルダを作成します
-            </DialogDescription>
+            <DialogDescription>新しいフォルダを作成します</DialogDescription>
           </DialogHeader>
           <CreateFolderContent
             key={resetKey}
