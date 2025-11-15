@@ -1,4 +1,5 @@
 import { getFolderById } from '@/features/folder/api';
+import type { Folder } from '@/features/folder/types';
 import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
@@ -66,7 +67,7 @@ export default async function WorkspacePage({ params }: WorkspacePageProps) {
           <div className="rounded-lg border p-4">
             <h2 className="text-lg font-semibold mb-4">子フォルダ</h2>
             <div className="grid gap-2">
-              {workspace.children.map((child) => (
+              {workspace.children.map((child: Folder) => (
                 <div
                   key={child.id}
                   className="flex items-center gap-2 rounded-md border p-3"
