@@ -39,6 +39,9 @@ describe('getGroupById', () => {
           },
         },
       ],
+      _count: {
+        members: 1,
+      },
     };
 
     (prisma.group.findUnique as jest.Mock).mockResolvedValue(mockGroup);
@@ -51,7 +54,6 @@ describe('getGroupById', () => {
       include: {
         parent: {
           select: {
-            id: true,
             name: true,
           },
         },
@@ -69,6 +71,11 @@ describe('getGroupById', () => {
             createdAt: 'asc',
           },
         },
+        _count: {
+          select: {
+            members: true,
+          },
+        },
       },
     });
   });
@@ -83,10 +90,12 @@ describe('getGroupById', () => {
       createdAt: new Date('2024-01-02'),
       updatedAt: new Date('2024-01-02'),
       parent: {
-        id: 'group-1',
         name: '親グループ',
       },
       members: [],
+      _count: {
+        members: 0,
+      },
     };
 
     (prisma.group.findUnique as jest.Mock).mockResolvedValue(mockGroup);

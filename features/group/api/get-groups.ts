@@ -36,5 +36,5 @@ export async function getGroups(): Promise<Group[]> {
     },
   });
 
-  return groups;
+  return groups as Group[];
 }

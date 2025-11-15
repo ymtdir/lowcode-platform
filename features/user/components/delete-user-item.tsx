@@ -20,9 +20,13 @@ import type { User } from '../types';
 
 type DeleteUserItemProps = {
   user: User;
+  onOpenChange: (open: boolean) => void;
 };
 
-export function DeleteUserItem({ user }: DeleteUserItemProps) {
+export function DeleteUserItem({
+  user,
+  onOpenChange: onDropdownOpenChange,
+}: DeleteUserItemProps) {
   const [open, setOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -45,14 +49,21 @@ export function DeleteUserItem({ user }: DeleteUserItemProps) {
     }
   };
 
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      onDropdownOpenChange(false);
+    }
+  };
+
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
+    <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogTrigger asChild>
         <DropdownMenuItem
-          className="text-destructive! hover:text-destructive! focus:text-destructive!"
+          className="text-destructive hover:text-destructive focus:text-destructive "
           onSelect={(e) => e.preventDefault()}
         >
-          <Trash2 className="text-destructive!" />
+          <Trash2 className="text-destructive" />
           削除
         </DropdownMenuItem>
       </AlertDialogTrigger>
@@ -74,7 +85,11 @@ export function DeleteUserItem({ user }: DeleteUserItemProps) {
           <AlertDialogCancel disabled={isDeleting}>
             キャンセル
           </AlertDialogCancel>
-          <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+          <AlertDialogAction
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60 "
+          >
             {isDeleting ? '削除中...' : '削除'}
           </AlertDialogAction>
         </AlertDialogFooter>

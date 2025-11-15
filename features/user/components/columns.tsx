@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -82,18 +83,20 @@ export const createColumns = (): ColumnDef<User>[] => [
     enableHiding: false,
     cell: ({ row }) => {
       const user = row.original;
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const [open, setOpen] = useState(false);
 
       return (
-        <DropdownMenu>
+        <DropdownMenu open={open} onOpenChange={setOpen}>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button variant="ghost" className="h-8 w-8 p-0 ">
               <span className="sr-only">メニューを開く</span>
               <MoreHorizontal />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="bottom">
-            <EditUserItem user={user} />
-            <DeleteUserItem user={user} />
+            <EditUserItem user={user} onOpenChange={setOpen} />
+            <DeleteUserItem user={user} onOpenChange={setOpen} />
           </DropdownMenuContent>
         </DropdownMenu>
       );

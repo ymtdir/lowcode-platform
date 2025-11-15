@@ -8,7 +8,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import {
@@ -43,9 +42,14 @@ type Group = {
 type ManageMembersItemProps = {
   group: Group;
   allUsers: User[];
+  onOpenChange: (open: boolean) => void;
 };
 
-export function ManageMembersItem({ group, allUsers }: ManageMembersItemProps) {
+export function ManageMembersItem({
+  group,
+  allUsers,
+  onOpenChange: onDropdownOpenChange,
+}: ManageMembersItemProps) {
   const [open, setOpen] = useState(false);
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(
     new Set()
@@ -123,155 +127,168 @@ export function ManageMembersItem({ group, allUsers }: ManageMembersItemProps) {
   const memberUserIds = new Set(members.map((m) => m.user.id));
   const usersToAdd = allUsers.filter((u) => !memberUserIds.has(u.id));
 
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      onDropdownOpenChange(false);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-          <Users />
-          メンバー管理
-        </DropdownMenuItem>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>{group.name} のメンバー管理</DialogTitle>
-        </DialogHeader>
+    <>
+      <DropdownMenuItem
+        onSelect={(e) => {
+          e.preventDefault();
+          setOpen(true);
+        }}
+      >
+        <Users />
+        メンバー管理
+      </DropdownMenuItem>
 
-        <div className="grid gap-6">
-          {/* メンバー追加セクション */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base">メンバーを追加</CardTitle>
-                {selectedUserIds.size > 0 && (
-                  <span className="text-sm text-muted-foreground">
-                    {selectedUserIds.size}人選択中
-                  </span>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="grid gap-4">
-              {usersToAdd.length === 0 ? (
-                <p className="text-muted-foreground text-center text-sm">
-                  追加できるユーザーがいません
-                </p>
-              ) : (
-                <>
-                  <div className="max-h-[200px] space-y-2 overflow-y-auto rounded-md border p-3">
-                    {usersToAdd.map((user) => (
-                      <div
-                        key={user.id}
-                        className="flex items-center space-x-2"
-                      >
-                        <Checkbox
-                          id={`user-${user.id}`}
-                          checked={selectedUserIds.has(user.id)}
-                          onCheckedChange={(checked) =>
-                            handleToggleUser(user.id, !!checked)
-                          }
-                        />
-                        <Label
-                          htmlFor={`user-${user.id}`}
-                          className="flex-1 cursor-pointer text-sm font-normal"
-                        >
-                          <div>
-                            <p>{user.name || user.email}</p>
-                            {user.name && (
-                              <p className="text-muted-foreground text-xs">
-                                {user.email}
-                              </p>
-                            )}
-                          </div>
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                  <Button
-                    onClick={handleAddMembers}
-                    disabled={selectedUserIds.size === 0 || isAdding}
-                    className="w-full"
-                  >
-                    <UserPlus />
-                    {isAdding
-                      ? '追加中...'
-                      : selectedUserIds.size > 0
-                        ? `${selectedUserIds.size}人を追加`
-                        : 'メンバーを追加'}
-                  </Button>
-                </>
-              )}
-            </CardContent>
-          </Card>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>{group.name} のメンバー管理</DialogTitle>
+          </DialogHeader>
 
-          {/* メンバー一覧セクション */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-base">現在のメンバー</CardTitle>
-                  <CardDescription>{members.length}人</CardDescription>
+          <div className="grid gap-6">
+            {/* メンバー追加セクション */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">メンバーを追加</CardTitle>
+                  {selectedUserIds.size > 0 && (
+                    <span className="text-sm text-muted-foreground">
+                      {selectedUserIds.size}人選択中
+                    </span>
+                  )}
                 </div>
-                {selectedMemberIds.size > 0 && (
-                  <span className="text-sm text-muted-foreground">
-                    {selectedMemberIds.size}人選択中
-                  </span>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="grid gap-4">
-              {members.length === 0 ? (
-                <p className="text-muted-foreground text-center text-sm">
-                  メンバーがいません
-                </p>
-              ) : (
-                <>
-                  <div className="max-h-[300px] space-y-2 overflow-y-auto rounded-md border p-3">
-                    {members.map((member) => (
-                      <div
-                        key={member.id}
-                        className="flex items-center space-x-2"
-                      >
-                        <Checkbox
-                          id={`member-${member.user.id}`}
-                          checked={selectedMemberIds.has(member.user.id)}
-                          onCheckedChange={(checked) =>
-                            handleToggleMember(member.user.id, !!checked)
-                          }
-                        />
-                        <Label
-                          htmlFor={`member-${member.user.id}`}
-                          className="flex-1 cursor-pointer text-sm font-normal"
+              </CardHeader>
+              <CardContent className="grid gap-4">
+                {usersToAdd.length === 0 ? (
+                  <p className="text-muted-foreground text-center text-sm">
+                    追加できるユーザーがいません
+                  </p>
+                ) : (
+                  <>
+                    <div className="max-h-[200px] space-y-2 overflow-y-auto rounded-md border p-3">
+                      {usersToAdd.map((user) => (
+                        <div
+                          key={user.id}
+                          className="flex items-center space-x-2"
                         >
-                          <div>
-                            <p>{member.user.name || member.user.email}</p>
-                            {member.user.name && (
-                              <p className="text-muted-foreground text-xs">
-                                {member.user.email}
-                              </p>
-                            )}
-                          </div>
-                        </Label>
-                      </div>
-                    ))}
+                          <Checkbox
+                            id={`user-${user.id}`}
+                            checked={selectedUserIds.has(user.id)}
+                            onCheckedChange={(checked) =>
+                              handleToggleUser(user.id, !!checked)
+                            }
+                          />
+                          <Label
+                            htmlFor={`user-${user.id}`}
+                            className="flex-1  text-sm font-normal"
+                          >
+                            <div>
+                              <p>{user.name || user.email}</p>
+                              {user.name && (
+                                <p className="text-muted-foreground text-xs">
+                                  {user.email}
+                                </p>
+                              )}
+                            </div>
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                    <Button
+                      onClick={handleAddMembers}
+                      disabled={selectedUserIds.size === 0 || isAdding}
+                      className="w-full "
+                    >
+                      <UserPlus />
+                      {isAdding
+                        ? '追加中...'
+                        : selectedUserIds.size > 0
+                          ? `${selectedUserIds.size}人を追加`
+                          : 'メンバーを追加'}
+                    </Button>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* メンバー一覧セクション */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base">現在のメンバー</CardTitle>
+                    <CardDescription>{members.length}人</CardDescription>
                   </div>
-                  <Button
-                    onClick={handleRemoveMembers}
-                    disabled={selectedMemberIds.size === 0 || isRemoving}
-                    variant="destructive"
-                    className="w-full"
-                  >
-                    <UserMinus />
-                    {isRemoving
-                      ? '削除中...'
-                      : selectedMemberIds.size > 0
-                        ? `${selectedMemberIds.size}人を削除`
-                        : 'メンバーを削除'}
-                  </Button>
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </DialogContent>
-    </Dialog>
+                  {selectedMemberIds.size > 0 && (
+                    <span className="text-sm text-muted-foreground">
+                      {selectedMemberIds.size}人選択中
+                    </span>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="grid gap-4">
+                {members.length === 0 ? (
+                  <p className="text-muted-foreground text-center text-sm">
+                    メンバーがいません
+                  </p>
+                ) : (
+                  <>
+                    <div className="max-h-[300px] space-y-2 overflow-y-auto rounded-md border p-3">
+                      {members.map((member) => (
+                        <div
+                          key={member.id}
+                          className="flex items-center space-x-2"
+                        >
+                          <Checkbox
+                            id={`member-${member.user.id}`}
+                            checked={selectedMemberIds.has(member.user.id)}
+                            onCheckedChange={(checked) =>
+                              handleToggleMember(member.user.id, !!checked)
+                            }
+                          />
+                          <Label
+                            htmlFor={`member-${member.user.id}`}
+                            className="flex-1  text-sm font-normal"
+                          >
+                            <div>
+                              <p>{member.user.name || member.user.email}</p>
+                              {member.user.name && (
+                                <p className="text-muted-foreground text-xs">
+                                  {member.user.email}
+                                </p>
+                              )}
+                            </div>
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                    <Button
+                      onClick={handleRemoveMembers}
+                      disabled={selectedMemberIds.size === 0 || isRemoving}
+                      variant="destructive"
+                      className="w-full "
+                    >
+                      <UserMinus />
+                      {isRemoving
+                        ? '削除中...'
+                        : selectedMemberIds.size > 0
+                          ? `${selectedMemberIds.size}人を削除`
+                          : 'メンバーを削除'}
+                    </Button>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

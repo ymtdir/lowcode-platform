@@ -2,8 +2,6 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
@@ -11,12 +9,16 @@ import {
 
 import { UserMenu } from './user-menu';
 import { MainMenu, mainMenuItems } from './main-menu';
+import { WorkspaceMenu } from './workspace-menu';
+import { getFolders } from '@/features/folder/api';
 
 type AppSidebarProps = {
   userName: string;
 };
 
-export function AppSidebar({ userName }: AppSidebarProps) {
+export async function AppSidebar({ userName }: AppSidebarProps) {
+  const folders = await getFolders();
+
   return (
     <Sidebar>
       <SidebarHeader>
@@ -32,11 +34,8 @@ export function AppSidebar({ userName }: AppSidebarProps) {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <MainMenu items={mainMenuItems} />
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <MainMenu items={mainMenuItems} />
+        <WorkspaceMenu folders={folders} />
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>

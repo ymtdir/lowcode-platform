@@ -8,7 +8,7 @@ export function LogoutItem() {
       <form action={logout} className="w-full">
         <button
           type="submit"
-          className="flex items-center gap-2 py-1.5 text-sm outline-none"
+          className="flex items-center gap-2 text-sm outline-none cursor-pointer"
         >
           <LogOut />
           <span>ログアウト</span>

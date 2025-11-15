@@ -8,7 +8,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -28,6 +27,7 @@ import type { User } from '../types';
 
 type EditUserItemProps = {
   user: User;
+  onOpenChange: (open: boolean) => void;
 };
 
 type EditUserContentProps = {
@@ -158,37 +158,45 @@ function EditUserContent({ user, onClose }: EditUserContentProps) {
   );
 }
 
-export function EditUserItem({ user }: EditUserItemProps) {
+export function EditUserItem({
+  user,
+  onOpenChange: onDropdownOpenChange,
+}: EditUserItemProps) {
   const [open, setOpen] = useState(false);
   const [resetKey, setResetKey] = useState(0);
 
-  // ダイアログが閉じられたときに状態をリセット
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
     if (!isOpen) {
-      // ダイアログが閉じられた時にkeyを変更してコンポーネントを再マウント
       setResetKey((prev) => prev + 1);
+      onDropdownOpenChange(false);
     }
   };
 
   const handleClose = () => {
-    setOpen(false);
+    handleOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-          <Pencil />
-          編集
-        </DropdownMenuItem>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>ユーザー情報を編集</DialogTitle>
-        </DialogHeader>
-        <EditUserContent key={resetKey} user={user} onClose={handleClose} />
-      </DialogContent>
-    </Dialog>
+    <>
+      <DropdownMenuItem
+        onSelect={(e) => {
+          e.preventDefault();
+          setOpen(true);
+        }}
+      >
+        <Pencil />
+        編集
+      </DropdownMenuItem>
+
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>ユーザー情報を編集</DialogTitle>
+          </DialogHeader>
+          <EditUserContent key={resetKey} user={user} onClose={handleClose} />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

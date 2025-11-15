@@ -23,7 +23,7 @@ export function UserMenu({ userName }: UserMenuProps) {
           <ChevronUp className="ml-auto" />
         </SidebarMenuButton>
       </DropdownMenuTrigger>
-      <DropdownMenuContent side="top">
+      <DropdownMenuContent side="top" className="py-1.5">
         <AccountSettingsItem />
         <LogoutItem />
       </DropdownMenuContent>
