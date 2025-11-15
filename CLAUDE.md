@@ -14,13 +14,14 @@ Next.js製の業務アプリケーションプラットフォーム
 
 ## 技術スタック
 
-- **フロントエンド・バックエンド**: Next.js 14+ (App Router)
+- **フロントエンド・バックエンド**: Next.js 16.0.0 (App Router with Turbopack)
 - **データベース**: Supabase (PostgreSQL)
 - **ORM**: Prisma
-- **認証**: Supabase Auth
+- **認証**: Supabase Auth（メール/パスワード認証のみ）
 - **ストレージ**: Supabase Storage（ファイルアップロード用）
 - **リアルタイム**: Supabase Realtime（複数人編集用）
 - **UI**: shadcn/ui + Tailwind CSS
+- **テスト**: Jest with next/jest
 - **コードエディタ**: Monaco Editor（ブラウザ上のコードエディタUI）
 - **スクリプト実行**: vm2（サーバーサイド）/ サンドボックス（クライアント）
 - **デプロイ**: Vercel
@@ -229,15 +230,9 @@ lowcode-platform/
 │   │
 │   ├── (auth)/                   # 認証プロセス
 │   │   ├── login/                # ログイン（/login）
-│   │   │   ├── page.tsx
-│   │   │   └── actions.ts
+│   │   │   └── page.tsx
 │   │   ├── signup/               # サインアップ（/signup）
-│   │   │   ├── page.tsx
-│   │   │   └── actions.ts
-│   │   ├── logout/               # ログアウト（/logout）
-│   │   │   └── actions.ts
-│   │   ├── callback/             # OAuth コールバック（/callback）
-│   │   │   └── route.ts
+│   │   │   └── page.tsx
 │   │   └── confirm/              # メール確認（/confirm）
 │   │       └── route.ts
 │   │
@@ -347,16 +342,105 @@ lowcode-platform/
 │   │
 │   ├── auth/
 │   │   ├── components/
-│   │   │   ├── LoginForm.tsx
-│   │   │   ├── RegisterForm.tsx
+│   │   │   ├── login-form.tsx
+│   │   │   ├── signup-form.tsx
 │   │   │   └── index.ts
 │   │   ├── api/
+│   │   │   ├── __tests__/
+│   │   │   │   ├── login.test.ts
+│   │   │   │   ├── signup.test.ts
+│   │   │   │   └── logout.test.ts
 │   │   │   ├── login.ts
 │   │   │   ├── logout.ts
-│   │   │   ├── register.ts
+│   │   │   ├── signup.ts
 │   │   │   └── index.ts
 │   │   └── types/
 │   │       └── auth.ts
+│   │
+│   ├── folder/
+│   │   ├── components/           # UIコンポーネント
+│   │   │   └── index.ts
+│   │   ├── api/                  # データ操作（Server Actions）
+│   │   │   ├── __tests__/
+│   │   │   │   ├── create-folder.test.ts
+│   │   │   │   ├── delete-folder.test.ts
+│   │   │   │   ├── get-folder-by-id.test.ts
+│   │   │   │   ├── get-folders.test.ts
+│   │   │   │   ├── rename-folder.test.ts
+│   │   │   │   └── reorder-folders.test.ts
+│   │   │   ├── create-folder.ts
+│   │   │   ├── delete-folder.ts
+│   │   │   ├── get-folder-by-id.ts
+│   │   │   ├── get-folders.ts
+│   │   │   ├── rename-folder.ts
+│   │   │   ├── reorder-folders.ts
+│   │   │   └── index.ts
+│   │   ├── types/
+│   │   │   ├── folder.ts
+│   │   │   └── index.ts
+│   │   ├── utils/
+│   │   │   ├── calculate-folder-order.ts
+│   │   │   └── index.ts
+│   │   └── hooks/
+│   │       └── index.ts
+│   │
+│   ├── group/
+│   │   ├── components/
+│   │   │   ├── bulk-delete-button.tsx
+│   │   │   ├── columns.tsx
+│   │   │   ├── create-group-button.tsx
+│   │   │   ├── delete-group-item.tsx
+│   │   │   ├── edit-group-item.tsx
+│   │   │   ├── group-table.tsx
+│   │   │   ├── manage-members-item.tsx
+│   │   │   ├── member-list.tsx
+│   │   │   └── index.ts
+│   │   ├── api/
+│   │   │   ├── __tests__/
+│   │   │   │   ├── add-members.test.ts
+│   │   │   │   ├── create-group.test.ts
+│   │   │   │   ├── delete-group.test.ts
+│   │   │   │   ├── get-group-by-id.test.ts
+│   │   │   │   ├── get-groups.test.ts
+│   │   │   │   ├── remove-members.test.ts
+│   │   │   │   └── update-group.test.ts
+│   │   │   ├── add-members.ts
+│   │   │   ├── create-group.ts
+│   │   │   ├── delete-group.ts
+│   │   │   ├── get-group-by-id.ts
+│   │   │   ├── get-groups.ts
+│   │   │   ├── remove-members.ts
+│   │   │   ├── update-group.ts
+│   │   │   └── index.ts
+│   │   └── types/
+│   │       ├── group.ts
+│   │       └── index.ts
+│   │
+│   ├── user/
+│   │   ├── components/
+│   │   │   ├── bulk-delete-button.tsx
+│   │   │   ├── columns.tsx
+│   │   │   ├── create-user-button.tsx
+│   │   │   ├── delete-user-item.tsx
+│   │   │   ├── edit-user-item.tsx
+│   │   │   ├── user-table.tsx
+│   │   │   └── index.ts
+│   │   ├── api/
+│   │   │   ├── __tests__/
+│   │   │   │   ├── create-user.test.ts
+│   │   │   │   ├── delete-user.test.ts
+│   │   │   │   ├── get-users.test.ts
+│   │   │   │   ├── update-user-password.test.ts
+│   │   │   │   └── update-user-profile.test.ts
+│   │   │   ├── create-user.ts
+│   │   │   ├── delete-user.ts
+│   │   │   ├── get-users.ts
+│   │   │   ├── update-user-password.ts
+│   │   │   ├── update-user-profile.ts
+│   │   │   └── index.ts
+│   │   └── types/
+│   │       ├── user.ts
+│   │       └── index.ts
 │   │
 │   └── layout/                   # レイアウトコンポーネント
 │       ├── components/
@@ -594,6 +678,47 @@ export default createJestConfig(config);
 - `clearMocks: true`でテスト間の独立性を確保
 - `moduleNameMapper`でパスエイリアス（`@/`）を解決
 
+#### テスト実装状況（2025-01-16時点）
+
+**実装済みのテスト**:
+
+- **auth機能**: 3ファイル、10テスト
+  - `login.test.ts`: ログイン機能（4テスト）
+  - `signup.test.ts`: サインアップ機能（5テスト）
+  - `logout.test.ts`: ログアウト機能（3テスト）
+
+- **folder機能**: 6ファイル、26テスト
+  - `create-folder.test.ts`: フォルダ作成（7テスト）
+  - `delete-folder.test.ts`: フォルダ削除（2テスト）
+  - `get-folder-by-id.test.ts`: フォルダ個別取得（3テスト）
+  - `get-folders.test.ts`: フォルダ一覧取得（3テスト）
+  - `rename-folder.test.ts`: フォルダ名変更（7テスト）
+  - `reorder-folders.test.ts`: フォルダ並び替え（4テスト）
+
+- **group機能**: 7ファイル、33テスト
+  - `add-members.test.ts`: メンバー追加（5テスト）
+  - `create-group.test.ts`: グループ作成（7テスト）
+  - `delete-group.test.ts`: グループ削除（2テスト）
+  - `get-group-by-id.test.ts`: グループ個別取得（3テスト）
+  - `get-groups.test.ts`: グループ一覧取得（3テスト）
+  - `remove-members.test.ts`: メンバー削除（6テスト）
+  - `update-group.test.ts`: グループ更新（7テスト）
+
+- **user機能**: 5ファイル、21テスト
+  - `create-user.test.ts`: ユーザー作成（7テスト）
+  - `delete-user.test.ts`: ユーザー削除（2テスト）
+  - `get-users.test.ts`: ユーザー一覧取得（3テスト）
+  - `update-user-password.test.ts`: パスワード更新（5テスト）
+  - `update-user-profile.test.ts`: プロフィール更新（4テスト）
+
+**合計**: 21テストスイート、90テスト（全て成功）
+
+**テストコマンド**:
+```bash
+npm test                 # 全テスト実行
+npm run test:coverage    # カバレッジ付きテスト実行
+```
+
 ## 機能要件
 
 > **注意:**  
@@ -604,18 +729,32 @@ export default createJestConfig(config);
 
 #### 1.1 認証・権限基盤
 
-- [ ] ユーザー登録（メール/パスワード）
-- [ ] ログイン・ログアウト
-- [ ] セッション管理
-- [ ] 認証状態の保護（ミドルウェア）
-- [ ] ユーザーロール設定
+- [x] ユーザー登録（メール/パスワード）
+- [x] ログイン・ログアウト
+- [x] セッション管理
+- [x] 認証状態の保護（ミドルウェア）
+- [x] ユーザーロール設定
   - **Admin**: すべての操作が可能
   - **Member**: 所属グループの権限に応じた操作
+- [x] 認証フォームのコンポーネント化
+  - `features/auth/components/login-form.tsx`
+  - `features/auth/components/signup-form.tsx`
+- [x] 認証APIの統合
+  - `features/auth/api/login.ts`
+  - `features/auth/api/signup.ts`
+  - `features/auth/api/logout.ts`
+
+**実装済み内容**:
+- Supabase Authを使用したメール/パスワード認証
+- Server Actionsによる認証処理
+- メール確認フロー（`/confirm`）
+- Prismaへのユーザー情報同期
+- 認証APIの単体テスト（10テスト）
 
 #### 1.2 グループ・権限管理
 
-- [ ] グループ作成・編集・削除
-- [ ] グループメンバー管理
+- [x] グループ作成・編集・削除
+- [x] グループメンバー管理
   - ユーザーをグループに追加・削除
   - ユーザーは複数グループに所属可能
 - [ ] 権限の基本構造実装
@@ -629,6 +768,39 @@ export default createJestConfig(config);
 - `read`: 閲覧のみ
 - `write`: 閲覧・作成・編集
 - `admin`: すべての操作（削除・権限設定含む）
+
+**実装済み内容**:
+- グループCRUD機能（`features/group/api/`）
+- メンバー追加・削除機能
+- グループ管理UI（Data Table with TanStack Table）
+- グループAPIの単体テスト（33テスト）
+
+#### 1.2.1 ユーザー管理
+
+- [x] ユーザー作成・編集・削除
+- [x] ユーザー一覧表示
+- [x] プロフィール編集（名前）
+- [x] パスワード変更
+- [x] ユーザーロール設定（Admin/Member）
+
+**実装済み内容**:
+- ユーザーCRUD機能（`features/user/api/`）
+- ユーザー管理UI（Data Table with TanStack Table）
+- ユーザーAPIの単体テスト（21テスト）
+
+#### 1.2.2 フォルダ管理（ワークスペース機能）
+
+- [x] フォルダ作成・削除・名前変更
+- [x] フォルダの階層構造（親子関係）
+- [x] フォルダの並び替え（ドラッグ&ドロップ）
+- [x] フォルダ内のテーブル管理
+
+**実装済み内容**:
+- フォルダCRUD機能（`features/folder/api/`）
+- 階層構造の再帰的取得
+- 並び替え機能（`calculate-folder-order`）
+- ワークスペースメニューUI（サイドバー）
+- フォルダAPIの単体テスト（26テスト）
 
 #### 1.3 テーブル管理
 
@@ -798,6 +970,7 @@ model User {
   groupMembers  GroupMember[]
   tables        Table[]
   records       Record[]
+  folders       Folder[]
 }
 
 model Group {
@@ -916,6 +1089,24 @@ model Style {
   table     Table    @relation(fields: [tableId], references: [id], onDelete: Cascade)
 
   @@index([tableId])
+}
+
+model Folder {
+  id          String   @id @default(cuid())
+  name        String
+  parentId    String?
+  order       Int      @default(0)
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  parent      Folder?  @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Folder[] @relation("FolderHierarchy")
+  createdBy   User     @relation(fields: [createdById], references: [id])
+
+  @@index([parentId])
+  @@index([createdById])
+  @@index([order])
 }
 
 enum UserRole {
