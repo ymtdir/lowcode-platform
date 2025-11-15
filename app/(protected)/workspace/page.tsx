@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { getFolders } from '@/features/folder/api';
 
+export const dynamic = 'force-dynamic';
+
 export default async function WorkspacePage() {
   const folders = await getFolders();
 

@@ -1,6 +1,8 @@
 import { getFolderById } from '@/features/folder/api';
 import { notFound } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 type WorkspacePageProps = {
   params: Promise<{ workspaceId: string }>;
 };
