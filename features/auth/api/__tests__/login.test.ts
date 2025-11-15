@@ -1,4 +1,4 @@
-import { login, loginWithGoogle } from '../login';
+import { login } from '../login';
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
@@ -105,72 +105,5 @@ describe('login', () => {
     expect(result).toEqual({
       error: 'メールアドレスまたはパスワードが正しくありません',
     });
-  });
-});
-
-describe('loginWithGoogle', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('Google OAuth認証URLにリダイレクトできる', async () => {
-    const mockSupabase = {
-      auth: {
-        signInWithOAuth: jest.fn().mockResolvedValue({
-          data: {
-            url: 'https://accounts.google.com/o/oauth2/auth?...',
-          },
-          error: null,
-        }),
-      },
-    };
-
-    (createClient as jest.Mock).mockResolvedValue(mockSupabase);
-
-    await expect(loginWithGoogle()).rejects.toThrow();
-
-    expect(mockSupabase.auth.signInWithOAuth).toHaveBeenCalledWith({
-      provider: 'google',
-      options: {
-        redirectTo: expect.stringContaining('/callback'),
-      },
-    });
-    expect(redirect).toHaveBeenCalledWith(
-      'https://accounts.google.com/o/oauth2/auth?...'
-    );
-  });
-
-  it('OAuth認証URLの取得に失敗した場合はエラーページにリダイレクト', async () => {
-    const mockSupabase = {
-      auth: {
-        signInWithOAuth: jest.fn().mockResolvedValue({
-          data: { url: null },
-          error: { message: 'OAuth error' },
-        }),
-      },
-    };
-
-    (createClient as jest.Mock).mockResolvedValue(mockSupabase);
-
-    await expect(loginWithGoogle()).rejects.toThrow();
-
-    expect(redirect).toHaveBeenCalledWith('/error');
-  });
-
-  it('URLが取得できなかった場合はリダイレクトしない', async () => {
-    const mockSupabase = {
-      auth: {
-        signInWithOAuth: jest.fn().mockResolvedValue({
-          data: { url: null },
-          error: null,
-        }),
-      },
-    };
-
-    (createClient as jest.Mock).mockResolvedValue(mockSupabase);
-
-    await loginWithGoogle();
-
-    expect(redirect).not.toHaveBeenCalled();
   });
 });

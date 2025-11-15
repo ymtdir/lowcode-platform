@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useActionState } from 'react';
-import { login, loginWithGoogle } from '@/features/auth/api';
+import { login } from '@/features/auth/api';
 import {
   Card,
   CardAction,
@@ -66,11 +66,6 @@ export function LoginForm() {
               ログイン
             </Button>
           </div>
-        </form>
-        <form action={loginWithGoogle} className="mt-4">
-          <Button type="submit" variant="outline" className="w-full">
-            Googleでログイン
-          </Button>
         </form>
       </CardContent>
       <CardFooter className="flex-col gap-2"></CardFooter>

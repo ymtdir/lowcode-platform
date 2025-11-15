@@ -35,32 +35,3 @@ export async function login(
   revalidatePath('/', 'layout');
   redirect('/');
 }
-
-export async function loginWithGoogle() {
-  let redirectUrl: string | null = null;
-
-  try {
-    const supabase = await createClient();
-
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/callback`,
-      },
-    });
-
-    if (error) {
-      console.error('Google認証エラー:', error.message);
-      redirectUrl = '/error';
-    } else if (data.url) {
-      redirectUrl = data.url;
-    }
-  } catch (error) {
-    console.error('Google認証エラー:', error);
-    redirectUrl = '/error';
-  }
-
-  if (redirectUrl) {
-    redirect(redirectUrl);
-  }
-}

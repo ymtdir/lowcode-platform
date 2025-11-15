@@ -1,4 +1,4 @@
-import { signup, signupWithGoogle } from '../signup';
+import { signup } from '../signup';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
@@ -146,72 +146,5 @@ describe('signup', () => {
     expect(result).toEqual({
       error: 'アカウントの作成に失敗しました',
     });
-  });
-});
-
-describe('signupWithGoogle', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('Google OAuth認証URLにリダイレクトできる', async () => {
-    const mockSupabase = {
-      auth: {
-        signInWithOAuth: jest.fn().mockResolvedValue({
-          data: {
-            url: 'https://accounts.google.com/o/oauth2/auth?...',
-          },
-          error: null,
-        }),
-      },
-    };
-
-    (createClient as jest.Mock).mockResolvedValue(mockSupabase);
-
-    await expect(signupWithGoogle()).rejects.toThrow();
-
-    expect(mockSupabase.auth.signInWithOAuth).toHaveBeenCalledWith({
-      provider: 'google',
-      options: {
-        redirectTo: expect.stringContaining('/callback'),
-      },
-    });
-    expect(redirect).toHaveBeenCalledWith(
-      'https://accounts.google.com/o/oauth2/auth?...'
-    );
-  });
-
-  it('OAuth認証URLの取得に失敗した場合はエラーページにリダイレクト', async () => {
-    const mockSupabase = {
-      auth: {
-        signInWithOAuth: jest.fn().mockResolvedValue({
-          data: { url: null },
-          error: { message: 'OAuth error' },
-        }),
-      },
-    };
-
-    (createClient as jest.Mock).mockResolvedValue(mockSupabase);
-
-    await expect(signupWithGoogle()).rejects.toThrow();
-
-    expect(redirect).toHaveBeenCalledWith('/error');
-  });
-
-  it('URLが取得できなかった場合はリダイレクトしない', async () => {
-    const mockSupabase = {
-      auth: {
-        signInWithOAuth: jest.fn().mockResolvedValue({
-          data: { url: null },
-          error: null,
-        }),
-      },
-    };
-
-    (createClient as jest.Mock).mockResolvedValue(mockSupabase);
-
-    await signupWithGoogle();
-
-    expect(redirect).not.toHaveBeenCalled();
   });
 });
