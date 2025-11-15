@@ -61,11 +61,27 @@ export async function createFolder(
       return { error: 'この名前のワークスペースは既に存在します' };
     }
 
+    // 同じ親の最大order値を取得
+    const maxOrderFolder = await prisma.folder.findFirst({
+      where: {
+        parentId: parentId || null,
+      },
+      orderBy: {
+        order: 'desc',
+      },
+      select: {
+        order: true,
+      },
+    });
+
+    const newOrder = maxOrderFolder ? maxOrderFolder.order + 1 : 0;
+
     await prisma.folder.create({
       data: {
         name: name.trim(),
         parentId: parentId || null,
         createdById: dbUser.id,
+        order: newOrder,
       },
     });
 

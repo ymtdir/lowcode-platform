@@ -25,7 +25,6 @@ export const createColumns = (): ColumnDef<User>[] => [
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
-       
       />
     ),
     cell: ({ row }) => (
@@ -33,7 +32,6 @@ export const createColumns = (): ColumnDef<User>[] => [
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Select row"
-       
       />
     ),
     enableSorting: false,
@@ -47,7 +45,6 @@ export const createColumns = (): ColumnDef<User>[] => [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-         
         >
           メールアドレス
           <ArrowUpDown className="ml-2 h-4 w-4" />

@@ -26,7 +26,7 @@ async function getFolderWithChildren(folderId: string): Promise<Folder> {
           },
         },
         orderBy: {
-          createdAt: 'asc',
+          order: 'asc',
         },
       },
       _count: {
@@ -59,7 +59,7 @@ export async function getFolders(): Promise<Folder[]> {
       parentId: null,
     },
     orderBy: {
-      createdAt: 'desc',
+      order: 'asc',
     },
     select: {
       id: true,

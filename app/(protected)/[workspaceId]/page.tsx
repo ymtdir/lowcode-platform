@@ -1,5 +1,4 @@
 import { getFolderById } from '@/features/folder/api';
-import { CreateItemButton } from '@/features/layout/components/workspace-menu/create-item-button';
 import { notFound } from 'next/navigation';
 
 type WorkspacePageProps = {

@@ -190,7 +190,6 @@ export function UserTable({ users }: UserTableProps) {
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-           
           >
             前へ
           </Button>
@@ -199,7 +198,6 @@ export function UserTable({ users }: UserTableProps) {
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-           
           >
             次へ
           </Button>

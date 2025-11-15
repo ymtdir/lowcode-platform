@@ -197,7 +197,6 @@ export function GroupTable({ groups, users }: GroupTableProps) {
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-           
           >
             前へ
           </Button>
@@ -206,7 +205,6 @@ export function GroupTable({ groups, users }: GroupTableProps) {
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-           
           >
             次へ
           </Button>

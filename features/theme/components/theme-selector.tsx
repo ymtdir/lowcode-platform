@@ -31,11 +31,7 @@ export function ThemeSelector() {
       </DropdownMenuTrigger>
       <DropdownMenuContent side="right">
         {themes.map(({ value, label, icon: Icon }) => (
-          <DropdownMenuItem
-            key={value}
-            onClick={() => setTheme(value)}
-           
-          >
+          <DropdownMenuItem key={value} onClick={() => setTheme(value)}>
             <Icon />
             <span>{label}</span>
           </DropdownMenuItem>
