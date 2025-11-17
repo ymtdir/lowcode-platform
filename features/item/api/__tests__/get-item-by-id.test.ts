@@ -1,9 +1,9 @@
-import { getFolderById } from '../get-folder-by-id';
+import { getItemById } from '../get-item-by-id';
 
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    folder: {
+    item: {
       findUnique: jest.fn(),
     },
   },
@@ -11,16 +11,16 @@ jest.mock('@/lib/prisma', () => ({
 
 import { prisma } from '@/lib/prisma';
 
-describe('getFolderById', () => {
+describe('getItemById', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('フォルダを取得できる', async () => {
-    const folderId = 'folder-1';
-    const mockFolder = {
-      id: folderId,
-      name: 'テストフォルダ',
+  it('アイテムを取得できる', async () => {
+    const itemId = 'folder-1';
+    const mockItem = {
+      id: itemId,
+      name: 'テストアイテム',
       parentId: null,
       order: 0,
       createdAt: new Date('2024-01-01'),
@@ -37,13 +37,13 @@ describe('getFolderById', () => {
       },
     };
 
-    (prisma.folder.findUnique as jest.Mock).mockResolvedValue(mockFolder);
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue(mockItem);
 
-    const result = await getFolderById(folderId);
+    const result = await getItemById(itemId);
 
-    expect(result).toEqual(mockFolder);
-    expect(prisma.folder.findUnique).toHaveBeenCalledWith({
-      where: { id: folderId },
+    expect(result).toEqual(mockItem);
+    expect(prisma.item.findUnique).toHaveBeenCalledWith({
+      where: { id: itemId },
       include: {
         createdBy: {
           select: {
@@ -74,11 +74,11 @@ describe('getFolderById', () => {
     });
   });
 
-  it('子フォルダを含むフォルダを取得できる', async () => {
-    const folderId = 'folder-1';
-    const mockFolder = {
-      id: folderId,
-      name: 'テストフォルダ',
+  it('子アイテムを含むアイテムを取得できる', async () => {
+    const itemId = 'folder-1';
+    const mockItem = {
+      id: itemId,
+      name: 'テストアイテム',
       parentId: null,
       order: 0,
       createdAt: new Date('2024-01-01'),
@@ -92,8 +92,8 @@ describe('getFolderById', () => {
       children: [
         {
           id: 'child-1',
-          name: '子フォルダ1',
-          parentId: folderId,
+          name: '子アイテム1',
+          parentId: itemId,
           order: 0,
           createdAt: new Date('2024-01-02'),
           updatedAt: new Date('2024-01-02'),
@@ -109,20 +109,20 @@ describe('getFolderById', () => {
       },
     };
 
-    (prisma.folder.findUnique as jest.Mock).mockResolvedValue(mockFolder);
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue(mockItem);
 
-    const result = await getFolderById(folderId);
+    const result = await getItemById(itemId);
 
-    expect(result).toEqual(mockFolder);
+    expect(result).toEqual(mockItem);
     expect(result?.children).toHaveLength(1);
   });
 
-  it('フォルダが見つからない場合はnullを返す', async () => {
-    const folderId = 'non-existent';
+  it('アイテムが見つからない場合はnullを返す', async () => {
+    const itemId = 'non-existent';
 
-    (prisma.folder.findUnique as jest.Mock).mockResolvedValue(null);
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue(null);
 
-    const result = await getFolderById(folderId);
+    const result = await getItemById(itemId);
 
     expect(result).toBeNull();
   });

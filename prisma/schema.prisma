@@ -17,7 +17,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   groupMembers GroupMember[]
-  folders      Folder[]
+  items        Item[]
 }
 
 model Group {
@@ -49,8 +49,9 @@ model GroupMember {
   @@index([groupId])
 }
 
-model Folder {
+model Item {
   id          String   @id @default(uuid())
+  type        ItemType @default(FOLDER)
   name        String
   parentId    String?
   order       Int      @default(0)
@@ -58,17 +59,22 @@ model Folder {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  parent    Folder?  @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
-  children  Folder[] @relation("FolderHierarchy")
-  createdBy User     @relation(fields: [createdById], references: [id])
+  parent    Item?  @relation("ItemHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Item[] @relation("ItemHierarchy")
+  createdBy User   @relation(fields: [createdById], references: [id])
 
   @@unique([name, parentId])
   @@index([parentId])
   @@index([createdById])
   @@index([parentId, order])
+  @@index([type])
 }
 
 enum UserRole {
   ADMIN
   MEMBER
+}
+
+enum ItemType {
+  FOLDER
 }

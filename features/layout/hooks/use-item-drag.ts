@@ -1,41 +1,41 @@
 import { useMemo } from 'react';
 import { DragEndEvent } from '@dnd-kit/core';
-import type { Folder as FolderType } from '@/features/folder/types';
-import { reorderFolders } from '@/features/folder/api';
+import type { Item as ItemType } from '@/features/item/types';
+import { reorderItems } from '@/features/item/api';
 import { toast } from 'sonner';
 import { WORKSPACE_ROOT_ID } from '@/features/layout/utils/collision-detection';
-import { calculateFolderOrder } from '@/features/layout/utils/calculate-folder-order';
+import { calculateItemOrder } from '@/features/layout/utils/calculate-item-order';
 
 type DropPosition = 'before' | 'after' | 'inside';
 
-type UseFolderDragParams = {
-  folders: FolderType[];
+type UseItemDragParams = {
+  items: ItemType[];
   insideTargetId: string | null;
   overId: string | null;
   dropPosition: DropPosition;
 };
 
-// フォルダのドラッグ&ドロップロジック（汎用）
+// アイテムのドラッグ&ドロップロジック（汎用）
 // UI状態は含まず、データ操作のみを扱う
-export function useFolderDrag({
-  folders,
+export function useItemDrag({
+  items,
   insideTargetId,
   overId,
   dropPosition,
-}: UseFolderDragParams) {
+}: UseItemDragParams) {
   // フラットなフォルダリストを作成
-  const flattenedFolders = useMemo(() => {
-    const flatten = (folders: FolderType[]): FolderType[] => {
-      return folders.reduce((acc, folder) => {
-        acc.push(folder);
-        if (folder.children && folder.children.length > 0) {
-          acc.push(...flatten(folder.children));
+  const flattenedItems = useMemo(() => {
+    const flatten = (items: ItemType[]): ItemType[] => {
+      return items.reduce((acc, item) => {
+        acc.push(item);
+        if (item.children && item.children.length > 0) {
+          acc.push(...flatten(item.children));
         }
         return acc;
-      }, [] as FolderType[]);
+      }, [] as ItemType[]);
     };
-    return flatten(folders);
-  }, [folders]);
+    return flatten(items);
+  }, [items]);
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
@@ -51,9 +51,9 @@ export function useFolderDrag({
     const finalOverId = (over?.id as string | undefined) || overId;
     const finalInsideTargetId = insideTargetId;
 
-    const activeFolder = flattenedFolders.find((f) => f.id === active.id);
+    const activeItem = flattenedItems.find((i) => i.id === active.id);
 
-    if (!activeFolder) {
+    if (!activeItem) {
       return;
     }
 
@@ -62,7 +62,7 @@ export function useFolderDrag({
       finalOverId === 'workspace-menu' ||
       finalInsideTargetId === WORKSPACE_ROOT_ID;
 
-    const implicitRootDrop = !finalOverId && activeFolder.parentId !== null;
+    const implicitRootDrop = !finalOverId && activeItem.parentId !== null;
 
     const isRootDrop = explicitRootDrop || implicitRootDrop;
 
@@ -74,21 +74,21 @@ export function useFolderDrag({
       return;
     }
 
-    // ルートへのドロップか、通常のフォルダへのドロップかで処理を分ける
-    let overFolder: FolderType | null = null;
+    // ルートへのドロップか、通常のアイテムへのドロップかで処理を分ける
+    let overItem: ItemType | null = null;
     if (!isRootDrop) {
-      overFolder = flattenedFolders.find((f) => f.id === finalOverId) || null;
-      if (!overFolder) {
+      overItem = flattenedItems.find((i) => i.id === finalOverId) || null;
+      if (!overItem) {
         return;
       }
     }
 
     // 新しい順序を計算
-    const { newParentId, reorderedSiblings } = calculateFolderOrder({
-      activeFolder,
-      overFolder,
+    const { newParentId, reorderedSiblings } = calculateItemOrder({
+      activeItem,
+      overItem,
       dropPosition,
-      flattenedFolders,
+      flattenedItems,
       insideTargetId: finalInsideTargetId,
     });
 
@@ -97,19 +97,19 @@ export function useFolderDrag({
       reorderedSiblings,
     });
 
-    const result = await reorderFolders({
-      folderId: active.id as string,
+    const result = await reorderItems({
+      itemId: active.id as string,
       newParentId,
       reorderedSiblings,
     });
 
     if (!result.success) {
-      toast.error(result.error || 'フォルダの移動に失敗しました');
+      toast.error(result.error || 'アイテムの移動に失敗しました');
     }
   };
 
   return {
-    flattenedFolders,
+    flattenedItems,
     handleDragEnd,
   };
 }

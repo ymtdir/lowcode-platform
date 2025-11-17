@@ -1,10 +1,10 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import type { Folder } from '../types';
+import type { Item } from '../types';
 
-export async function getFolderById(id: string): Promise<Folder | null> {
-  const folder = await prisma.folder.findUnique({
+export async function getItemById(id: string): Promise<Item | null> {
+  const item = await prisma.item.findUnique({
     where: { id },
     include: {
       createdBy: {
@@ -35,5 +35,5 @@ export async function getFolderById(id: string): Promise<Folder | null> {
     },
   });
 
-  return folder as Folder | null;
+  return item as Item | null;
 }

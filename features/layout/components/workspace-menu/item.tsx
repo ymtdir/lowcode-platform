@@ -13,39 +13,39 @@ import {
 } from '@/components/ui/sidebar';
 import { CreateItemButton } from './create-item-button';
 import { EditItemButton } from './edit-item-button';
-import type { Folder as FolderType } from '@/features/folder/types';
+import type { ItemType } from '@/features/item/types';
 
 type DropPosition = 'before' | 'after' | 'inside';
 
-type FolderItemProps = {
-  folder: FolderType;
+type ItemProps = {
+  item: ItemType;
   level?: number;
   overId?: string | null;
   dropPosition?: DropPosition;
   insideTargetId?: string | null;
   isUnderInsideTarget?: boolean;
-  activeFolder?: FolderType | null;
+  activeItem?: ItemType | null;
 };
 
-export function FolderItem({
-  folder,
+export function Item({
+  item,
   level = 0,
   overId,
   dropPosition,
   insideTargetId,
   isUnderInsideTarget = false,
-  activeFolder,
-}: FolderItemProps) {
+  activeItem,
+}: ItemProps) {
   const [isOpen, setIsOpen] = useState(true);
-  const hasChildren = folder.children && folder.children.length > 0;
-  const isOver = overId === folder.id;
+  const hasChildren = item.children && item.children.length > 0;
+  const isOver = overId === item.id;
 
-  const isInsideTarget = insideTargetId === folder.id;
+  const isInsideTarget = insideTargetId === item.id;
   const shouldHighlight = isInsideTarget || isUnderInsideTarget;
 
   // 同じ親を持つかチェック（青いラインを表示するかの判定用）
   const isSameParent =
-    activeFolder && isOver ? activeFolder.parentId === folder.parentId : false;
+    activeItem && isOver ? activeItem.parentId === item.parentId : false;
   const shouldShowLine = isOver && isSameParent && dropPosition !== 'inside';
 
   const {
@@ -54,18 +54,18 @@ export function FolderItem({
     setNodeRef: setDragRef,
     isDragging,
   } = useDraggable({
-    id: folder.id,
+    id: item.id,
     data: {
-      type: 'folder',
-      folder,
+      type: 'item',
+      item,
     },
   });
 
   const { setNodeRef: setDropRef } = useDroppable({
-    id: folder.id,
+    id: item.id,
     data: {
-      type: 'folder',
-      folder,
+      type: 'item',
+      item,
     },
   });
 
@@ -114,20 +114,20 @@ export function FolderItem({
                 }`}
               />
             </button>
-            <Link href={`/${folder.id}`} className="flex-1">
-              <span>{folder.name}</span>
+            <Link href={`/${item.id}`} className="flex-1">
+              <span>{item.name}</span>
             </Link>
-            <EditItemButton folderId={folder.id} folderName={folder.name} />
-            <CreateItemButton workspaceId={folder.id} />
+            <EditItemButton itemId={item.id} itemName={item.name} />
+            <CreateItemButton workspaceId={item.id} />
           </div>
         </SidebarMenuButton>
 
         {hasChildren && isOpen && (
           <SidebarMenuSub className="mr-0 pr-0">
-            {folder.children!.map((child) => (
-              <FolderItem
+            {item.children!.map((child: ItemType) => (
+              <Item
                 key={child.id}
-                folder={child}
+                item={child}
                 level={level + 1}
                 overId={overId}
                 dropPosition={dropPosition}
@@ -135,7 +135,7 @@ export function FolderItem({
                 isUnderInsideTarget={
                   shouldHighlight && dropPosition === 'inside'
                 }
-                activeFolder={activeFolder}
+                activeItem={activeItem}
               />
             ))}
           </SidebarMenuSub>
@@ -192,26 +192,26 @@ export function FolderItem({
               }`}
             />
           </button>
-          <Link href={`/${folder.id}`} className="flex-1">
-            <span>{folder.name}</span>
+          <Link href={`/${item.id}`} className="flex-1">
+            <span>{item.name}</span>
           </Link>
-          <EditItemButton folderId={folder.id} folderName={folder.name} />
-          <CreateItemButton workspaceId={folder.id} />
+          <EditItemButton itemId={item.id} itemName={item.name} />
+          <CreateItemButton workspaceId={item.id} />
         </div>
       </SidebarMenuSubButton>
 
       {hasChildren && isOpen && (
         <SidebarMenuSub className="mr-0 pr-0">
-          {folder.children!.map((child) => (
-            <FolderItem
+          {item.children!.map((child) => (
+            <Item
               key={child.id}
-              folder={child}
+              item={child}
               level={level + 1}
               overId={overId}
               dropPosition={dropPosition}
               insideTargetId={insideTargetId}
               isUnderInsideTarget={shouldHighlight && dropPosition === 'inside'}
-              activeFolder={activeFolder}
+              activeItem={activeItem}
             />
           ))}
         </SidebarMenuSub>

@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { createFolder } from '@/features/folder/api/create-folder';
+import { createItem } from '@/features/item/api/create-item';
 
 type CreateFolderItemProps = {
   workspaceId: string;
@@ -31,7 +31,7 @@ function CreateFolderContent({
   workspaceId,
   onClose,
 }: CreateFolderContentProps) {
-  const [state, formAction] = useActionState(createFolder, {});
+  const [state, formAction] = useActionState(createItem, {});
 
   // 成功・エラー時の処理
   useEffect(() => {

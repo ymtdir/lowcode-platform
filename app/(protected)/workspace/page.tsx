@@ -1,10 +1,10 @@
 import Link from 'next/link';
-import { getFolders } from '@/features/folder/api';
+import { getItems } from '@/features/item/api';
 
 export const dynamic = 'force-dynamic';
 
 export default async function WorkspacePage() {
-  const folders = await getFolders();
+  const folders = await getItems();
 
   return (
     <div className="container mx-auto p-6">

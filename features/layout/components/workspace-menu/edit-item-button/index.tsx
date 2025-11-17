@@ -7,8 +7,8 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { RenameFolderItem } from './rename-folder-item';
-import { DeleteFolderItem } from './delete-folder-item';
+import { RenameFolderItem } from './rename-item-button';
+import { DeleteFolderItem } from './delete-item-button';
 
 type EditItemButtonProps = {
   folderId: string;

@@ -3,11 +3,11 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 
-export async function deleteFolder(folderId: string) {
+export async function deleteItem(itemId: string) {
   try {
-    // フォルダを削除（Cascadeで子フォルダも削除される）
-    await prisma.folder.delete({
-      where: { id: folderId },
+    // アイテムを削除（Cascadeで子アイテムも削除される）
+    await prisma.item.delete({
+      where: { id: itemId },
     });
 
     // キャッシュを再検証
@@ -18,10 +18,10 @@ export async function deleteFolder(folderId: string) {
       success: true,
     };
   } catch (error) {
-    console.error('フォルダ削除エラー:', error);
+    console.error('アイテム削除エラー:', error);
     return {
       success: false,
-      error: 'フォルダの削除に失敗しました',
+      error: 'アイテムの削除に失敗しました',
     };
   }
 }

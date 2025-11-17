@@ -1,35 +1,35 @@
 'use client';
 
-import type { Folder as FolderType } from '@/features/folder/types';
-import { FolderItem } from './folder-item';
+import type { Item as ItemType } from '@/features/item/types';
+import { Item } from './item';
 
 type DropPosition = 'before' | 'after' | 'inside';
 
 type WorkspaceItemsProps = {
-  folders: FolderType[];
+  items: ItemType[];
   overId: string | null;
   dropPosition: DropPosition;
   insideTargetId: string | null;
-  activeFolder: FolderType | null;
+  activeItem: ItemType | null;
 };
 
 export function WorkspaceItems({
-  folders,
+  items,
   overId,
   dropPosition,
   insideTargetId,
-  activeFolder,
+  activeItem,
 }: WorkspaceItemsProps) {
   return (
     <>
-      {folders.map((folder) => (
-        <FolderItem
-          key={folder.id}
-          folder={folder}
+      {items.map((item) => (
+        <Item
+          key={item.id}
+          item={item}
           overId={overId}
           dropPosition={dropPosition}
           insideTargetId={insideTargetId}
-          activeFolder={activeFolder}
+          activeItem={activeItem}
         />
       ))}
     </>

@@ -7,7 +7,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { CreateFolderItem } from './create-folder-item';
+import { CreateFolderItem } from './create-folder-button';
 import { CreateTableItem } from './create-table-item';
 
 type CreateItemButtonProps = {

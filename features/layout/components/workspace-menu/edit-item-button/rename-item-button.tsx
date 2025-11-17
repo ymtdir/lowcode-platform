@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { renameFolder } from '@/features/folder/api';
+import { renameItem } from '@/features/item/api';
 
 type RenameFolderItemProps = {
   folderId: string;
@@ -36,7 +36,7 @@ function RenameContent({ folderId, currentName, onClose }: RenameContentProps) {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const result = await renameFolder(folderId, name);
+    const result = await renameItem(folderId, name);
 
     setIsSubmitting(false);
 

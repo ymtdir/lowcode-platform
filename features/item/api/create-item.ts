@@ -9,7 +9,7 @@ type FormState = {
   success?: boolean;
 };
 
-export async function createFolder(
+export async function createItem(
   _prevState: FormState,
   formData: FormData
 ): Promise<FormState> {
@@ -49,20 +49,20 @@ export async function createFolder(
   }
 
   try {
-    // 同じ階層に同じ名前のフォルダが存在しないかチェック
-    const existingFolder = await prisma.folder.findFirst({
+    // 同じ階層に同じ名前のアイテムが存在しないかチェック
+    const existingItem = await prisma.item.findFirst({
       where: {
         name: name.trim(),
         parentId: parentId || null,
       },
     });
 
-    if (existingFolder) {
+    if (existingItem) {
       return { error: 'この名前のワークスペースは既に存在します' };
     }
 
     // 同じ親の最大order値を取得
-    const maxOrderFolder = await prisma.folder.findFirst({
+    const maxOrderItem = await prisma.item.findFirst({
       where: {
         parentId: parentId || null,
       },
@@ -74,9 +74,9 @@ export async function createFolder(
       },
     });
 
-    const newOrder = maxOrderFolder ? maxOrderFolder.order + 1 : 0;
+    const newOrder = maxOrderItem ? maxOrderItem.order + 1 : 0;
 
-    await prisma.folder.create({
+    await prisma.item.create({
       data: {
         name: name.trim(),
         parentId: parentId || null,

@@ -6,7 +6,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import type { Folder as FolderType } from '@/features/folder/types';
+import type { Item as ItemType } from '@/features/item/types';
 import { WORKSPACE_ROOT_ID } from '@/features/layout/utils/collision-detection';
 
 type DropPosition = 'before' | 'after' | 'inside';
@@ -15,20 +15,20 @@ type DropPosition = 'before' | 'after' | 'inside';
  * workspace-menu固有のドラッグUI状態管理
  * ホバー時の表示制御など、UI関連のロジックを扱う
  */
-export function useMenuDrag(folders: FolderType[]) {
+export function useMenuDrag(items: ItemType[]) {
   // フラットなフォルダリストを作成
-  const flattenedFolders = useMemo(() => {
-    const flatten = (folders: FolderType[]): FolderType[] => {
-      return folders.reduce((acc, folder) => {
-        acc.push(folder);
-        if (folder.children && folder.children.length > 0) {
-          acc.push(...flatten(folder.children));
+  const flattenedItems = useMemo(() => {
+    const flatten = (items: ItemType[]): ItemType[] => {
+      return items.reduce((acc, item) => {
+        acc.push(item);
+        if (item.children && item.children.length > 0) {
+          acc.push(...flatten(item.children));
         }
         return acc;
-      }, [] as FolderType[]);
+      }, [] as ItemType[]);
     };
-    return flatten(folders);
-  }, [folders]);
+    return flatten(items);
+  }, [items]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
   const [dropPosition, setDropPosition] = useState<DropPosition>('after');
@@ -74,7 +74,7 @@ export function useMenuDrag(folders: FolderType[]) {
     console.log('🔍 handleDragOver:', overIdString);
     setOverId(overIdString);
 
-    const activeFolder = flattenedFolders.find((f) => f.id === active.id);
+    const activeItem = flattenedItems.find((i) => i.id === active.id);
 
     if (
       overIdString === WORKSPACE_ROOT_ID ||
@@ -96,21 +96,21 @@ export function useMenuDrag(folders: FolderType[]) {
       return;
     }
 
-    const overFolder = flattenedFolders.find((f) => f.id === overIdString);
+    const overItem = flattenedItems.find((i) => i.id === overIdString);
 
-    if (!activeFolder || !overFolder) return;
+    if (!activeItem || !overItem) return;
 
-    const isSameParent = activeFolder.parentId === overFolder.parentId;
+    const isSameParent = activeItem.parentId === overItem.parentId;
 
     const isDescendantOfInsideTarget = (
-      folderId: string,
+      itemId: string,
       targetId: string | null
     ): boolean => {
       if (!targetId) return false;
-      if (folderId === targetId) return true;
-      const folder = flattenedFolders.find((f) => f.id === folderId);
-      if (!folder || !folder.parentId) return false;
-      return isDescendantOfInsideTarget(folder.parentId, targetId);
+      if (itemId === targetId) return true;
+      const item = flattenedItems.find((i) => i.id === itemId);
+      if (!item || !item.parentId) return false;
+      return isDescendantOfInsideTarget(item.parentId, targetId);
     };
 
     if (
@@ -169,8 +169,8 @@ export function useMenuDrag(folders: FolderType[]) {
     setInsideTargetId(null);
   };
 
-  const activeFolder = activeId
-    ? (flattenedFolders.find((f) => f.id === activeId) ?? null)
+  const activeItem = activeId
+    ? (flattenedItems.find((i) => i.id === activeId) ?? null)
     : null;
 
   return {
@@ -179,7 +179,7 @@ export function useMenuDrag(folders: FolderType[]) {
     overId,
     dropPosition,
     insideTargetId,
-    activeFolder,
+    activeItem,
     handleDragStart,
     handleDragOver,
     handleDragCancel,
