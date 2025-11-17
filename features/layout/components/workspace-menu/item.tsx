@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/sidebar';
 import { CreateItemButton } from './create-item-button';
 import { EditItemButton } from './edit-item-button';
-import type { ItemType } from '@/features/item/types';
+import type { Item as ItemType } from '@/features/item/types';
 
 type DropPosition = 'before' | 'after' | 'inside';
 

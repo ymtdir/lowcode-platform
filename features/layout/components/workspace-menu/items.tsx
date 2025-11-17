@@ -3,7 +3,7 @@
 import { DndContext, DragOverlay, useDroppable } from '@dnd-kit/core';
 import Link from 'next/link';
 import { SidebarGroupLabel, SidebarMenu } from '@/components/ui/sidebar';
-import type { ItemType } from '@/features/item/types';
+import type { Item as ItemType } from '@/features/item/types';
 import { WorkspaceItems } from './workspace-items';
 import { Folder } from 'lucide-react';
 import { CreateItemButton } from './create-item-button';
