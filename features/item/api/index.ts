@@ -1,4 +1,5 @@
 export * from './create-item';
+export * from './create-table';
 export * from './get-items';
 export * from './get-item-by-id';
 export * from './delete-item';

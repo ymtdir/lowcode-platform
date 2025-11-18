@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -28,9 +28,9 @@ model Group {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  parent      Group?        @relation("GroupHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
-  children    Group[]       @relation("GroupHierarchy")
-  members     GroupMember[]
+  parent   Group?        @relation("GroupHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children Group[]       @relation("GroupHierarchy")
+  members  GroupMember[]
 
   @@index([parentId])
 }
@@ -55,6 +55,7 @@ model Item {
   name        String
   parentId    String?
   order       Int      @default(0)
+  meta        Json?
   createdById String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -63,7 +64,6 @@ model Item {
   children  Item[] @relation("ItemHierarchy")
   createdBy User   @relation(fields: [createdById], references: [id])
 
-  @@unique([name, parentId])
   @@index([parentId])
   @@index([createdById])
   @@index([parentId, order])
@@ -77,4 +77,5 @@ enum UserRole {
 
 enum ItemType {
   FOLDER
+  TABLE
 }

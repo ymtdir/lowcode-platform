@@ -7,8 +7,8 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { CreateFolderItem } from './create-folder-button';
-import { CreateTableItem } from './create-table-item';
+import { CreateFolderButton } from './create-folder-button';
+import { CreateTableButton } from './create-table-button';
 
 type CreateItemButtonProps = {
   workspaceId: string;
@@ -32,8 +32,8 @@ export function CreateItemButton({ workspaceId }: CreateItemButtonProps) {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" sideOffset={4}>
-        <CreateFolderItem workspaceId={workspaceId} onOpenChange={setOpen} />
-        <CreateTableItem workspaceId={workspaceId} onOpenChange={setOpen} />
+        <CreateFolderButton workspaceId={workspaceId} onOpenChange={setOpen} />
+        <CreateTableButton workspaceId={workspaceId} onOpenChange={setOpen} />
       </DropdownMenuContent>
     </DropdownMenu>
   );

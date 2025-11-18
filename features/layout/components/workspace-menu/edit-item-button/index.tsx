@@ -11,11 +11,11 @@ import { RenameFolderItem } from './rename-item-button';
 import { DeleteFolderItem } from './delete-item-button';
 
 type EditItemButtonProps = {
-  folderId: string;
-  folderName: string;
+  itemId: string;
+  itemName: string;
 };
 
-export function EditItemButton({ folderId, folderName }: EditItemButtonProps) {
+export function EditItemButton({ itemId, itemName }: EditItemButtonProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -34,13 +34,13 @@ export function EditItemButton({ folderId, folderName }: EditItemButtonProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" sideOffset={4}>
         <RenameFolderItem
-          folderId={folderId}
-          currentName={folderName}
+          folderId={itemId}
+          currentName={itemName}
           onOpenChange={setOpen}
         />
         <DeleteFolderItem
-          folderId={folderId}
-          folderName={folderName}
+          folderId={itemId}
+          folderName={itemName}
           onOpenChange={setOpen}
         />
       </DropdownMenuContent>

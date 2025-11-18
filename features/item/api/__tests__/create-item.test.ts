@@ -63,10 +63,12 @@ describe('createItem', () => {
     expect(result).toEqual({ success: true });
     expect(prisma.item.create).toHaveBeenCalledWith({
       data: {
+        type: 'FOLDER',
         name: 'テストアイテム',
         parentId: null,
         createdById: 'user-1',
         order: 0,
+        meta: null,
       },
     });
   });
@@ -88,9 +90,7 @@ describe('createItem', () => {
       id: 'user-1',
     });
 
-    (prisma.item.findFirst as jest.Mock)
-      .mockResolvedValueOnce(null) // 既存アイテムチェック
-      .mockResolvedValueOnce({ order: 2 }); // 最大order値
+    (prisma.item.findFirst as jest.Mock).mockResolvedValue({ order: 2 }); // 最大order値
 
     (prisma.item.create as jest.Mock).mockResolvedValue({
       id: 'folder-2',
@@ -105,10 +105,12 @@ describe('createItem', () => {
     expect(result).toEqual({ success: true });
     expect(prisma.item.create).toHaveBeenCalledWith({
       data: {
+        type: 'FOLDER',
         name: '子アイテム',
         parentId: 'parent-1',
         createdById: 'user-1',
         order: 3,
+        meta: null,
       },
     });
   });
@@ -152,7 +154,7 @@ describe('createItem', () => {
     const result = await createItem({}, formData);
 
     expect(result).toEqual({
-      error: 'ワークスペース名を入力してください',
+      error: 'アイテム名を入力してください',
     });
     expect(prisma.item.create).not.toHaveBeenCalled();
   });
@@ -199,17 +201,16 @@ describe('createItem', () => {
       id: 'user-1',
     });
 
-    (prisma.item.findFirst as jest.Mock).mockResolvedValue({
-      id: 'existing-folder',
+    (prisma.item.findFirst as jest.Mock).mockResolvedValue({ order: 0 });
+
+    (prisma.item.create as jest.Mock).mockResolvedValue({
+      id: 'new-item',
       name: '既存アイテム',
     });
 
     const result = await createItem({}, formData);
 
-    expect(result).toEqual({
-      error: 'この名前のワークスペースは既に存在します',
-    });
-    expect(prisma.item.create).not.toHaveBeenCalled();
+    expect(result).toEqual({ success: true });
   });
 
   it('データベースエラーが発生した場合はエラーを返す', async () => {
@@ -238,7 +239,7 @@ describe('createItem', () => {
     const result = await createItem({}, formData);
 
     expect(result).toEqual({
-      error: 'ワークスペースの作成に失敗しました',
+      error: 'アイテムの作成に失敗しました',
     });
   });
 });

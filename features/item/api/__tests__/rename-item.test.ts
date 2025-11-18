@@ -98,7 +98,7 @@ describe('renameItem', () => {
     expect(prisma.item.update).not.toHaveBeenCalled();
   });
 
-  it('同じ名前のアイテムが既に存在する場合はエラーを返す', async () => {
+  it('同じ名前のアイテムが既に存在する場合でも名前を変更できる', async () => {
     const itemId = 'folder-1';
     const newName = '既存アイテム';
 
@@ -107,17 +107,18 @@ describe('renameItem', () => {
       parentId: null,
     });
 
-    (prisma.item.findFirst as jest.Mock).mockResolvedValue({
-      id: 'folder-2',
-      name: '既存アイテム',
+    (prisma.item.update as jest.Mock).mockResolvedValue({
+      id: itemId,
+      name: newName,
     });
 
     const result = await renameItem(itemId, newName);
 
-    expect(result).toEqual({
-      error: 'この名前のアイテムは既に存在します',
+    expect(result).toEqual({ success: true });
+    expect(prisma.item.update).toHaveBeenCalledWith({
+      where: { id: itemId },
+      data: { name: newName },
     });
-    expect(prisma.item.update).not.toHaveBeenCalled();
   });
 
   it('データベースエラーが発生した場合はエラーを返す', async () => {

@@ -8,6 +8,7 @@ import {
 } from '@dnd-kit/core';
 import type { Item as ItemType } from '@/features/item/types';
 import { WORKSPACE_ROOT_ID } from '@/features/layout/utils/collision-detection';
+import { ITEM_CONFIGS } from '@/features/item/constants';
 
 type DropPosition = 'before' | 'after' | 'inside';
 
@@ -99,6 +100,13 @@ export function useMenuDrag(items: ItemType[]) {
     const overItem = flattenedItems.find((i) => i.id === overIdString);
 
     if (!activeItem || !overItem) return;
+
+    // Tableはドロップ不可（子要素を持てない）
+    if (!ITEM_CONFIGS[overItem.type].droppable) {
+      setDropPosition('after'); // デフォルトに戻す
+      setInsideTargetId(null);
+      return;
+    }
 
     const isSameParent = activeItem.parentId === overItem.parentId;
 

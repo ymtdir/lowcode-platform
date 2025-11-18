@@ -4,8 +4,7 @@ import { DndContext, DragOverlay, useDroppable } from '@dnd-kit/core';
 import Link from 'next/link';
 import { SidebarGroupLabel, SidebarMenu } from '@/components/ui/sidebar';
 import type { Item as ItemType } from '@/features/item/types';
-import { WorkspaceItems } from './workspace-items';
-import { Folder } from 'lucide-react';
+import { Item } from './item';
 import { CreateItemButton } from './create-item-button';
 import { useMenuDrag } from './use-menu-drag';
 import { useItemDrag } from '@/features/layout/hooks/use-item-drag';
@@ -13,6 +12,7 @@ import {
   customCollisionDetection,
   WORKSPACE_ROOT_ID,
 } from '@/features/layout/utils/collision-detection';
+import { ITEM_CONFIGS } from '@/features/item/constants';
 
 type WorkspaceItemsWrapperProps = {
   items: ItemType[];
@@ -114,18 +114,24 @@ export function WorkspaceItemsWrapper({ items }: WorkspaceItemsWrapperProps) {
         </div>
       </SidebarGroupLabel>
       <SidebarMenu ref={setWorkspaceMenuRef} className="min-h-[200px]">
-        <WorkspaceItems
-          items={items}
-          overId={overId}
-          dropPosition={dropPosition}
-          insideTargetId={insideTargetId}
-          activeItem={activeItem}
-        />
+        {items.map((item) => (
+          <Item
+            key={item.id}
+            item={item}
+            overId={overId}
+            dropPosition={dropPosition}
+            insideTargetId={insideTargetId}
+            activeItem={activeItem}
+          />
+        ))}
       </SidebarMenu>
       <DragOverlay>
         {activeItem ? (
           <div className="flex items-center gap-2 bg-sidebar-accent text-sidebar-accent-foreground px-2 py-1.5 rounded-md shadow-lg">
-            <Folder className="size-4" />
+            {(() => {
+              const Icon = ITEM_CONFIGS[activeItem.type].icon;
+              return <Icon className="size-4" />;
+            })()}
             <span className="text-sm font-medium">{activeItem.name}</span>
           </div>
         ) : null}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronRight, Folder } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import {
@@ -14,6 +14,7 @@ import {
 import { CreateItemButton } from './create-item-button';
 import { EditItemButton } from './edit-item-button';
 import type { Item as ItemType } from '@/features/item/types';
+import { ITEM_CONFIGS } from '@/features/item/constants';
 
 type DropPosition = 'before' | 'after' | 'inside';
 
@@ -37,7 +38,10 @@ export function Item({
   activeItem,
 }: ItemProps) {
   const [isOpen, setIsOpen] = useState(true);
-  const hasChildren = item.children && item.children.length > 0;
+  const config = ITEM_CONFIGS[item.type];
+  const Icon = config.icon;
+  const hasChildren =
+    config.canHaveChildren && item.children && item.children.length > 0;
   const isOver = overId === item.id;
 
   const isInsideTarget = insideTargetId === item.id;
@@ -107,18 +111,26 @@ export function Item({
               }}
               className="flex items-center justify-center shrink-0 rounded hover:bg-primary/10"
             >
-              <Folder className="size-4 group-hover/item:hidden" />
-              <ChevronRight
-                className={`size-4 hidden group-hover/item:block transition-transform duration-200 ${
-                  isOpen ? 'rotate-90' : ''
-                }`}
+              <Icon
+                className={
+                  config.showChevron
+                    ? 'size-4 group-hover/item:hidden'
+                    : 'size-4'
+                }
               />
+              {config.showChevron && (
+                <ChevronRight
+                  className={`size-4 hidden group-hover/item:block transition-transform duration-200 ${
+                    isOpen ? 'rotate-90' : ''
+                  }`}
+                />
+              )}
             </button>
             <Link href={`/${item.id}`} className="flex-1">
               <span>{item.name}</span>
             </Link>
             <EditItemButton itemId={item.id} itemName={item.name} />
-            <CreateItemButton workspaceId={item.id} />
+            {config.showAddButton && <CreateItemButton workspaceId={item.id} />}
           </div>
         </SidebarMenuButton>
 
@@ -185,18 +197,24 @@ export function Item({
             }}
             className="flex items-center justify-center shrink-0 rounded hover:bg-primary/10"
           >
-            <Folder className="size-4 group-hover/item:hidden" />
-            <ChevronRight
-              className={`size-4 hidden group-hover/item:block transition-transform duration-200 ${
-                isOpen ? 'rotate-90' : ''
-              }`}
+            <Icon
+              className={
+                config.showChevron ? 'size-4 group-hover/item:hidden' : 'size-4'
+              }
             />
+            {config.showChevron && (
+              <ChevronRight
+                className={`size-4 hidden group-hover/item:block transition-transform duration-200 ${
+                  isOpen ? 'rotate-90' : ''
+                }`}
+              />
+            )}
           </button>
           <Link href={`/${item.id}`} className="flex-1">
             <span>{item.name}</span>
           </Link>
           <EditItemButton itemId={item.id} itemName={item.name} />
-          <CreateItemButton workspaceId={item.id} />
+          {config.showAddButton && <CreateItemButton workspaceId={item.id} />}
         </div>
       </SidebarMenuSubButton>
 

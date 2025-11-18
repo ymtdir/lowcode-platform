@@ -32,21 +32,6 @@ export async function renameItem(itemId: string, newName: string) {
       };
     }
 
-    // 同じ階層に同じ名前のアイテムが存在しないかチェック
-    const existingItem = await prisma.item.findFirst({
-      where: {
-        name: newName.trim(),
-        parentId: item.parentId,
-        id: { not: itemId }, // 自分自身は除外
-      },
-    });
-
-    if (existingItem) {
-      return {
-        error: 'この名前のアイテムは既に存在します',
-      };
-    }
-
     // アイテム名を更新
     await prisma.item.update({
       where: { id: itemId },
