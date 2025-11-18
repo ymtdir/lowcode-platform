@@ -1,96 +1,96 @@
-import type { Folder as FolderType } from '@/features/folder/types';
+import type { Item as ItemType } from '@/features/item/types';
 
 type DropPosition = 'before' | 'after' | 'inside';
 
-type CalculateFolderOrderParams = {
-  activeFolder: FolderType;
-  overFolder: FolderType | null;
+type CalculateItemOrderParams = {
+  activeItem: ItemType;
+  overItem: ItemType | null;
   dropPosition: DropPosition;
-  flattenedFolders: FolderType[];
+  flattenedItems: ItemType[];
   insideTargetId: string | null;
 };
 
-type CalculateFolderOrderResult = {
+type CalculateItemOrderResult = {
   newParentId: string | null;
   reorderedSiblings: Array<{ id: string; order: number }>;
 };
 
-//兄弟フォルダを取得してソート
+//兄弟アイテムを取得してソート
 function getSiblings(
-  flattenedFolders: FolderType[],
+  flattenedItems: ItemType[],
   parentId: string | null,
   excludeId?: string
-): FolderType[] {
-  return flattenedFolders
+): ItemType[] {
+  return flattenedItems
     .filter((f) => f.parentId === parentId && f.id !== excludeId)
     .sort((a, b) => a.order - b.order);
 }
 
-//フォルダのリストから順序付きの配列を生成
+//アイテムのリストから順序付きの配列を生成
 function createReorderedSiblings(
-  folders: FolderType[]
+  items: ItemType[]
 ): Array<{ id: string; order: number }> {
-  return folders.map((f, index) => ({
+  return items.map((f, index) => ({
     id: f.id,
     order: index,
   }));
 }
 
-// フォルダのドラッグ&ドロップ時の新しい順序を計算する
-export function calculateFolderOrder({
-  activeFolder,
-  overFolder,
+// アイテムのドラッグ&ドロップ時の新しい順序を計算する
+export function calculateItemOrder({
+  activeItem,
+  overItem,
   dropPosition,
-  flattenedFolders,
+  flattenedItems,
   insideTargetId,
-}: CalculateFolderOrderParams): CalculateFolderOrderResult {
+}: CalculateItemOrderParams): CalculateItemOrderResult {
   // ルートへのドロップ
-  if (!overFolder) {
-    const rootFolders = getSiblings(flattenedFolders, null, activeFolder.id);
+  if (!overItem) {
+    const rootItems = getSiblings(flattenedItems, null, activeItem.id);
 
     return {
       newParentId: null,
       reorderedSiblings: [
-        ...createReorderedSiblings(rootFolders),
-        { id: activeFolder.id, order: rootFolders.length },
+        ...createReorderedSiblings(rootItems),
+        { id: activeItem.id, order: rootItems.length },
       ],
     };
   }
 
-  // フォルダ内へのドロップ
+  // アイテム内へのドロップ
   if (dropPosition === 'inside') {
-    const newParentId = insideTargetId || overFolder.id;
-    const newSiblings = getSiblings(flattenedFolders, newParentId);
+    const newParentId = insideTargetId || overItem.id;
+    const newSiblings = getSiblings(flattenedItems, newParentId);
 
     return {
       newParentId,
       reorderedSiblings: [
         ...createReorderedSiblings(newSiblings),
-        { id: activeFolder.id, order: newSiblings.length },
+        { id: activeItem.id, order: newSiblings.length },
       ],
     };
   }
 
   // before/after でのドロップ
-  const newParentId = overFolder.parentId;
-  const isSameParent = activeFolder.parentId === newParentId;
+  const newParentId = overItem.parentId;
+  const isSameParent = activeItem.parentId === newParentId;
 
   if (isSameParent) {
     // 同じ親内での移動
     return calculateSameParentReorder({
-      activeFolder,
-      overFolder,
+      activeItem,
+      overItem,
       dropPosition,
-      flattenedFolders,
+      flattenedItems,
       newParentId,
     });
   } else {
     // 異なる親への移動
     return calculateDifferentParentReorder({
-      activeFolder,
-      overFolder,
+      activeItem,
+      overItem,
       dropPosition,
-      flattenedFolders,
+      flattenedItems,
       newParentId,
     });
   }
@@ -98,23 +98,23 @@ export function calculateFolderOrder({
 
 // 同じ親内での並び替え
 function calculateSameParentReorder({
-  activeFolder,
-  overFolder,
+  activeItem,
+  overItem,
   dropPosition,
-  flattenedFolders,
+  flattenedItems,
   newParentId,
 }: {
-  activeFolder: FolderType;
-  overFolder: FolderType;
+  activeItem: ItemType;
+  overItem: ItemType;
   dropPosition: DropPosition;
-  flattenedFolders: FolderType[];
+  flattenedItems: ItemType[];
   newParentId: string | null;
-}): CalculateFolderOrderResult {
-  const siblings = getSiblings(flattenedFolders, newParentId);
+}): CalculateItemOrderResult {
+  const siblings = getSiblings(flattenedItems, newParentId);
 
   // 配列操作で並び替え
-  const activeIndex = siblings.findIndex((f) => f.id === activeFolder.id);
-  const overIndex = siblings.findIndex((f) => f.id === overFolder.id);
+  const activeIndex = siblings.findIndex((f) => f.id === activeItem.id);
+  const overIndex = siblings.findIndex((f) => f.id === overItem.id);
 
   const reordered = [...siblings];
   const [moved] = reordered.splice(activeIndex, 1);
@@ -136,21 +136,21 @@ function calculateSameParentReorder({
 
 // 異なる親への移動
 function calculateDifferentParentReorder({
-  activeFolder,
-  overFolder,
+  activeItem,
+  overItem,
   dropPosition,
-  flattenedFolders,
+  flattenedItems,
   newParentId,
 }: {
-  activeFolder: FolderType;
-  overFolder: FolderType;
+  activeItem: ItemType;
+  overItem: ItemType;
   dropPosition: DropPosition;
-  flattenedFolders: FolderType[];
+  flattenedItems: ItemType[];
   newParentId: string | null;
-}): CalculateFolderOrderResult {
-  const newSiblings = getSiblings(flattenedFolders, newParentId);
+}): CalculateItemOrderResult {
+  const newSiblings = getSiblings(flattenedItems, newParentId);
 
-  const overIndex = newSiblings.findIndex((f) => f.id === overFolder.id);
+  const overIndex = newSiblings.findIndex((f) => f.id === overItem.id);
 
   let insertIndex: number;
   if (dropPosition === 'before') {
@@ -159,8 +159,8 @@ function calculateDifferentParentReorder({
     insertIndex = overIndex + 1;
   }
 
-  // 挿入位置にアクティブフォルダを追加
-  newSiblings.splice(insertIndex, 0, activeFolder);
+  // 挿入位置にアクティブアイテムを追加
+  newSiblings.splice(insertIndex, 0, activeItem);
 
   return {
     newParentId,

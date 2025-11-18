@@ -3,38 +3,38 @@
 import { DndContext, DragOverlay, useDroppable } from '@dnd-kit/core';
 import Link from 'next/link';
 import { SidebarGroupLabel, SidebarMenu } from '@/components/ui/sidebar';
-import type { Folder as FolderType } from '@/features/folder/types';
-import { WorkspaceItems } from './workspace-items';
-import { Folder } from 'lucide-react';
+import type { Item as ItemType } from '@/features/item/types';
+import { Item } from './item';
 import { CreateItemButton } from './create-item-button';
 import { useMenuDrag } from './use-menu-drag';
-import { useFolderDrag } from '@/features/layout/hooks/use-folder-drag';
+import { useItemDrag } from '@/features/layout/hooks/use-item-drag';
 import {
   customCollisionDetection,
   WORKSPACE_ROOT_ID,
 } from '@/features/layout/utils/collision-detection';
+import { ITEM_CONFIGS } from '@/features/item/constants';
 
 type WorkspaceItemsWrapperProps = {
-  folders: FolderType[];
+  items: ItemType[];
 };
 
-export function WorkspaceItemsWrapper({ folders }: WorkspaceItemsWrapperProps) {
+export function WorkspaceItemsWrapper({ items }: WorkspaceItemsWrapperProps) {
   // メニュー固有のUI状態管理
   const {
     sensors,
     overId,
     dropPosition,
     insideTargetId,
-    activeFolder,
+    activeItem,
     handleDragStart,
     handleDragOver,
     handleDragCancel,
     clearDragState,
-  } = useMenuDrag(folders);
+  } = useMenuDrag(items);
 
   // 汎用的なドラッグロジック（現在の状態を渡す）
-  const { handleDragEnd: handleFolderDragEnd } = useFolderDrag({
-    folders,
+  const { handleDragEnd: handleItemDragEnd } = useItemDrag({
+    items,
     insideTargetId,
     overId,
     dropPosition,
@@ -42,9 +42,9 @@ export function WorkspaceItemsWrapper({ folders }: WorkspaceItemsWrapperProps) {
 
   // ドラッグ終了時の処理
   const handleDragEnd = async (
-    event: Parameters<typeof handleFolderDragEnd>[0]
+    event: Parameters<typeof handleItemDragEnd>[0]
   ) => {
-    await handleFolderDragEnd(event);
+    await handleItemDragEnd(event);
     clearDragState();
   };
 
@@ -66,7 +66,7 @@ export function WorkspaceItemsWrapper({ folders }: WorkspaceItemsWrapperProps) {
     (overId === WORKSPACE_ROOT_ID || overId === 'workspace-menu') &&
     dropPosition === 'inside';
 
-  if (folders.length === 0) {
+  if (items.length === 0) {
     return (
       <>
         <SidebarGroupLabel
@@ -114,19 +114,25 @@ export function WorkspaceItemsWrapper({ folders }: WorkspaceItemsWrapperProps) {
         </div>
       </SidebarGroupLabel>
       <SidebarMenu ref={setWorkspaceMenuRef} className="min-h-[200px]">
-        <WorkspaceItems
-          folders={folders}
-          overId={overId}
-          dropPosition={dropPosition}
-          insideTargetId={insideTargetId}
-          activeFolder={activeFolder}
-        />
+        {items.map((item) => (
+          <Item
+            key={item.id}
+            item={item}
+            overId={overId}
+            dropPosition={dropPosition}
+            insideTargetId={insideTargetId}
+            activeItem={activeItem}
+          />
+        ))}
       </SidebarMenu>
       <DragOverlay>
-        {activeFolder ? (
+        {activeItem ? (
           <div className="flex items-center gap-2 bg-sidebar-accent text-sidebar-accent-foreground px-2 py-1.5 rounded-md shadow-lg">
-            <Folder className="size-4" />
-            <span className="text-sm font-medium">{activeFolder.name}</span>
+            {(() => {
+              const Icon = ITEM_CONFIGS[activeItem.type].icon;
+              return <Icon className="size-4" />;
+            })()}
+            <span className="text-sm font-medium">{activeItem.name}</span>
           </div>
         ) : null}
       </DragOverlay>

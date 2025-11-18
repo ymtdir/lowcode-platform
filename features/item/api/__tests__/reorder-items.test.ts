@@ -1,4 +1,4 @@
-import { reorderFolders } from '../reorder-folders';
+import { reorderItems } from '../reorder-items';
 
 // revalidatePathをモック化
 jest.mock('next/cache', () => ({
@@ -8,7 +8,7 @@ jest.mock('next/cache', () => ({
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    folder: {
+    item: {
       findUnique: jest.fn(),
       update: jest.fn(),
     },
@@ -18,31 +18,31 @@ jest.mock('@/lib/prisma', () => ({
 
 import { prisma } from '@/lib/prisma';
 
-describe('reorderFolders', () => {
+describe('reorderItems', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('フォルダが見つからない場合はエラーを返す', async () => {
+  it('アイテムが見つからない場合はエラーを返す', async () => {
     const input = {
-      folderId: 'non-existent',
+      itemId: 'non-existent',
       newParentId: null,
       reorderedSiblings: [],
     };
 
-    (prisma.folder.findUnique as jest.Mock).mockResolvedValue(null);
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue(null);
 
-    const result = await reorderFolders(input);
+    const result = await reorderItems(input);
 
     expect(result).toEqual({
       success: false,
-      error: 'フォルダが見つかりません',
+      error: 'アイテムが見つかりません',
     });
   });
 
-  it('同じ親内でフォルダの順序を変更できる', async () => {
+  it('同じ親内でアイテムの順序を変更できる', async () => {
     const input = {
-      folderId: 'folder-1',
+      itemId: 'folder-1',
       newParentId: null,
       reorderedSiblings: [
         { id: 'folder-2', order: 0 },
@@ -51,26 +51,26 @@ describe('reorderFolders', () => {
       ],
     };
 
-    (prisma.folder.findUnique as jest.Mock).mockResolvedValue({
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({
       id: 'folder-1',
-      name: 'フォルダ1',
+      name: 'アイテム1',
       parentId: null,
       children: [],
     });
 
     (prisma.$transaction as jest.Mock).mockImplementation(async (callback) => {
       const tx = {
-        folder: {
+        item: {
           update: jest.fn().mockResolvedValue({}),
         },
       };
       return callback(tx);
     });
 
-    const result = await reorderFolders(input);
+    const result = await reorderItems(input);
 
     expect(result).toEqual({ success: true });
-    expect(prisma.folder.findUnique).toHaveBeenCalledWith({
+    expect(prisma.item.findUnique).toHaveBeenCalledWith({
       where: { id: 'folder-1' },
       include: {
         children: {
@@ -82,36 +82,36 @@ describe('reorderFolders', () => {
 
   it('自分自身を親にしようとした場合はエラーを返す', async () => {
     const input = {
-      folderId: 'folder-1',
+      itemId: 'folder-1',
       newParentId: 'folder-1',
       reorderedSiblings: [],
     };
 
-    (prisma.folder.findUnique as jest.Mock).mockResolvedValue({
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({
       id: 'folder-1',
-      name: 'フォルダ1',
+      name: 'アイテム1',
       parentId: null,
       children: [],
     });
 
-    const result = await reorderFolders(input);
+    const result = await reorderItems(input);
 
     expect(result).toEqual({
       success: false,
-      error: '自分自身または子フォルダを親にすることはできません',
+      error: '自分自身または子アイテムを親にすることはできません',
     });
   });
 
   it('データベースエラーが発生した場合はエラーを返す', async () => {
     const input = {
-      folderId: 'folder-1',
+      itemId: 'folder-1',
       newParentId: null,
       reorderedSiblings: [{ id: 'folder-1', order: 0 }],
     };
 
-    (prisma.folder.findUnique as jest.Mock).mockResolvedValue({
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({
       id: 'folder-1',
-      name: 'フォルダ1',
+      name: 'アイテム1',
       parentId: null,
       children: [],
     });
@@ -120,10 +120,10 @@ describe('reorderFolders', () => {
       new Error('Database error')
     );
 
-    const result = await reorderFolders(input);
+    const result = await reorderItems(input);
 
     expect(result).toEqual({
-      error: 'フォルダの並び替えに失敗しました',
+      error: 'アイテムの並び替えに失敗しました',
     });
   });
 });

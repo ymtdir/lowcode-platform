@@ -1,9 +1,9 @@
-import { getFolders } from '../get-folders';
+import { getItems } from '../get-items';
 
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    folder: {
+    item: {
       findMany: jest.fn(),
       findUnique: jest.fn(),
     },
@@ -12,17 +12,17 @@ jest.mock('@/lib/prisma', () => ({
 
 import { prisma } from '@/lib/prisma';
 
-describe('getFolders', () => {
+describe('getItems', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('ルートフォルダを取得できる', async () => {
+  it('ルートアイテムを取得できる', async () => {
     const mockRootFolders = [{ id: 'folder-1' }, { id: 'folder-2' }];
 
-    const mockFolder1 = {
+    const mockItem1 = {
       id: 'folder-1',
-      name: 'フォルダ1',
+      name: 'アイテム1',
       parentId: null,
       order: 0,
       createdAt: new Date('2024-01-01'),
@@ -39,9 +39,9 @@ describe('getFolders', () => {
       },
     };
 
-    const mockFolder2 = {
+    const mockItem2 = {
       id: 'folder-2',
-      name: 'フォルダ2',
+      name: 'アイテム2',
       parentId: null,
       order: 1,
       createdAt: new Date('2024-01-02'),
@@ -58,15 +58,15 @@ describe('getFolders', () => {
       },
     };
 
-    (prisma.folder.findMany as jest.Mock).mockResolvedValue(mockRootFolders);
-    (prisma.folder.findUnique as jest.Mock)
-      .mockResolvedValueOnce(mockFolder1)
-      .mockResolvedValueOnce(mockFolder2);
+    (prisma.item.findMany as jest.Mock).mockResolvedValue(mockRootFolders);
+    (prisma.item.findUnique as jest.Mock)
+      .mockResolvedValueOnce(mockItem1)
+      .mockResolvedValueOnce(mockItem2);
 
-    const result = await getFolders();
+    const result = await getItems();
 
-    expect(result).toEqual([mockFolder1, mockFolder2]);
-    expect(prisma.folder.findMany).toHaveBeenCalledWith({
+    expect(result).toEqual([mockItem1, mockItem2]);
+    expect(prisma.item.findMany).toHaveBeenCalledWith({
       where: {
         parentId: null,
       },
@@ -79,12 +79,12 @@ describe('getFolders', () => {
     });
   });
 
-  it('子フォルダを含むルートフォルダを取得できる', async () => {
+  it('子アイテムを含むルートアイテムを取得できる', async () => {
     const mockRootFolders = [{ id: 'folder-1' }];
 
     const mockChildFolder = {
       id: 'child-1',
-      name: '子フォルダ',
+      name: '子アイテム',
       parentId: 'folder-1',
       order: 0,
       createdAt: new Date('2024-01-02'),
@@ -101,9 +101,9 @@ describe('getFolders', () => {
       },
     };
 
-    const mockFolder1WithChildren = {
+    const mockItem1WithChildren = {
       id: 'folder-1',
-      name: 'フォルダ1',
+      name: 'アイテム1',
       parentId: null,
       order: 0,
       createdAt: new Date('2024-01-01'),
@@ -120,22 +120,22 @@ describe('getFolders', () => {
       },
     };
 
-    (prisma.folder.findMany as jest.Mock).mockResolvedValue(mockRootFolders);
-    (prisma.folder.findUnique as jest.Mock)
-      .mockResolvedValueOnce(mockFolder1WithChildren)
+    (prisma.item.findMany as jest.Mock).mockResolvedValue(mockRootFolders);
+    (prisma.item.findUnique as jest.Mock)
+      .mockResolvedValueOnce(mockItem1WithChildren)
       .mockResolvedValueOnce(mockChildFolder);
 
-    const result = await getFolders();
+    const result = await getItems();
 
     expect(result).toHaveLength(1);
     expect(result[0]?.children).toHaveLength(1);
     expect(result[0]?.children?.[0]?.id).toBe('child-1');
   });
 
-  it('ルートフォルダが存在しない場合は空配列を返す', async () => {
-    (prisma.folder.findMany as jest.Mock).mockResolvedValue([]);
+  it('ルートアイテムが存在しない場合は空配列を返す', async () => {
+    (prisma.item.findMany as jest.Mock).mockResolvedValue([]);
 
-    const result = await getFolders();
+    const result = await getItems();
 
     expect(result).toEqual([]);
   });

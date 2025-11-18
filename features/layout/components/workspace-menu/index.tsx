@@ -3,16 +3,16 @@
 import { SidebarGroup } from '@/components/ui/sidebar';
 
 import { WorkspaceItemsWrapper } from './items';
-import type { Folder } from '@/features/folder/types';
+import type { Item } from '@/features/item/types';
 
 type WorkspaceMenuProps = {
-  folders: Folder[];
+  items: Item[];
 };
 
-export function WorkspaceMenu({ folders }: WorkspaceMenuProps) {
+export function WorkspaceMenu({ items }: WorkspaceMenuProps) {
   return (
     <SidebarGroup>
-      <WorkspaceItemsWrapper folders={folders} />
+      <WorkspaceItemsWrapper items={items} />
     </SidebarGroup>
   );
 }

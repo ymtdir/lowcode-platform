@@ -10,14 +10,14 @@ import {
 import { UserMenu } from './user-menu';
 import { MainMenu, mainMenuItems } from './main-menu';
 import { WorkspaceMenu } from './workspace-menu';
-import { getFolders } from '@/features/folder/api';
+import { getItems } from '@/features/item/api';
 
 type AppSidebarProps = {
   userName: string;
 };
 
 export async function AppSidebar({ userName }: AppSidebarProps) {
-  const folders = await getFolders();
+  const items = await getItems();
 
   return (
     <Sidebar>
@@ -35,7 +35,7 @@ export async function AppSidebar({ userName }: AppSidebarProps) {
       </SidebarHeader>
       <SidebarContent>
         <MainMenu items={mainMenuItems} />
-        <WorkspaceMenu folders={folders} />
+        <WorkspaceMenu items={items} />
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>

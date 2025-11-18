@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import { deleteFolder } from '@/features/folder/api';
+import { deleteItem } from '@/features/item/api';
 
 type DeleteFolderItemProps = {
   folderId: string;
@@ -36,7 +36,7 @@ export function DeleteFolderItem({
   const handleDelete = async () => {
     setIsDeleting(true);
 
-    const result = await deleteFolder(folderId);
+    const result = await deleteItem(folderId);
 
     setOpen(false);
     setIsDeleting(false);

@@ -15,9 +15,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { createFolder } from '@/features/folder/api/create-folder';
+import { createFolder } from '@/features/item/api/create-folder';
 
-type CreateFolderItemProps = {
+type CreateFolderButtonProps = {
   workspaceId: string;
   onOpenChange: (open: boolean) => void;
 };
@@ -72,10 +72,10 @@ function CreateFolderContent({
   );
 }
 
-export function CreateFolderItem({
+export function CreateFolderButton({
   workspaceId,
   onOpenChange: onDropdownOpenChange,
-}: CreateFolderItemProps) {
+}: CreateFolderButtonProps) {
   const [open, setOpen] = useState(false);
   const [resetKey, setResetKey] = useState(0);
 

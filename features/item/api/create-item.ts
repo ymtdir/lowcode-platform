@@ -3,13 +3,14 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
+import { Prisma, type ItemType } from '@prisma/client';
 
 type FormState = {
   error?: string;
   success?: boolean;
 };
 
-export async function createFolder(
+export async function createItem(
   _prevState: FormState,
   formData: FormData
 ): Promise<FormState> {
@@ -35,9 +36,10 @@ export async function createFolder(
 
   const name = formData.get('name') as string;
   const parentId = formData.get('parentId') as string;
+  const itemType = (formData.get('type') as ItemType) || 'FOLDER';
 
   if (!name || name.trim() === '') {
-    return { error: 'ワークスペース名を入力してください' };
+    return { error: 'アイテム名を入力してください' };
   }
 
   // 名前に使用できない文字をチェック
@@ -49,20 +51,8 @@ export async function createFolder(
   }
 
   try {
-    // 同じ階層に同じ名前のフォルダが存在しないかチェック
-    const existingFolder = await prisma.folder.findFirst({
-      where: {
-        name: name.trim(),
-        parentId: parentId || null,
-      },
-    });
-
-    if (existingFolder) {
-      return { error: 'この名前のワークスペースは既に存在します' };
-    }
-
     // 同じ親の最大order値を取得
-    const maxOrderFolder = await prisma.folder.findFirst({
+    const maxOrderItem = await prisma.item.findFirst({
       where: {
         parentId: parentId || null,
       },
@@ -74,21 +64,23 @@ export async function createFolder(
       },
     });
 
-    const newOrder = maxOrderFolder ? maxOrderFolder.order + 1 : 0;
+    const newOrder = maxOrderItem ? maxOrderItem.order + 1 : 0;
 
-    await prisma.folder.create({
+    await prisma.item.create({
       data: {
+        type: itemType,
         name: name.trim(),
         parentId: parentId || null,
         createdById: dbUser.id,
         order: newOrder,
+        meta: Prisma.JsonNull,
       },
     });
 
     revalidatePath('/', 'layout');
     return { success: true };
   } catch (error) {
-    console.error('ワークスペース作成エラー:', error);
-    return { error: 'ワークスペースの作成に失敗しました' };
+    console.error('アイテム作成エラー:', error);
+    return { error: 'アイテムの作成に失敗しました' };
   }
 }

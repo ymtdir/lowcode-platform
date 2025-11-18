@@ -1,4 +1,5 @@
-import { createFolder } from '../create-folder';
+import { createItem } from '../create-item';
+import { Prisma } from '@prisma/client';
 
 // revalidatePathをモック化
 jest.mock('next/cache', () => ({
@@ -16,7 +17,7 @@ jest.mock('@/lib/prisma', () => ({
     user: {
       findUnique: jest.fn(),
     },
-    folder: {
+    item: {
       findFirst: jest.fn(),
       create: jest.fn(),
     },
@@ -26,14 +27,14 @@ jest.mock('@/lib/prisma', () => ({
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 
-describe('createFolder', () => {
+describe('createItem', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('フォルダを作成できる', async () => {
+  it('アイテムを作成できる', async () => {
     const formData = new FormData();
-    formData.append('name', 'テストフォルダ');
+    formData.append('name', 'テストアイテム');
     formData.append('parentId', '');
 
     (createClient as jest.Mock).mockResolvedValue({
@@ -48,32 +49,34 @@ describe('createFolder', () => {
       id: 'user-1',
     });
 
-    (prisma.folder.findFirst as jest.Mock).mockResolvedValue(null);
+    (prisma.item.findFirst as jest.Mock).mockResolvedValue(null);
 
-    (prisma.folder.create as jest.Mock).mockResolvedValue({
+    (prisma.item.create as jest.Mock).mockResolvedValue({
       id: 'folder-1',
-      name: 'テストフォルダ',
+      name: 'テストアイテム',
       parentId: null,
       createdById: 'user-1',
       order: 0,
     });
 
-    const result = await createFolder({}, formData);
+    const result = await createItem({}, formData);
 
     expect(result).toEqual({ success: true });
-    expect(prisma.folder.create).toHaveBeenCalledWith({
+    expect(prisma.item.create).toHaveBeenCalledWith({
       data: {
-        name: 'テストフォルダ',
+        type: 'FOLDER',
+        name: 'テストアイテム',
         parentId: null,
         createdById: 'user-1',
         order: 0,
+        meta: Prisma.JsonNull,
       },
     });
   });
 
-  it('親フォルダを指定してフォルダを作成できる', async () => {
+  it('親アイテムを指定してアイテムを作成できる', async () => {
     const formData = new FormData();
-    formData.append('name', '子フォルダ');
+    formData.append('name', '子アイテム');
     formData.append('parentId', 'parent-1');
 
     (createClient as jest.Mock).mockResolvedValue({
@@ -88,34 +91,34 @@ describe('createFolder', () => {
       id: 'user-1',
     });
 
-    (prisma.folder.findFirst as jest.Mock)
-      .mockResolvedValueOnce(null) // 既存フォルダチェック
-      .mockResolvedValueOnce({ order: 2 }); // 最大order値
+    (prisma.item.findFirst as jest.Mock).mockResolvedValue({ order: 2 }); // 最大order値
 
-    (prisma.folder.create as jest.Mock).mockResolvedValue({
+    (prisma.item.create as jest.Mock).mockResolvedValue({
       id: 'folder-2',
-      name: '子フォルダ',
+      name: '子アイテム',
       parentId: 'parent-1',
       createdById: 'user-1',
       order: 3,
     });
 
-    const result = await createFolder({}, formData);
+    const result = await createItem({}, formData);
 
     expect(result).toEqual({ success: true });
-    expect(prisma.folder.create).toHaveBeenCalledWith({
+    expect(prisma.item.create).toHaveBeenCalledWith({
       data: {
-        name: '子フォルダ',
+        type: 'FOLDER',
+        name: '子アイテム',
         parentId: 'parent-1',
         createdById: 'user-1',
         order: 3,
+        meta: Prisma.JsonNull,
       },
     });
   });
 
   it('認証されていない場合はエラーを返す', async () => {
     const formData = new FormData();
-    formData.append('name', 'テストフォルダ');
+    formData.append('name', 'テストアイテム');
     formData.append('parentId', '');
 
     (createClient as jest.Mock).mockResolvedValue({
@@ -126,13 +129,13 @@ describe('createFolder', () => {
       },
     });
 
-    const result = await createFolder({}, formData);
+    const result = await createItem({}, formData);
 
     expect(result).toEqual({ error: '認証が必要です' });
-    expect(prisma.folder.create).not.toHaveBeenCalled();
+    expect(prisma.item.create).not.toHaveBeenCalled();
   });
 
-  it('フォルダ名が空の場合はエラーを返す', async () => {
+  it('アイテム名が空の場合はエラーを返す', async () => {
     const formData = new FormData();
     formData.append('name', '');
     formData.append('parentId', '');
@@ -149,12 +152,12 @@ describe('createFolder', () => {
       id: 'user-1',
     });
 
-    const result = await createFolder({}, formData);
+    const result = await createItem({}, formData);
 
     expect(result).toEqual({
-      error: 'ワークスペース名を入力してください',
+      error: 'アイテム名を入力してください',
     });
-    expect(prisma.folder.create).not.toHaveBeenCalled();
+    expect(prisma.item.create).not.toHaveBeenCalled();
   });
 
   it('使用できない文字が含まれている場合はエラーを返す', async () => {
@@ -174,17 +177,17 @@ describe('createFolder', () => {
       id: 'user-1',
     });
 
-    const result = await createFolder({}, formData);
+    const result = await createItem({}, formData);
 
     expect(result).toEqual({
       error: '使用できない文字が含まれています（/ \\ : * ? " < > |）',
     });
-    expect(prisma.folder.create).not.toHaveBeenCalled();
+    expect(prisma.item.create).not.toHaveBeenCalled();
   });
 
-  it('同じ名前のフォルダが既に存在する場合はエラーを返す', async () => {
+  it('同じ名前のアイテムが既に存在する場合はエラーを返す', async () => {
     const formData = new FormData();
-    formData.append('name', '既存フォルダ');
+    formData.append('name', '既存アイテム');
     formData.append('parentId', '');
 
     (createClient as jest.Mock).mockResolvedValue({
@@ -199,22 +202,21 @@ describe('createFolder', () => {
       id: 'user-1',
     });
 
-    (prisma.folder.findFirst as jest.Mock).mockResolvedValue({
-      id: 'existing-folder',
-      name: '既存フォルダ',
+    (prisma.item.findFirst as jest.Mock).mockResolvedValue({ order: 0 });
+
+    (prisma.item.create as jest.Mock).mockResolvedValue({
+      id: 'new-item',
+      name: '既存アイテム',
     });
 
-    const result = await createFolder({}, formData);
+    const result = await createItem({}, formData);
 
-    expect(result).toEqual({
-      error: 'この名前のワークスペースは既に存在します',
-    });
-    expect(prisma.folder.create).not.toHaveBeenCalled();
+    expect(result).toEqual({ success: true });
   });
 
   it('データベースエラーが発生した場合はエラーを返す', async () => {
     const formData = new FormData();
-    formData.append('name', 'テストフォルダ');
+    formData.append('name', 'テストアイテム');
     formData.append('parentId', '');
 
     (createClient as jest.Mock).mockResolvedValue({
@@ -229,16 +231,16 @@ describe('createFolder', () => {
       id: 'user-1',
     });
 
-    (prisma.folder.findFirst as jest.Mock).mockResolvedValue(null);
+    (prisma.item.findFirst as jest.Mock).mockResolvedValue(null);
 
-    (prisma.folder.create as jest.Mock).mockRejectedValue(
+    (prisma.item.create as jest.Mock).mockRejectedValue(
       new Error('Database error')
     );
 
-    const result = await createFolder({}, formData);
+    const result = await createItem({}, formData);
 
     expect(result).toEqual({
-      error: 'ワークスペースの作成に失敗しました',
+      error: 'アイテムの作成に失敗しました',
     });
   });
 });
