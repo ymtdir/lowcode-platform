@@ -72,7 +72,10 @@ describe('createTable', () => {
         parentId: null,
         createdById: 'user-1',
         order: 0,
+<<<<<<< HEAD
         meta: Prisma.JsonNull,
+=======
+
       },
     });
   });
