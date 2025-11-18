@@ -1,70 +1,166 @@
 import { createFolder } from '../create-folder';
+import { Prisma } from '@prisma/client';
 
-// createItemをモック化
-jest.mock('../create-item', () => ({
-  createItem: jest.fn(),
+// next/cacheをモック化
+jest.mock('next/cache', () => ({
+  revalidatePath: jest.fn(),
 }));
 
-import { createItem } from '../create-item';
+// Supabaseクライアントをモック化
+jest.mock('@/lib/supabase/server', () => ({
+  createClient: jest.fn(),
+}));
+
+// Prismaクライアントをモック化
+jest.mock('@/lib/prisma', () => ({
+  prisma: {
+    user: {
+      findUnique: jest.fn(),
+    },
+    item: {
+      findFirst: jest.fn(),
+      create: jest.fn(),
+    },
+  },
+}));
+
+import { createClient } from '@/lib/supabase/server';
+import { prisma } from '@/lib/prisma';
 
 describe('createFolder', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('createItemをtypeをFOLDERに設定して呼び出す', async () => {
+  it('FOLDERタイプのアイテムを作成できる', async () => {
     const formData = new FormData();
     formData.append('name', 'テストフォルダ');
     formData.append('parentId', '');
 
-    (createItem as jest.Mock).mockResolvedValue({ success: true });
+    (createClient as jest.Mock).mockResolvedValue({
+      auth: {
+        getUser: jest.fn().mockResolvedValue({
+          data: {
+            user: { email: 'test@example.com' },
+          },
+        }),
+      },
+    });
+
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+    });
+
+    (prisma.item.findFirst as jest.Mock).mockResolvedValue(null);
+
+    (prisma.item.create as jest.Mock).mockResolvedValue({
+      id: 'folder-1',
+      type: 'FOLDER',
+      name: 'テストフォルダ',
+      parentId: null,
+      createdById: 'user-1',
+      order: 0,
+    });
 
     const result = await createFolder({}, formData);
 
     expect(result).toEqual({ success: true });
-    expect(createItem).toHaveBeenCalledWith(
-      {},
-      expect.any(FormData)
-    );
-
-    // FormDataのtypeフィールドがFOLDERに設定されていることを確認
-    const calledFormData = (createItem as jest.Mock).mock.calls[0][1];
-    expect(calledFormData.get('type')).toBe('FOLDER');
-    expect(calledFormData.get('name')).toBe('テストフォルダ');
-    expect(calledFormData.get('parentId')).toBe('');
+    expect(prisma.item.create).toHaveBeenCalledWith({
+      data: {
+        type: 'FOLDER',
+        name: 'テストフォルダ',
+        parentId: null,
+        createdById: 'user-1',
+        order: 0,
+        meta: Prisma.JsonNull,
+      },
+    });
   });
 
-  it('親フォルダを指定した場合も正しく渡される', async () => {
+  it('親フォルダを指定してFOLDERを作成できる', async () => {
     const formData = new FormData();
     formData.append('name', '子フォルダ');
     formData.append('parentId', 'parent-1');
 
-    (createItem as jest.Mock).mockResolvedValue({ success: true });
+    (createClient as jest.Mock).mockResolvedValue({
+      auth: {
+        getUser: jest.fn().mockResolvedValue({
+          data: {
+            user: { email: 'test@example.com' },
+          },
+        }),
+      },
+    });
+
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+    });
+
+    (prisma.item.findFirst as jest.Mock).mockResolvedValue({ order: 2 });
+
+    (prisma.item.create as jest.Mock).mockResolvedValue({
+      id: 'folder-2',
+      type: 'FOLDER',
+      name: '子フォルダ',
+      parentId: 'parent-1',
+      createdById: 'user-1',
+      order: 3,
+    });
 
     const result = await createFolder({}, formData);
 
     expect(result).toEqual({ success: true });
-
-    const calledFormData = (createItem as jest.Mock).mock.calls[0][1];
-    expect(calledFormData.get('type')).toBe('FOLDER');
-    expect(calledFormData.get('name')).toBe('子フォルダ');
-    expect(calledFormData.get('parentId')).toBe('parent-1');
+    expect(prisma.item.create).toHaveBeenCalledWith({
+      data: {
+        type: 'FOLDER',
+        name: '子フォルダ',
+        parentId: 'parent-1',
+        createdById: 'user-1',
+        order: 3,
+        meta: Prisma.JsonNull,
+      },
+    });
   });
 
-  it('typeを明示的に設定してもFOLDERで上書きされる', async () => {
+  it('typeがFOLDERに設定される', async () => {
     const formData = new FormData();
     formData.append('name', 'フォルダ確認');
     formData.append('parentId', '');
-    formData.append('type', 'TABLE'); // 異なるtypeを設定
+    // typeを明示的に設定しても上書きされる
+    formData.append('type', 'TABLE');
 
-    (createItem as jest.Mock).mockResolvedValue({ success: true });
+    (createClient as jest.Mock).mockResolvedValue({
+      auth: {
+        getUser: jest.fn().mockResolvedValue({
+          data: {
+            user: { email: 'test@example.com' },
+          },
+        }),
+      },
+    });
+
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+    });
+
+    (prisma.item.findFirst as jest.Mock).mockResolvedValue(null);
+
+    (prisma.item.create as jest.Mock).mockResolvedValue({
+      id: 'folder-3',
+      type: 'FOLDER',
+      name: 'フォルダ確認',
+    });
 
     const result = await createFolder({}, formData);
 
     expect(result).toEqual({ success: true });
-
-    // typeがFOLDERに上書きされていることを確認
-    const calledFormData = (createItem as jest.Mock).mock.calls[0][1];
-    expect(calledFormData.get('type')).toBe('FOLDER');
+    // typeがFOLDERになっていることを確認
+    expect(prisma.item.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          type: 'FOLDER',
+        }),
+      })
+    );
   });
 });

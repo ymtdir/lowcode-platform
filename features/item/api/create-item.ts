@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
-import type { ItemType } from '@prisma/client';
+import { Prisma, type ItemType } from '@prisma/client';
 
 type FormState = {
   error?: string;
@@ -73,7 +73,7 @@ export async function createItem(
         parentId: parentId || null,
         createdById: dbUser.id,
         order: newOrder,
-        meta: null,
+        meta: Prisma.JsonNull,
       },
     });
 

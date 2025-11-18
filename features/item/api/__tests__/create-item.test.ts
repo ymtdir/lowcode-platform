@@ -1,4 +1,5 @@
 import { createItem } from '../create-item';
+import { Prisma } from '@prisma/client';
 
 // revalidatePathをモック化
 jest.mock('next/cache', () => ({
@@ -68,7 +69,7 @@ describe('createItem', () => {
         parentId: null,
         createdById: 'user-1',
         order: 0,
-        meta: null,
+        meta: Prisma.JsonNull,
       },
     });
   });
@@ -110,7 +111,7 @@ describe('createItem', () => {
         parentId: 'parent-1',
         createdById: 'user-1',
         order: 3,
-        meta: null,
+        meta: Prisma.JsonNull,
       },
     });
   });
