@@ -1,165 +1,70 @@
 import { createTable } from '../create-table';
 
-// next/cacheをモック化
-jest.mock('next/cache', () => ({
-  revalidatePath: jest.fn(),
+// createItemをモック化
+jest.mock('../create-item', () => ({
+  createItem: jest.fn(),
 }));
 
-// Supabaseクライアントをモック化
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn(),
-}));
-
-// Prismaクライアントをモック化
-jest.mock('@/lib/prisma', () => ({
-  prisma: {
-    user: {
-      findUnique: jest.fn(),
-    },
-    item: {
-      findFirst: jest.fn(),
-      create: jest.fn(),
-    },
-  },
-}));
-
-import { createClient } from '@/lib/supabase/server';
-import { prisma } from '@/lib/prisma';
+import { createItem } from '../create-item';
 
 describe('createTable', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('TABLEタイプのアイテムを作成できる', async () => {
+  it('createItemをtypeをTABLEに設定して呼び出す', async () => {
     const formData = new FormData();
     formData.append('name', 'テストテーブル');
     formData.append('parentId', '');
 
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: {
-            user: { id: 'user-1' },
-          },
-        }),
-      },
-    });
-
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-    });
-
-    (prisma.item.findFirst as jest.Mock).mockResolvedValue(null); // アイテムが存在しない場合
-
-    (prisma.item.create as jest.Mock).mockResolvedValue({
-      id: 'table-1',
-      type: 'TABLE',
-      name: 'テストテーブル',
-      parentId: null,
-      createdById: 'user-1',
-      order: 0,
-    });
+    (createItem as jest.Mock).mockResolvedValue({ success: true });
 
     const result = await createTable({}, formData);
 
     expect(result).toEqual({ success: true });
-    expect(prisma.item.create).toHaveBeenCalledWith({
-      data: {
-        type: 'TABLE',
-        name: 'テストテーブル',
-        parentId: null,
-        createdById: 'user-1',
-        order: 0,
-        meta: null,
-      },
-    });
+    expect(createItem).toHaveBeenCalledWith(
+      {},
+      expect.any(FormData)
+    );
+
+    // FormDataのtypeフィールドがTABLEに設定されていることを確認
+    const calledFormData = (createItem as jest.Mock).mock.calls[0][1];
+    expect(calledFormData.get('type')).toBe('TABLE');
+    expect(calledFormData.get('name')).toBe('テストテーブル');
+    expect(calledFormData.get('parentId')).toBe('');
   });
 
-  it('親フォルダを指定してTABLEを作成できる', async () => {
+  it('親フォルダを指定した場合も正しく渡される', async () => {
     const formData = new FormData();
     formData.append('name', '子テーブル');
     formData.append('parentId', 'parent-1');
 
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: {
-            user: { id: 'user-1' },
-          },
-        }),
-      },
-    });
-
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-    });
-
-    (prisma.item.findFirst as jest.Mock).mockResolvedValue({ order: 2 });
-
-    (prisma.item.create as jest.Mock).mockResolvedValue({
-      id: 'table-2',
-      type: 'TABLE',
-      name: '子テーブル',
-      parentId: 'parent-1',
-      createdById: 'user-1',
-      order: 3,
-    });
+    (createItem as jest.Mock).mockResolvedValue({ success: true });
 
     const result = await createTable({}, formData);
 
     expect(result).toEqual({ success: true });
-    expect(prisma.item.create).toHaveBeenCalledWith({
-      data: {
-        type: 'TABLE',
-        name: '子テーブル',
-        parentId: 'parent-1',
-        createdById: 'user-1',
-        order: 3,
-        meta: null,
-      },
-    });
+
+    const calledFormData = (createItem as jest.Mock).mock.calls[0][1];
+    expect(calledFormData.get('type')).toBe('TABLE');
+    expect(calledFormData.get('name')).toBe('子テーブル');
+    expect(calledFormData.get('parentId')).toBe('parent-1');
   });
 
-  it('typeがTABLEに設定される', async () => {
+  it('typeを明示的に設定してもTABLEで上書きされる', async () => {
     const formData = new FormData();
     formData.append('name', 'テーブル確認');
     formData.append('parentId', '');
-    // typeを明示的に設定しても上書きされる
-    formData.append('type', 'FOLDER');
+    formData.append('type', 'FOLDER'); // 異なるtypeを設定
 
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: {
-            user: { id: 'user-1' },
-          },
-        }),
-      },
-    });
-
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-    });
-
-    (prisma.item.findFirst as jest.Mock).mockResolvedValue(null);
-
-    (prisma.item.create as jest.Mock).mockResolvedValue({
-      id: 'table-3',
-      type: 'TABLE',
-      name: 'テーブル確認',
-    });
+    (createItem as jest.Mock).mockResolvedValue({ success: true });
 
     const result = await createTable({}, formData);
 
     expect(result).toEqual({ success: true });
-    // typeがTABLEになっていることを確認
-    expect(prisma.item.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          type: 'TABLE',
-        }),
-      })
-    );
+
+    // typeがTABLEに上書きされていることを確認
+    const calledFormData = (createItem as jest.Mock).mock.calls[0][1];
+    expect(calledFormData.get('type')).toBe('TABLE');
   });
 });
