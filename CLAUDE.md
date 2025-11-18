@@ -763,6 +763,7 @@ export type Item = FolderItem | TableItem;
 ```
 
 **利点**:
+
 - 型レベルでFOLDERとTABLEの違いを表現
 - `item.type === 'FOLDER'`で型が自動的に`FolderItem`に絞り込まれる
 - TABLEに`children`プロパティが存在しないことをコンパイル時に保証
@@ -778,11 +779,11 @@ import type { ItemType } from '@prisma/client';
 
 type ItemConfig = {
   icon: typeof Folder | typeof Table;
-  draggable: boolean;       // ドラッグ可能か
-  droppable: boolean;       // ドロップ先になれるか
+  draggable: boolean; // ドラッグ可能か
+  droppable: boolean; // ドロップ先になれるか
   canHaveChildren: boolean; // 子要素を持てるか
-  showAddButton: boolean;   // 追加ボタンを表示するか
-  showChevron: boolean;     // ホバー時にChevronRightを表示するか
+  showAddButton: boolean; // 追加ボタンを表示するか
+  showChevron: boolean; // ホバー時にChevronRightを表示するか
 };
 
 export const ITEM_CONFIGS: Record<ItemType, ItemConfig> = {
@@ -806,6 +807,7 @@ export const ITEM_CONFIGS: Record<ItemType, ItemConfig> = {
 ```
 
 **利点**:
+
 - 新しいItemType（例: VIEW, FORM）を追加する際、設定を追加するだけで対応可能
 - コンポーネント側は設定を参照するだけで適切なUIを表示
 - 条件分岐がシンプルになり、メンテナンス性が向上
@@ -856,6 +858,7 @@ export async function createTable(
 ```
 
 **利点**:
+
 - 共通処理の重複を避けつつ、呼び出し側で明示的にFOLDER/TABLEを指定可能
 - テストは`create-item.test.ts`で実装を検証し、`create-folder.test.ts`と`create-table.test.ts`ではラッパーの動作を検証
 - 将来的にTABLE固有のメタデータ処理が必要になった場合も、`createTable`内で拡張可能
