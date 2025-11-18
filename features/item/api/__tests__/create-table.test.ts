@@ -1,88 +1,165 @@
 import { createTable } from '../create-table';
-import { createItem } from '../create-item';
 
-// createItemをモック化
-jest.mock('../create-item', () => ({
-  createItem: jest.fn(),
+// next/cacheをモック化
+jest.mock('next/cache', () => ({
+  revalidatePath: jest.fn(),
 }));
+
+// Supabaseクライアントをモック化
+jest.mock('@/lib/supabase/server', () => ({
+  createClient: jest.fn(),
+}));
+
+// Prismaクライアントをモック化
+jest.mock('@/lib/prisma', () => ({
+  prisma: {
+    user: {
+      findUnique: jest.fn(),
+    },
+    item: {
+      findFirst: jest.fn(),
+      create: jest.fn(),
+    },
+  },
+}));
+
+import { createClient } from '@/lib/supabase/server';
+import { prisma } from '@/lib/prisma';
 
 describe('createTable', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('createItemをtype=TABLEで呼び出す', async () => {
+  it('TABLEタイプのアイテムを作成できる', async () => {
     const formData = new FormData();
     formData.append('name', 'テストテーブル');
+    formData.append('parentId', '');
+
+    (createClient as jest.Mock).mockResolvedValue({
+      auth: {
+        getUser: jest.fn().mockResolvedValue({
+          data: {
+            user: { id: 'user-1' },
+          },
+        }),
+      },
+    });
+
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+    });
+
+    (prisma.item.findFirst as jest.Mock).mockResolvedValue(null); // アイテムが存在しない場合
+
+    (prisma.item.create as jest.Mock).mockResolvedValue({
+      id: 'table-1',
+      type: 'TABLE',
+      name: 'テストテーブル',
+      parentId: null,
+      createdById: 'user-1',
+      order: 0,
+    });
+
+    const result = await createTable({}, formData);
+
+    expect(result).toEqual({ success: true });
+    expect(prisma.item.create).toHaveBeenCalledWith({
+      data: {
+        type: 'TABLE',
+        name: 'テストテーブル',
+        parentId: null,
+        createdById: 'user-1',
+        order: 0,
+        meta: null,
+      },
+    });
+  });
+
+  it('親フォルダを指定してTABLEを作成できる', async () => {
+    const formData = new FormData();
+    formData.append('name', '子テーブル');
     formData.append('parentId', 'parent-1');
 
-    (createItem as jest.Mock).mockResolvedValue({ success: true });
+    (createClient as jest.Mock).mockResolvedValue({
+      auth: {
+        getUser: jest.fn().mockResolvedValue({
+          data: {
+            user: { id: 'user-1' },
+          },
+        }),
+      },
+    });
 
-    const result = await createTable({}, formData);
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+    });
 
-    expect(result).toEqual({ success: true });
-    expect(createItem).toHaveBeenCalledTimes(1);
+    (prisma.item.findFirst as jest.Mock).mockResolvedValue({ order: 2 });
 
-    // createItemが正しい引数で呼び出されたか確認
-    const callArgs = (createItem as jest.Mock).mock.calls[0];
-    expect(callArgs[0]).toEqual({}); // prevState
-    expect(callArgs[1]).toBeInstanceOf(FormData);
-
-    // FormDataの内容を確認
-    const passedFormData = callArgs[1] as FormData;
-    expect(passedFormData.get('name')).toBe('テストテーブル');
-    expect(passedFormData.get('parentId')).toBe('parent-1');
-    expect(passedFormData.get('type')).toBe('TABLE');
-  });
-
-  it('parentIdが空文字列の場合も正しく処理する', async () => {
-    const formData = new FormData();
-    formData.append('name', 'ルートテーブル');
-    formData.append('parentId', '');
-
-    (createItem as jest.Mock).mockResolvedValue({ success: true });
-
-    const result = await createTable({}, formData);
-
-    expect(result).toEqual({ success: true });
-    expect(createItem).toHaveBeenCalledTimes(1);
-
-    const callArgs = (createItem as jest.Mock).mock.calls[0];
-    const passedFormData = callArgs[1] as FormData;
-    expect(passedFormData.get('name')).toBe('ルートテーブル');
-    expect(passedFormData.get('parentId')).toBe('');
-    expect(passedFormData.get('type')).toBe('TABLE');
-  });
-
-  it('createItemがエラーを返した場合はそのエラーを返す', async () => {
-    const formData = new FormData();
-    formData.append('name', 'テストテーブル');
-    formData.append('parentId', '');
-
-    (createItem as jest.Mock).mockResolvedValue({
-      error: 'アイテムの作成に失敗しました',
+    (prisma.item.create as jest.Mock).mockResolvedValue({
+      id: 'table-2',
+      type: 'TABLE',
+      name: '子テーブル',
+      parentId: 'parent-1',
+      createdById: 'user-1',
+      order: 3,
     });
 
     const result = await createTable({}, formData);
 
-    expect(result).toEqual({
-      error: 'アイテムの作成に失敗しました',
+    expect(result).toEqual({ success: true });
+    expect(prisma.item.create).toHaveBeenCalledWith({
+      data: {
+        type: 'TABLE',
+        name: '子テーブル',
+        parentId: 'parent-1',
+        createdById: 'user-1',
+        order: 3,
+        meta: null,
+      },
     });
-    expect(createItem).toHaveBeenCalledTimes(1);
   });
 
-  it('prevStateを正しく渡す', async () => {
+  it('typeがTABLEに設定される', async () => {
     const formData = new FormData();
-    formData.append('name', 'テストテーブル');
+    formData.append('name', 'テーブル確認');
     formData.append('parentId', '');
+    // typeを明示的に設定しても上書きされる
+    formData.append('type', 'FOLDER');
 
-    const prevState = { error: '前のエラー' };
+    (createClient as jest.Mock).mockResolvedValue({
+      auth: {
+        getUser: jest.fn().mockResolvedValue({
+          data: {
+            user: { id: 'user-1' },
+          },
+        }),
+      },
+    });
 
-    (createItem as jest.Mock).mockResolvedValue({ success: true });
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+    });
 
-    await createTable(prevState, formData);
+    (prisma.item.findFirst as jest.Mock).mockResolvedValue(null);
 
-    const callArgs = (createItem as jest.Mock).mock.calls[0];
-    expect(callArgs[0]).toEqual(prevState);
+    (prisma.item.create as jest.Mock).mockResolvedValue({
+      id: 'table-3',
+      type: 'TABLE',
+      name: 'テーブル確認',
+    });
+
+    const result = await createTable({}, formData);
+
+    expect(result).toEqual({ success: true });
+    // typeがTABLEになっていることを確認
+    expect(prisma.item.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          type: 'TABLE',
+        }),
+      })
+    );
   });
 });
