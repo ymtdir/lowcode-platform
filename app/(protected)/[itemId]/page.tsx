@@ -4,52 +4,50 @@ import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-type WorkspacePageProps = {
-  params: Promise<{ workspaceId: string }>;
+type ItemPageProps = {
+  params: Promise<{ itemId: string }>;
 };
 
-export default async function WorkspacePage({ params }: WorkspacePageProps) {
-  const { workspaceId } = await params;
+export default async function ItemPage({ params }: ItemPageProps) {
+  const { itemId } = await params;
 
-  const workspace = await getItemById(workspaceId);
+  const item = await getItemById(itemId);
 
-  if (!workspace) {
+  if (!item) {
     notFound();
   }
 
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{workspace.name}</h1>
+        <h1 className="text-2xl font-bold">{item.name}</h1>
       </div>
 
       <div className="grid gap-4">
         <div className="rounded-lg border p-4">
-          <h2 className="text-lg font-semibold mb-4">フォルダ情報</h2>
+          <h2 className="text-lg font-semibold mb-4">
+            {item.type === 'FOLDER' ? 'フォルダ情報' : 'テーブル情報'}
+          </h2>
           <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <dt className="text-sm font-medium text-muted-foreground">
-                フォルダID
-              </dt>
-              <dd className="mt-1 text-sm">{workspace.id}</dd>
+              <dt className="text-sm font-medium text-muted-foreground">ID</dt>
+              <dd className="mt-1 text-sm">{item.id}</dd>
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              作成者: {workspace.createdBy.name || workspace.createdBy.email}
+              作成者: {item.createdBy.name || item.createdBy.email}
             </p>
             <div>
               <dt className="text-sm font-medium text-muted-foreground">
-                子フォルダ数
+                {item.type === 'FOLDER' ? '子フォルダ数' : '子アイテム数'}
               </dt>
-              <dd className="mt-1 text-sm">
-                {workspace._count?.children || 0}
-              </dd>
+              <dd className="mt-1 text-sm">{item._count?.children || 0}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-muted-foreground">
                 作成日時
               </dt>
               <dd className="mt-1 text-sm">
-                {new Date(workspace.createdAt).toLocaleString('ja-JP')}
+                {new Date(item.createdAt).toLocaleString('ja-JP')}
               </dd>
             </div>
             <div>
@@ -57,17 +55,19 @@ export default async function WorkspacePage({ params }: WorkspacePageProps) {
                 更新日時
               </dt>
               <dd className="mt-1 text-sm">
-                {new Date(workspace.updatedAt).toLocaleString('ja-JP')}
+                {new Date(item.updatedAt).toLocaleString('ja-JP')}
               </dd>
             </div>
           </dl>
         </div>
 
-        {workspace.children && workspace.children.length > 0 && (
+        {item.children && item.children.length > 0 && (
           <div className="rounded-lg border p-4">
-            <h2 className="text-lg font-semibold mb-4">子フォルダ</h2>
+            <h2 className="text-lg font-semibold mb-4">
+              {item.type === 'FOLDER' ? '子フォルダ' : '子アイテム'}
+            </h2>
             <div className="grid gap-2">
-              {workspace.children.map((child: Item) => (
+              {item.children.map((child: Item) => (
                 <div
                   key={child.id}
                   className="flex items-center gap-2 rounded-md border p-3"
@@ -84,10 +84,12 @@ export default async function WorkspacePage({ params }: WorkspacePageProps) {
           </div>
         )}
 
-        {(!workspace.children || workspace.children.length === 0) && (
+        {(!item.children || item.children.length === 0) && (
           <div className="rounded-lg border p-8 text-center">
             <p className="text-muted-foreground">
-              このワークスペースには子フォルダがありません
+              {item.type === 'FOLDER'
+                ? 'このフォルダには子アイテムがありません'
+                : 'このテーブルには子アイテムがありません'}
             </p>
           </div>
         )}
