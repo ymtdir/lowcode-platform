@@ -18,19 +18,16 @@ import { toast } from 'sonner';
 import { createFolder } from '@/features/item/api/create-folder';
 
 type CreateFolderButtonProps = {
-  workspaceId: string;
+  parentId: string;
   onOpenChange: (open: boolean) => void;
 };
 
 type CreateFolderContentProps = {
-  workspaceId: string;
+  parentId: string;
   onClose: () => void;
 };
 
-function CreateFolderContent({
-  workspaceId,
-  onClose,
-}: CreateFolderContentProps) {
+function CreateFolderContent({ parentId, onClose }: CreateFolderContentProps) {
   const [state, formAction] = useActionState(createFolder, {});
 
   // 成功・エラー時の処理
@@ -47,7 +44,7 @@ function CreateFolderContent({
 
   return (
     <form action={formAction}>
-      <input type="hidden" name="parentId" value={workspaceId} />
+      <input type="hidden" name="parentId" value={parentId} />
 
       <div className="grid gap-4 py-4">
         <div className="grid gap-2">
@@ -73,7 +70,7 @@ function CreateFolderContent({
 }
 
 export function CreateFolderButton({
-  workspaceId,
+  parentId,
   onOpenChange: onDropdownOpenChange,
 }: CreateFolderButtonProps) {
   const [open, setOpen] = useState(false);
@@ -111,7 +108,7 @@ export function CreateFolderButton({
           </DialogHeader>
           <CreateFolderContent
             key={resetKey}
-            workspaceId={workspaceId}
+            parentId={parentId}
             onClose={handleClose}
           />
         </DialogContent>

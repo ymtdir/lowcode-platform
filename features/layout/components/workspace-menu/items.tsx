@@ -78,7 +78,7 @@ export function WorkspaceItemsWrapper({ items }: WorkspaceItemsWrapperProps) {
             <Link href="/workspace" className="flex-1">
               <span>ワークスペース</span>
             </Link>
-            <CreateItemButton workspaceId="" />
+            <CreateItemButton parentId="" />
           </div>
         </SidebarGroupLabel>
         <SidebarMenu ref={setWorkspaceMenuRef}>
@@ -110,7 +110,7 @@ export function WorkspaceItemsWrapper({ items }: WorkspaceItemsWrapperProps) {
           <Link href="/workspace" className="flex-1">
             <span>ワークスペース</span>
           </Link>
-          <CreateItemButton workspaceId="" />
+          <CreateItemButton parentId="" />
         </div>
       </SidebarGroupLabel>
       <SidebarMenu ref={setWorkspaceMenuRef} className="min-h-[200px]">

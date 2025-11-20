@@ -18,16 +18,16 @@ import { toast } from 'sonner';
 import { createTable } from '@/features/item/api/create-table';
 
 type CreateTableButtonProps = {
-  workspaceId: string;
+  parentId: string;
   onOpenChange: (open: boolean) => void;
 };
 
 type CreateTableContentProps = {
-  workspaceId: string;
+  parentId: string;
   onClose: () => void;
 };
 
-function CreateTableContent({ workspaceId, onClose }: CreateTableContentProps) {
+function CreateTableContent({ parentId, onClose }: CreateTableContentProps) {
   const [state, formAction] = useActionState(createTable, {});
 
   // 成功・エラー時の処理
@@ -44,7 +44,7 @@ function CreateTableContent({ workspaceId, onClose }: CreateTableContentProps) {
 
   return (
     <form action={formAction}>
-      <input type="hidden" name="parentId" value={workspaceId} />
+      <input type="hidden" name="parentId" value={parentId} />
 
       <div className="grid gap-4 py-4">
         <div className="grid gap-2">
@@ -70,7 +70,7 @@ function CreateTableContent({ workspaceId, onClose }: CreateTableContentProps) {
 }
 
 export function CreateTableButton({
-  workspaceId,
+  parentId,
   onOpenChange: onDropdownOpenChange,
 }: CreateTableButtonProps) {
   const [open, setOpen] = useState(false);
@@ -108,7 +108,7 @@ export function CreateTableButton({
           </DialogHeader>
           <CreateTableContent
             key={resetKey}
-            workspaceId={workspaceId}
+            parentId={parentId}
             onClose={handleClose}
           />
         </DialogContent>

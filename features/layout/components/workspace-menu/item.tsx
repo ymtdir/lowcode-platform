@@ -130,7 +130,7 @@ export function Item({
               <span>{item.name}</span>
             </Link>
             <EditItemButton itemId={item.id} itemName={item.name} />
-            {config.showAddButton && <CreateItemButton workspaceId={item.id} />}
+            {config.showAddButton && <CreateItemButton parentId={item.id} />}
           </div>
         </SidebarMenuButton>
 
@@ -214,7 +214,7 @@ export function Item({
             <span>{item.name}</span>
           </Link>
           <EditItemButton itemId={item.id} itemName={item.name} />
-          {config.showAddButton && <CreateItemButton workspaceId={item.id} />}
+          {config.showAddButton && <CreateItemButton parentId={item.id} />}
         </div>
       </SidebarMenuSubButton>
 

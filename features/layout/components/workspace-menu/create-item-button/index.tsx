@@ -11,10 +11,10 @@ import { CreateFolderButton } from './create-folder-button';
 import { CreateTableButton } from './create-table-button';
 
 type CreateItemButtonProps = {
-  workspaceId: string;
+  parentId: string;
 };
 
-export function CreateItemButton({ workspaceId }: CreateItemButtonProps) {
+export function CreateItemButton({ parentId }: CreateItemButtonProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -32,8 +32,8 @@ export function CreateItemButton({ workspaceId }: CreateItemButtonProps) {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" sideOffset={4}>
-        <CreateFolderButton workspaceId={workspaceId} onOpenChange={setOpen} />
-        <CreateTableButton workspaceId={workspaceId} onOpenChange={setOpen} />
+        <CreateFolderButton parentId={parentId} onOpenChange={setOpen} />
+        <CreateTableButton parentId={parentId} onOpenChange={setOpen} />
       </DropdownMenuContent>
     </DropdownMenu>
   );
