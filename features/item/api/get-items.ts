@@ -3,7 +3,9 @@
 import { prisma } from '@/lib/prisma';
 import type { Item } from '../types';
 
-// 再帰的に子アイテムを取得するヘルパー関数
+/**
+ * 再帰的に子アイテムを取得するヘルパー関数
+ */
 async function getItemWithChildren(itemId: string): Promise<Item> {
   const item = await prisma.item.findUnique({
     where: { id: itemId },
@@ -52,6 +54,9 @@ async function getItemWithChildren(itemId: string): Promise<Item> {
   return item as Item;
 }
 
+/**
+ * すべてのアイテムを再帰的に取得するServer Action
+ */
 export async function getItems(): Promise<Item[]> {
   // ルートアイテムのみ取得
   const rootItems = await prisma.item.findMany({

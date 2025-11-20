@@ -3,6 +3,9 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 
+/**
+ * アイテムを削除するServer Action
+ */
 export async function deleteItem(itemId: string) {
   try {
     // アイテムを削除（Cascadeで子アイテムも削除される）

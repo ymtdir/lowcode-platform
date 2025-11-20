@@ -20,6 +20,9 @@ export const metadata: Metadata = {
   description: 'Lowcode Platform',
 };
 
+/**
+ * ルートレイアウトコンポーネント
+ */
 export default function RootLayout({
   children,
 }: Readonly<{

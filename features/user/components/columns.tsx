@@ -14,6 +14,9 @@ import { EditUserItem } from './edit-user-item';
 import { DeleteUserItem } from './delete-user-item';
 import type { User } from '../types';
 
+/**
+ * ユーザーテーブルのカラム定義を生成する関数
+ */
 export const createColumns = (): ColumnDef<User>[] => [
   {
     id: 'select',

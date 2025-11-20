@@ -1,3 +1,6 @@
+/**
+ * テーマカラーの型
+ */
 export type Color =
   | 'neutral'
   | 'stone'

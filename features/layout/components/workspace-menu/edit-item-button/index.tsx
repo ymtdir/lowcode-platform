@@ -10,11 +10,17 @@ import {
 import { RenameFolderItem } from './rename-item-button';
 import { DeleteFolderItem } from './delete-item-button';
 
+/**
+ * アイテム編集ボタンのProps型
+ */
 type EditItemButtonProps = {
   itemId: string;
   itemName: string;
 };
 
+/**
+ * アイテム編集ボタンコンポーネント
+ */
 export function EditItemButton({ itemId, itemName }: EditItemButtonProps) {
   const [open, setOpen] = useState(false);
 

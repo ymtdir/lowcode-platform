@@ -7,6 +7,9 @@ type FormState = {
   success?: boolean;
 };
 
+/**
+ * テーブルを作成するServer Action（createItemのラッパー）
+ */
 export async function createTable(
   prevState: FormState,
   formData: FormData

@@ -3,6 +3,9 @@
 import * as React from 'react';
 import type { Color } from '../types';
 
+/**
+ * カラーコンテキストの型
+ */
 type ColorContextType = {
   color: Color;
   setColor: (color: Color) => void;
@@ -15,6 +18,9 @@ const ColorContext = React.createContext<ColorContextType | undefined>(
 const COLOR_STORAGE_KEY = 'app-color';
 const DEFAULT_COLOR: Color = 'neutral';
 
+/**
+ * カラープロバイダーコンポーネント
+ */
 export function ColorProvider({ children }: { children: React.ReactNode }) {
   const [color, setColorState] = React.useState<Color>(DEFAULT_COLOR);
   const [isMounted, setIsMounted] = React.useState(false);
@@ -40,6 +46,9 @@ export function ColorProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * カラーコンテキストを使用するカスタムフック
+ */
 export function useColor() {
   const context = React.useContext(ColorContext);
   if (!context) {

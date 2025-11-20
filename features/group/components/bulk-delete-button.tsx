@@ -17,11 +17,17 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { deleteGroup } from '../api/delete-group';
 
+/**
+ * 一括削除ボタンのProps型
+ */
 type BulkDeleteButtonProps = {
   selectedGroupIds: string[];
   onDeleteComplete: () => void;
 };
 
+/**
+ * 一括削除ボタンコンポーネント
+ */
 export function BulkDeleteButton({
   selectedGroupIds,
   onDeleteComplete,

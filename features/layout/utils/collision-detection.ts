@@ -4,9 +4,14 @@ import {
   CollisionDetection,
 } from '@dnd-kit/core';
 
+/**
+ * ワークスペースルートのID
+ */
 const WORKSPACE_ROOT_ID = 'workspace-root';
 
-// カスタム衝突検出：ワークスペースルート/メニューを優先
+/**
+ * カスタム衝突検出：ワークスペースルート/メニューを優先
+ */
 export const customCollisionDetection: CollisionDetection = (args) => {
   // まずpointerWithinで検出
   const pointerCollisions = pointerWithin(args);

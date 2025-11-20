@@ -9,6 +9,9 @@ type FormState = {
   error?: string;
 };
 
+/**
+ * ログイン処理を行うServer Action
+ */
 export async function login(
   _prevState: FormState,
   formData: FormData

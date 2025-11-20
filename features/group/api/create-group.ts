@@ -8,6 +8,9 @@ type FormState = {
   success?: boolean;
 };
 
+/**
+ * グループを作成するServer Action
+ */
 export async function createGroup(
   _prevState: FormState,
   formData: FormData

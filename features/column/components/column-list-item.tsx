@@ -13,6 +13,9 @@ import { COLUMN_CONFIGS } from '../constants';
 import { EditColumnItem } from './edit-column-item';
 import { DeleteColumnItem } from './delete-column-item';
 
+/**
+ * カラムリストアイテムのProps型
+ */
 type ColumnListItemProps = {
   itemId: string;
   column: Column;
@@ -34,7 +37,7 @@ export function ColumnListItem({ itemId, column }: ColumnListItemProps) {
       </div>
 
       {/* アイコン */}
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         <Icon className="h-4 w-4 text-muted-foreground" />
       </div>
 

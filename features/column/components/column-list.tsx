@@ -8,6 +8,9 @@ import { ColumnListItem } from './column-list-item';
 import { AddColumnDialog } from './add-column-dialog';
 import { useState } from 'react';
 
+/**
+ * カラム一覧表示コンポーネントのProps型
+ */
 type ColumnListProps = {
   itemId: string;
   columns: Column[];

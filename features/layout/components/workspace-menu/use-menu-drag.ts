@@ -10,6 +10,9 @@ import type { Item as ItemType } from '@/features/item/types';
 import { WORKSPACE_ROOT_ID } from '@/features/layout/utils/collision-detection';
 import { ITEM_CONFIGS } from '@/features/item/constants';
 
+/**
+ * ドロップ位置の型
+ */
 type DropPosition = 'before' | 'after' | 'inside';
 
 /**

@@ -25,16 +25,25 @@ import { Button } from '@/components/ui/button';
 import { updateUserProfile, updateUserPassword } from '../api/update-user';
 import type { User } from '../types';
 
+/**
+ * ユーザー編集アイテムのProps型
+ */
 type EditUserItemProps = {
   user: User;
   onOpenChange: (open: boolean) => void;
 };
 
+/**
+ * ユーザー編集コンテンツのProps型
+ */
 type EditUserContentProps = {
   user: User;
   onClose: () => void;
 };
 
+/**
+ * ユーザー編集コンテンツコンポーネント
+ */
 function EditUserContent({ user, onClose }: EditUserContentProps) {
   const [profileState, profileAction] = useActionState(
     updateUserProfile.bind(null, user.id),
@@ -158,6 +167,9 @@ function EditUserContent({ user, onClose }: EditUserContentProps) {
   );
 }
 
+/**
+ * ユーザー編集アイテムコンポーネント
+ */
 export function EditUserItem({
   user,
   onOpenChange: onDropdownOpenChange,

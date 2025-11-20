@@ -6,8 +6,14 @@ import { toast } from 'sonner';
 import { WORKSPACE_ROOT_ID } from '@/features/layout/utils/collision-detection';
 import { calculateItemOrder } from '@/features/layout/utils/calculate-item-order';
 
+/**
+ * ドロップ位置の型
+ */
 type DropPosition = 'before' | 'after' | 'inside';
 
+/**
+ * useItemDragのパラメータ型
+ */
 type UseItemDragParams = {
   items: ItemType[];
   insideTargetId: string | null;
@@ -15,8 +21,10 @@ type UseItemDragParams = {
   dropPosition: DropPosition;
 };
 
-// アイテムのドラッグ&ドロップロジック（汎用）
-// UI状態は含まず、データ操作のみを扱う
+/**
+ * アイテムのドラッグ&ドロップロジック（汎用）
+ * UI状態は含まず、データ操作のみを扱う
+ */
 export function useItemDrag({
   items,
   insideTargetId,

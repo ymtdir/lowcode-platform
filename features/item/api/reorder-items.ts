@@ -3,13 +3,18 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 
+/**
+ * アイテムの並び替え入力型
+ */
 export type ReorderItemsInput = {
   itemId: string;
   newParentId: string | null;
   reorderedSiblings: Array<{ id: string; order: number }>;
 };
 
-// アイテムの並び替えと親子関係の変更
+/**
+ * アイテムの並び替えと親子関係の変更を行うServer Action
+ */
 export async function reorderItems(input: ReorderItemsInput) {
   const { itemId, newParentId, reorderedSiblings } = input;
 
@@ -62,7 +67,9 @@ export async function reorderItems(input: ReorderItemsInput) {
   }
 }
 
-// 指定したアイテムが別のアイテムの子孫かどうかをチェック
+/**
+ * 指定したアイテムが別のアイテムの子孫かどうかをチェックするヘルパー関数
+ */
 async function checkIsDescendant(
   itemId: string,
   potentialAncestorId: string

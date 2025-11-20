@@ -3,6 +3,9 @@
 import { prisma } from '@/lib/prisma';
 import type { Group } from '../types';
 
+/**
+ * すべてのグループを取得するServer Action
+ */
 export async function getGroups(): Promise<Group[]> {
   const groups = await prisma.group.findMany({
     orderBy: {

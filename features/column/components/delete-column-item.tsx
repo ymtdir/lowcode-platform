@@ -18,12 +18,18 @@ import { toast } from 'sonner';
 import { removeColumn } from '../api/remove-column';
 import type { Column } from '../types/column';
 
+/**
+ * カラム削除アイテムのProps型
+ */
 type DeleteColumnItemProps = {
   itemId: string;
   column: Column;
   onOpenChange: (open: boolean) => void;
 };
 
+/**
+ * カラム削除アイテムコンポーネント
+ */
 export function DeleteColumnItem({
   itemId,
   column,

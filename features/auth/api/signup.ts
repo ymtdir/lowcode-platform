@@ -10,6 +10,9 @@ type FormState = {
   error?: string;
 };
 
+/**
+ * サインアップ処理を行うServer Action
+ */
 export async function signup(
   _prevState: FormState,
   formData: FormData

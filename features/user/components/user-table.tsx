@@ -35,10 +35,16 @@ import {
 } from '@/components/ui/table';
 import type { User } from '../types';
 
+/**
+ * ユーザーテーブルのProps型
+ */
 type UserTableProps = {
   users: User[];
 };
 
+/**
+ * ユーザーテーブルコンポーネント
+ */
 export function UserTable({ users }: UserTableProps) {
   const columns = createColumns();
   const [sorting, setSorting] = React.useState<SortingState>([]);

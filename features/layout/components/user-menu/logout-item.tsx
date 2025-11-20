@@ -2,6 +2,9 @@ import { LogOut } from 'lucide-react';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { logout } from '@/features/auth/api';
 
+/**
+ * ログアウトアイテムコンポーネント
+ */
 export function LogoutItem() {
   return (
     <DropdownMenuItem asChild>

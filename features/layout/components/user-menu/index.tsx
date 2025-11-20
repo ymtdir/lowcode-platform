@@ -10,10 +10,16 @@ import { SidebarMenuButton } from '@/components/ui/sidebar';
 import { AccountSettingsItem } from './account-settings-item';
 import { LogoutItem } from './logout-item';
 
+/**
+ * ユーザーメニューのProps型
+ */
 type UserMenuProps = {
   userName: string;
 };
 
+/**
+ * ユーザーメニューコンポーネント
+ */
 export function UserMenu({ userName }: UserMenuProps) {
   return (
     <DropdownMenu>

@@ -1,5 +1,8 @@
 import type { Group as PrismaGroup, GroupMember, User } from '@prisma/client';
 
+/**
+ * グループ型（PrismaGroupを拡張）
+ */
 export type Group = PrismaGroup & {
   parent?: {
     name: string;

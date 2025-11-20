@@ -3,6 +3,9 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 
+/**
+ * アイテム名を変更するServer Action
+ */
 export async function renameItem(itemId: string, newName: string) {
   try {
     // 名前のバリデーション

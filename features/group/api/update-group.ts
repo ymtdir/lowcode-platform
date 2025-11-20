@@ -3,7 +3,9 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 
-// 循環参照をチェックする関数
+/**
+ * 循環参照をチェックするヘルパー関数
+ */
 async function checkCircularReference(groupId: string, newParentId: string) {
   const visited = new Set<string>();
   let currentId = newParentId;
@@ -39,6 +41,9 @@ async function checkCircularReference(groupId: string, newParentId: string) {
   return false;
 }
 
+/**
+ * グループを更新するServer Action
+ */
 export async function updateGroup(
   groupId: string,
   _prevState: unknown,

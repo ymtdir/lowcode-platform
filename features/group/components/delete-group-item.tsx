@@ -18,11 +18,17 @@ import { toast } from 'sonner';
 import { deleteGroup } from '../api/delete-group';
 import type { Group } from '../types';
 
+/**
+ * グループ削除アイテムのProps型
+ */
 type DeleteGroupItemProps = {
   group: Group;
   onOpenChange: (open: boolean) => void;
 };
 
+/**
+ * グループ削除アイテムコンポーネント
+ */
 export function DeleteGroupItem({
   group,
   onOpenChange: onDropdownOpenChange,

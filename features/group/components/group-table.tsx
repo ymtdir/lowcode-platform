@@ -35,17 +35,26 @@ import {
 } from '@/components/ui/table';
 import type { Group } from '../types';
 
+/**
+ * ユーザー型
+ */
 type User = {
   id: string;
   email: string;
   name: string | null;
 };
 
+/**
+ * グループテーブルのProps型
+ */
 type GroupTableProps = {
   groups: Group[];
   users: User[];
 };
 
+/**
+ * グループテーブルコンポーネント
+ */
 export function GroupTable({ groups, users }: GroupTableProps) {
   const columns = createColumns(groups, users);
   const [sorting, setSorting] = React.useState<SortingState>([]);

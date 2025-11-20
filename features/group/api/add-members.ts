@@ -3,6 +3,9 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 
+/**
+ * グループにメンバーを追加するServer Action
+ */
 export async function addMembers(groupId: string, userIds: string[]) {
   try {
     if (userIds.length === 0) {

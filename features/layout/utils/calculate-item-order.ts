@@ -1,7 +1,13 @@
 import type { Item as ItemType } from '@/features/item/types';
 
+/**
+ * ドロップ位置の型
+ */
 type DropPosition = 'before' | 'after' | 'inside';
 
+/**
+ * アイテム順序計算の入力型
+ */
 type CalculateItemOrderParams = {
   activeItem: ItemType;
   overItem: ItemType | null;
@@ -10,12 +16,17 @@ type CalculateItemOrderParams = {
   insideTargetId: string | null;
 };
 
+/**
+ * アイテム順序計算の結果型
+ */
 type CalculateItemOrderResult = {
   newParentId: string | null;
   reorderedSiblings: Array<{ id: string; order: number }>;
 };
 
-//兄弟アイテムを取得してソート
+/**
+ * 兄弟アイテムを取得してソートするヘルパー関数
+ */
 function getSiblings(
   flattenedItems: ItemType[],
   parentId: string | null,
@@ -26,7 +37,9 @@ function getSiblings(
     .sort((a, b) => a.order - b.order);
 }
 
-//アイテムのリストから順序付きの配列を生成
+/**
+ * アイテムのリストから順序付きの配列を生成するヘルパー関数
+ */
 function createReorderedSiblings(
   items: ItemType[]
 ): Array<{ id: string; order: number }> {
@@ -36,7 +49,9 @@ function createReorderedSiblings(
   }));
 }
 
-// アイテムのドラッグ&ドロップ時の新しい順序を計算する
+/**
+ * アイテムのドラッグ&ドロップ時の新しい順序を計算する関数
+ */
 export function calculateItemOrder({
   activeItem,
   overItem,
@@ -96,7 +111,9 @@ export function calculateItemOrder({
   }
 }
 
-// 同じ親内での並び替え
+/**
+ * 同じ親内での並び替えを計算するヘルパー関数
+ */
 function calculateSameParentReorder({
   activeItem,
   overItem,
@@ -134,7 +151,9 @@ function calculateSameParentReorder({
   };
 }
 
-// 異なる親への移動
+/**
+ * 異なる親への移動を計算するヘルパー関数
+ */
 function calculateDifferentParentReorder({
   activeItem,
   overItem,

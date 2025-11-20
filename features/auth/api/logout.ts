@@ -3,6 +3,9 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 
+/**
+ * ログアウト処理を行うServer Action
+ */
 export async function logout() {
   try {
     const supabase = await createClient();

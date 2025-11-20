@@ -16,8 +16,14 @@ import { EditItemButton } from './edit-item-button';
 import type { Item as ItemType } from '@/features/item/types';
 import { ITEM_CONFIGS } from '@/features/item/constants';
 
+/**
+ * ドロップ位置の型
+ */
 type DropPosition = 'before' | 'after' | 'inside';
 
+/**
+ * アイテムコンポーネントのProps型
+ */
 type ItemProps = {
   item: ItemType;
   level?: number;
@@ -28,6 +34,9 @@ type ItemProps = {
   activeItem?: ItemType | null;
 };
 
+/**
+ * ワークスペースメニューのアイテムコンポーネント
+ */
 export function Item({
   item,
   level = 0,

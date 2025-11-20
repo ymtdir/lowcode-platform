@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/features/layout/components/app-sidebar';
 
+/**
+ * 保護されたレイアウトコンポーネント（認証必須）
+ */
 export default async function ProtectedLayout({
   children,
 }: {
