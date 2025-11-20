@@ -24,10 +24,16 @@ import { toast } from 'sonner';
 import { createGroup } from '../api/create-group';
 import type { Group } from '../types';
 
+/**
+ * グループ作成ボタンのProps型
+ */
 type CreateGroupButtonProps = {
   groups: Group[];
 };
 
+/**
+ * グループ作成コンテンツのProps型
+ */
 type CreateGroupContentProps = {
   groups: Group[];
   onClose: () => void;
@@ -35,6 +41,9 @@ type CreateGroupContentProps = {
 
 const NONE_VALUE = '__none__';
 
+/**
+ * グループ作成コンテンツコンポーネント
+ */
 function CreateGroupContent({ groups, onClose }: CreateGroupContentProps) {
   const [parentId, setParentId] = useState<string>(NONE_VALUE);
   const [state, formAction] = useActionState(createGroup, {});
@@ -98,6 +107,9 @@ function CreateGroupContent({ groups, onClose }: CreateGroupContentProps) {
   );
 }
 
+/**
+ * グループ作成ボタンコンポーネント
+ */
 export function CreateGroupButton({ groups }: CreateGroupButtonProps) {
   const [open, setOpen] = useState(false);
   const [resetKey, setResetKey] = useState(0);

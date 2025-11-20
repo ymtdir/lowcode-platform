@@ -16,6 +16,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+/**
+ * ログインフォームコンポーネント
+ */
 export function LoginForm() {
   const [state, formAction] = useActionState(login, {});
 

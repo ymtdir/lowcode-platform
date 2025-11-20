@@ -13,6 +13,9 @@ import {
 import { useColor } from '../providers/color-provider';
 import type { Color } from '../types';
 
+/**
+ * カラー選択コンポーネント
+ */
 export function ColorSelector() {
   const { color, setColor } = useColor();
   const { resolvedTheme } = useTheme();

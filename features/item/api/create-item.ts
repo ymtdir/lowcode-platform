@@ -10,6 +10,9 @@ type FormState = {
   success?: boolean;
 };
 
+/**
+ * アイテムを作成するServer Action
+ */
 export async function createItem(
   _prevState: FormState,
   formData: FormData

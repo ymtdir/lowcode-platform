@@ -1,6 +1,9 @@
 import { Folder, Table } from 'lucide-react';
 import type { ItemType } from '@prisma/client';
 
+/**
+ * アイテムタイプごとの設定
+ */
 type ItemConfig = {
   icon: typeof Folder | typeof Table;
   draggable: boolean;
@@ -10,6 +13,9 @@ type ItemConfig = {
   showChevron: boolean; // ホバー時にChevronRightを表示するか
 };
 
+/**
+ * アイテムタイプの設定（Config-Driven UI）
+ */
 export const ITEM_CONFIGS: Record<ItemType, ItemConfig> = {
   FOLDER: {
     icon: Folder,

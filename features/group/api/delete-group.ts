@@ -3,11 +3,17 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 
+/**
+ * グループ削除結果の型
+ */
 type DeleteResult = {
   error?: string;
   success?: boolean;
 };
 
+/**
+ * グループを削除するServer Action
+ */
 export async function deleteGroup(groupId: string): Promise<DeleteResult> {
   try {
     // 子グループが存在するか確認

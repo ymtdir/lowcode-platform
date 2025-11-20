@@ -10,6 +10,9 @@ type FormState = {
   success?: boolean;
 };
 
+/**
+ * ユーザーのプロフィールを更新するServer Action
+ */
 export async function updateUserProfile(
   userId: string,
   _prevState: FormState,
@@ -52,6 +55,9 @@ export async function updateUserProfile(
   }
 }
 
+/**
+ * ユーザーのパスワードを更新するServer Action
+ */
 export async function updateUserPassword(
   userId: string,
   _prevState: FormState,

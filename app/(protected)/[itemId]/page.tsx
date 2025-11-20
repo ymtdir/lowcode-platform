@@ -6,10 +6,16 @@ import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * アイテムページのProps型
+ */
 type ItemPageProps = {
   params: Promise<{ itemId: string }>;
 };
 
+/**
+ * アイテム詳細ページ（フォルダ/テーブル）
+ */
 export default async function ItemPage({ params }: ItemPageProps) {
   const { itemId } = await params;
 

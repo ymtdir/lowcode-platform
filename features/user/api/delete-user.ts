@@ -5,11 +5,17 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 
+/**
+ * ユーザー削除結果の型
+ */
 type DeleteResult = {
   error?: string;
   success?: boolean;
 };
 
+/**
+ * ユーザーを削除するServer Action
+ */
 export async function deleteUser(userId: string): Promise<DeleteResult> {
   try {
     // 現在のユーザーを取得

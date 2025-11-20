@@ -7,6 +7,9 @@ type FormState = {
   success?: boolean;
 };
 
+/**
+ * フォルダを作成するServer Action（createItemのラッパー）
+ */
 export async function createFolder(
   prevState: FormState,
   formData: FormData

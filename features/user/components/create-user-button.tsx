@@ -16,10 +16,16 @@ import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { createUser } from '../api/create-user';
 
+/**
+ * ユーザー作成コンテンツのProps型
+ */
 type CreateUserContentProps = {
   onClose: () => void;
 };
 
+/**
+ * ユーザー作成コンテンツコンポーネント
+ */
 function CreateUserContent({ onClose }: CreateUserContentProps) {
   const [state, formAction] = useActionState(createUser, {});
 
@@ -76,6 +82,9 @@ function CreateUserContent({ onClose }: CreateUserContentProps) {
   );
 }
 
+/**
+ * ユーザー作成ボタンコンポーネント
+ */
 export function CreateUserButton() {
   const [open, setOpen] = useState(false);
   const [resetKey, setResetKey] = useState(0);

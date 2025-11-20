@@ -17,16 +17,25 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { createTable } from '@/features/item/api/create-table';
 
+/**
+ * テーブル作成ボタンのProps型
+ */
 type CreateTableButtonProps = {
   parentId: string;
   onOpenChange: (open: boolean) => void;
 };
 
+/**
+ * テーブル作成コンテンツのProps型
+ */
 type CreateTableContentProps = {
   parentId: string;
   onClose: () => void;
 };
 
+/**
+ * テーブル作成コンテンツコンポーネント
+ */
 function CreateTableContent({ parentId, onClose }: CreateTableContentProps) {
   const [state, formAction] = useActionState(createTable, {});
 
@@ -69,6 +78,9 @@ function CreateTableContent({ parentId, onClose }: CreateTableContentProps) {
   );
 }
 
+/**
+ * テーブル作成ボタンコンポーネント
+ */
 export function CreateTableButton({
   parentId,
   onOpenChange: onDropdownOpenChange,

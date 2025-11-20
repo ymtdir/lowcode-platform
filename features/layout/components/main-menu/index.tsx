@@ -8,6 +8,9 @@ import {
 
 import type { MainMenuItem } from '../../types';
 
+/**
+ * メインメニューコンポーネント
+ */
 export function MainMenu({ items }: { items: MainMenuItem[] }) {
   return (
     <SidebarGroup>

@@ -9,6 +9,9 @@ type FormState = {
   success?: boolean;
 };
 
+/**
+ * ユーザーを作成するServer Action
+ */
 export async function createUser(
   _prevState: FormState,
   formData: FormData

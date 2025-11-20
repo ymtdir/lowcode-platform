@@ -18,12 +18,18 @@ import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { deleteItem } from '@/features/item/api';
 
+/**
+ * フォルダ削除アイテムのProps型
+ */
 type DeleteFolderItemProps = {
   folderId: string;
   folderName: string;
   onOpenChange: (open: boolean) => void;
 };
 
+/**
+ * フォルダ削除アイテムコンポーネント
+ */
 export function DeleteFolderItem({
   folderId,
   folderName,

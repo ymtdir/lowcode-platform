@@ -31,12 +31,18 @@ import {
 import { updateGroup } from '../api/update-group';
 import type { Group } from '../types';
 
+/**
+ * グループ編集アイテムのProps型
+ */
 type EditGroupItemProps = {
   group: Group;
   allGroups: Group[];
   onOpenChange: (open: boolean) => void;
 };
 
+/**
+ * グループ編集コンテンツのProps型
+ */
 type EditGroupContentProps = {
   group: Group;
   allGroups: Group[];
@@ -45,7 +51,9 @@ type EditGroupContentProps = {
 
 const NONE_VALUE = '__none__';
 
-// 子孫グループIDを再帰的に収集する
+/**
+ * 子孫グループIDを再帰的に収集するヘルパー関数
+ */
 function collectDescendantIds(groupId: string, allGroups: Group[]): string[] {
   const descendantIds: string[] = [];
 
@@ -63,6 +71,9 @@ function collectDescendantIds(groupId: string, allGroups: Group[]): string[] {
   return descendantIds;
 }
 
+/**
+ * グループ編集コンテンツコンポーネント
+ */
 function EditGroupContent({
   group,
   allGroups,
@@ -152,6 +163,9 @@ function EditGroupContent({
   );
 }
 
+/**
+ * グループ編集アイテムコンポーネント
+ */
 export function EditGroupItem({
   group,
   allGroups,

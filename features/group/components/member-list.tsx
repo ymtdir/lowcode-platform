@@ -27,23 +27,35 @@ import {
 } from '@/components/ui/select';
 import { addMembers, removeMembers } from '../api';
 
+/**
+ * ユーザー型
+ */
 type User = {
   id: string;
   email: string;
   name: string | null;
 };
 
+/**
+ * メンバー型
+ */
 type Member = {
   id: string;
   user: User;
 };
 
+/**
+ * メンバーリストのProps型
+ */
 type MemberListProps = {
   groupId: string;
   members: Member[];
   availableUsers: User[];
 };
 
+/**
+ * メンバーリストコンポーネント
+ */
 export function MemberList({
   groupId,
   members,

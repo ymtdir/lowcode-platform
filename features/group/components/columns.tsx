@@ -15,12 +15,18 @@ import { DeleteGroupItem } from './delete-group-item';
 import { ManageMembersItem } from './manage-members-item';
 import type { Group } from '../types';
 
+/**
+ * ユーザー型
+ */
 type User = {
   id: string;
   email: string;
   name: string | null;
 };
 
+/**
+ * グループテーブルのカラム定義を生成する関数
+ */
 export const createColumns = (
   allGroups: Group[],
   allUsers: User[]

@@ -10,6 +10,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+/**
+ * テーマ選択コンポーネント
+ */
 export function ThemeSelector() {
   const { theme, setTheme } = useTheme();
 

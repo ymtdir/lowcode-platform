@@ -16,18 +16,27 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { renameItem } from '@/features/item/api';
 
+/**
+ * フォルダ名変更アイテムのProps型
+ */
 type RenameFolderItemProps = {
   folderId: string;
   currentName: string;
   onOpenChange: (open: boolean) => void;
 };
 
+/**
+ * 名前変更コンテンツのProps型
+ */
 type RenameContentProps = {
   folderId: string;
   currentName: string;
   onClose: () => void;
 };
 
+/**
+ * 名前変更コンテンツコンポーネント
+ */
 function RenameContent({ folderId, currentName, onClose }: RenameContentProps) {
   const [name, setName] = useState(currentName);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -87,6 +96,9 @@ function RenameContent({ folderId, currentName, onClose }: RenameContentProps) {
   );
 }
 
+/**
+ * フォルダ名変更アイテムコンポーネント
+ */
 export function RenameFolderItem({
   folderId,
   currentName,

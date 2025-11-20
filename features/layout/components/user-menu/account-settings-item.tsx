@@ -13,6 +13,9 @@ import { Separator } from '@/components/ui/separator';
 import { ThemeSelector } from '@/features/theme/components/theme-selector';
 import { ColorSelector } from '@/features/theme/components/color-selector';
 
+/**
+ * アカウント設定アイテムコンポーネント
+ */
 export function AccountSettingsItem() {
   return (
     <Dialog>

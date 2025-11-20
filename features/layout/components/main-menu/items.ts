@@ -2,6 +2,9 @@ import { Home, Users, Building, Calendar, Settings } from 'lucide-react';
 
 import type { MainMenuItem } from '../../types';
 
+/**
+ * メインメニューアイテムの配列
+ */
 export const mainMenuItems: MainMenuItem[] = [
   {
     title: 'ホーム',

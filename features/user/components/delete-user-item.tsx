@@ -18,11 +18,17 @@ import { toast } from 'sonner';
 import { deleteUser } from '../api/delete-user';
 import type { User } from '../types';
 
+/**
+ * ユーザー削除アイテムのProps型
+ */
 type DeleteUserItemProps = {
   user: User;
   onOpenChange: (open: boolean) => void;
 };
 
+/**
+ * ユーザー削除アイテムコンポーネント
+ */
 export function DeleteUserItem({
   user,
   onOpenChange: onDropdownOpenChange,

@@ -18,12 +18,18 @@ import { toast } from 'sonner';
 import { updateColumn } from '../api/update-column';
 import type { Column } from '../types/column';
 
+/**
+ * カラム編集アイテムのProps型
+ */
 type EditColumnItemProps = {
   itemId: string;
   column: Column;
   onOpenChange: (open: boolean) => void;
 };
 
+/**
+ * カラム編集アイテムコンポーネント
+ */
 export function EditColumnItem({
   itemId,
   column,

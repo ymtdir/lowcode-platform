@@ -24,6 +24,9 @@ import { addColumn } from '../api/add-column';
 import type { ColumnType } from '../types/column';
 import { COLUMN_TYPE_LIST, COLUMN_CONFIGS } from '../constants';
 
+/**
+ * カラム追加ダイアログのProps型
+ */
 type AddColumnDialogProps = {
   itemId: string;
   open: boolean;
@@ -31,6 +34,9 @@ type AddColumnDialogProps = {
   nextOrder: number;
 };
 
+/**
+ * カラム追加ダイアログコンポーネント
+ */
 export function AddColumnDialog({
   itemId,
   open,

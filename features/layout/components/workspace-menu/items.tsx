@@ -14,10 +14,16 @@ import {
 } from '@/features/layout/utils/collision-detection';
 import { ITEM_CONFIGS } from '@/features/item/constants';
 
+/**
+ * ワークスペースアイテムラッパーのProps型
+ */
 type WorkspaceItemsWrapperProps = {
   items: ItemType[];
 };
 
+/**
+ * ワークスペースアイテムラッパーコンポーネント
+ */
 export function WorkspaceItemsWrapper({ items }: WorkspaceItemsWrapperProps) {
   // メニュー固有のUI状態管理
   const {

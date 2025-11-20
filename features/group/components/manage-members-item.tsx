@@ -22,29 +22,44 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { addMembers, removeMembers } from '../api';
 
+/**
+ * ユーザー型
+ */
 type User = {
   id: string;
   email: string;
   name: string | null;
 };
 
+/**
+ * メンバー型
+ */
 type Member = {
   id: string;
   user: User;
 };
 
+/**
+ * グループ型（メンバー管理用）
+ */
 type Group = {
   id: string;
   name: string;
   members?: Member[];
 };
 
+/**
+ * メンバー管理アイテムのProps型
+ */
 type ManageMembersItemProps = {
   group: Group;
   allUsers: User[];
   onOpenChange: (open: boolean) => void;
 };
 
+/**
+ * メンバー管理アイテムコンポーネント
+ */
 export function ManageMembersItem({
   group,
   allUsers,

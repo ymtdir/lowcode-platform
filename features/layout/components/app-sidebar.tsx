@@ -12,10 +12,16 @@ import { MainMenu, mainMenuItems } from './main-menu';
 import { WorkspaceMenu } from './workspace-menu';
 import { getItems } from '@/features/item/api';
 
+/**
+ * アプリケーションサイドバーのProps型
+ */
 type AppSidebarProps = {
   userName: string;
 };
 
+/**
+ * アプリケーションサイドバーコンポーネント
+ */
 export async function AppSidebar({ userName }: AppSidebarProps) {
   const items = await getItems();
 

@@ -3,6 +3,9 @@ import { getItems } from '@/features/item/api';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * ワークスペースページ
+ */
 export default async function WorkspacePage() {
   const folders = await getItems();
 

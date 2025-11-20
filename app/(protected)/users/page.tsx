@@ -3,6 +3,9 @@ import { UserTable } from '@/features/user/components';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * ユーザー管理ページ
+ */
 export default async function UsersPage() {
   const users = await getUsers();
 

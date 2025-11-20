@@ -17,16 +17,25 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { createFolder } from '@/features/item/api/create-folder';
 
+/**
+ * フォルダ作成ボタンのProps型
+ */
 type CreateFolderButtonProps = {
   parentId: string;
   onOpenChange: (open: boolean) => void;
 };
 
+/**
+ * フォルダ作成コンテンツのProps型
+ */
 type CreateFolderContentProps = {
   parentId: string;
   onClose: () => void;
 };
 
+/**
+ * フォルダ作成コンテンツコンポーネント
+ */
 function CreateFolderContent({ parentId, onClose }: CreateFolderContentProps) {
   const [state, formAction] = useActionState(createFolder, {});
 
@@ -69,6 +78,9 @@ function CreateFolderContent({ parentId, onClose }: CreateFolderContentProps) {
   );
 }
 
+/**
+ * フォルダ作成ボタンコンポーネント
+ */
 export function CreateFolderButton({
   parentId,
   onOpenChange: onDropdownOpenChange,

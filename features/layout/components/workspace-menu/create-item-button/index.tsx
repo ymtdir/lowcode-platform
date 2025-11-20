@@ -10,10 +10,16 @@ import {
 import { CreateFolderButton } from './create-folder-button';
 import { CreateTableButton } from './create-table-button';
 
+/**
+ * アイテム作成ボタンのProps型
+ */
 type CreateItemButtonProps = {
   parentId: string;
 };
 
+/**
+ * アイテム作成ボタンコンポーネント
+ */
 export function CreateItemButton({ parentId }: CreateItemButtonProps) {
   const [open, setOpen] = useState(false);
 
