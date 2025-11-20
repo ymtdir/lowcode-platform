@@ -71,7 +71,7 @@ export function AddColumnDialog({
         toast.success('カラムを追加しました');
         onOpenChange(false);
       }
-    } catch (error) {
+    } catch {
       toast.error('カラムの追加に失敗しました');
     } finally {
       setIsSubmitting(false);

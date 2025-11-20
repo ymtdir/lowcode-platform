@@ -63,7 +63,7 @@ export function EditColumnItem({
         setOpen(false);
         onOpenChange(false);
       }
-    } catch (error) {
+    } catch {
       toast.error('カラムの更新に失敗しました');
     } finally {
       setIsSubmitting(false);

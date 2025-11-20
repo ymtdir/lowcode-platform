@@ -1,5 +1,9 @@
 import { nanoid } from 'nanoid';
-import type { Column, CreateColumnInput, UpdateColumnInput } from '../types/column';
+import type {
+  Column,
+  CreateColumnInput,
+  UpdateColumnInput,
+} from '../types/column';
 import type { ColumnSchema } from '../types/schema';
 
 /**

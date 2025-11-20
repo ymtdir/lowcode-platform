@@ -27,10 +27,7 @@ type CreateFolderContentProps = {
   onClose: () => void;
 };
 
-function CreateFolderContent({
-  parentId,
-  onClose,
-}: CreateFolderContentProps) {
+function CreateFolderContent({ parentId, onClose }: CreateFolderContentProps) {
   const [state, formAction] = useActionState(createFolder, {});
 
   // 成功・エラー時の処理

@@ -21,8 +21,7 @@ export function validateColumnValue(
     return {
       columnId: column.id,
       columnName: column.name,
-      message:
-        column.validation.message || `${column.name}は必須項目です`,
+      message: column.validation.message || `${column.name}は必須項目です`,
     };
   }
 
