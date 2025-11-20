@@ -1,5 +1,7 @@
 import { getItemById } from '@/features/item/api';
 import type { Item } from '@/features/item/types';
+import { getColumnSchema } from '@/features/column/types/schema';
+import { ColumnList } from '@/features/column/components/column-list';
 import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
@@ -16,6 +18,11 @@ export default async function ItemPage({ params }: ItemPageProps) {
   if (!item) {
     notFound();
   }
+
+  // TABLE型の場合、カラムスキーマを取得
+  const columnSchema =
+    item.type === 'TABLE' ? getColumnSchema(item.meta) : null;
+  const columns = columnSchema?.columns || [];
 
   return (
     <div className="container mx-auto p-6">
@@ -60,6 +67,14 @@ export default async function ItemPage({ params }: ItemPageProps) {
             </div>
           </dl>
         </div>
+
+        {/* TABLE型の場合、カラム管理UIを表示 */}
+        {item.type === 'TABLE' && (
+          <div className="rounded-lg border p-4">
+            <h2 className="text-lg font-semibold mb-4">カラム管理</h2>
+            <ColumnList itemId={itemId} columns={columns} />
+          </div>
+        )}
 
         {item.children && item.children.length > 0 && (
           <div className="rounded-lg border p-4">

@@ -134,29 +134,9 @@ export type Column =
   | CheckboxColumn;
 
 /**
- * カラムスキーマ（テーブルの全カラム定義）
- */
-export type ColumnSchema = {
-  columns: Column[];
-};
-
-/**
  * カラム作成用の入力型
  */
-export type CreateColumnInput<T extends ColumnType = ColumnType> =
-  T extends 'TEXT'
-    ? Omit<TextColumn, 'id' | 'createdAt' | 'updatedAt'>
-    : T extends 'TEXTAREA'
-      ? Omit<TextareaColumn, 'id' | 'createdAt' | 'updatedAt'>
-      : T extends 'NUMBER'
-        ? Omit<NumberColumn, 'id' | 'createdAt' | 'updatedAt'>
-        : T extends 'DATE'
-          ? Omit<DateColumn, 'id' | 'createdAt' | 'updatedAt'>
-          : T extends 'SELECT'
-            ? Omit<SelectColumn, 'id' | 'createdAt' | 'updatedAt'>
-            : T extends 'CHECKBOX'
-              ? Omit<CheckboxColumn, 'id' | 'createdAt' | 'updatedAt'>
-              : never;
+export type CreateColumnInput = Omit<Column, 'id' | 'createdAt' | 'updatedAt'>;
 
 /**
  * カラム更新用の入力型
