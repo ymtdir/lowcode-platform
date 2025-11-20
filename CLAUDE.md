@@ -42,6 +42,91 @@ NEXTAUTH_SECRET=your-nextauth-secret
 NEXTAUTH_URL=http://localhost:3000
 ```
 
+## コーディング規約
+
+### コメントルール
+
+コードの可読性とメンテナンス性を向上させるため、以下のコメントルールに従う。
+
+#### 1. JSDoc形式のコメント（`/** */`）
+
+関数、型定義、定数にはJSDoc形式のコメントを使用する。
+
+```typescript
+/**
+ * ユーザー情報を取得する
+ * @param userId - ユーザーID
+ * @returns ユーザー情報、存在しない場合はnull
+ */
+export async function getUserById(userId: string): Promise<User | null> {
+  return await prisma.user.findUnique({ where: { id: userId } });
+}
+
+/**
+ * カラムの型定義
+ */
+export type ColumnType = 'TEXT' | 'NUMBER' | 'DATE' | 'SELECT' | 'CHECKBOX';
+
+/**
+ * カラムタイプの一覧（順序を保持）
+ */
+export const COLUMN_TYPE_LIST: ColumnType[] = [
+  'TEXT',
+  'NUMBER',
+  'DATE',
+  'SELECT',
+  'CHECKBOX',
+];
+```
+
+#### 2. インライン・コメント（`//`）
+
+実装内の処理や判断ロジックの説明には `//` を使用する。
+
+```typescript
+export async function addColumn(itemId: string, input: CreateColumnInput) {
+  // 認証チェック
+  const user = await getCurrentUser();
+  if (!user) {
+    return { error: '認証が必要です' };
+  }
+
+  // アイテムの取得と権限チェック
+  const item = await prisma.item.findUnique({ where: { id: itemId } });
+  if (!item || item.type !== 'TABLE') {
+    return { error: 'テーブルが見つかりません' };
+  }
+
+  // カラムをスキーマに追加
+  const tableMeta = getTableMeta(item.meta);
+  const updatedSchema = addColumnToSchema(
+    tableMeta?.schema || createEmptySchema(),
+    input
+  );
+
+  return { success: true };
+}
+```
+
+#### 3. コメントのガイドライン
+
+- **必須**: 公開APIとなる関数、型定義、定数にはJSDocコメントを記述
+- **推奨**: 複雑なロジックや非自明な処理には実装内コメント
+- **避ける**: 自明な処理への冗長なコメント
+- **日本語**: このプロジェクトでは日本語でコメントを記述
+
+```typescript
+// ❌ Bad: 自明な処理へのコメント
+const sum = a + b; // aとbを足す
+
+// ✅ Good: 非自明な処理への説明
+// 並び替え後のorderが重複しないよう、後続要素を+1ずつ調整
+const reorderedColumns = columns.map((col, index) => ({
+  ...col,
+  order: index >= newOrder ? col.order + 1 : col.order,
+}));
+```
+
 ## アーキテクチャ方針
 
 ### Server-First Architecture
