@@ -46,9 +46,6 @@ export default async function ItemPage({ params }: ItemPageProps) {
               <dt className="text-sm font-medium text-muted-foreground">ID</dt>
               <dd className="mt-1 text-sm">{item.id}</dd>
             </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              作成者: {item.createdBy.name || item.createdBy.email}
-            </p>
             <div>
               <dt className="text-sm font-medium text-muted-foreground">
                 {item.type === 'FOLDER' ? '子フォルダ数' : '子アイテム数'}
@@ -95,9 +92,6 @@ export default async function ItemPage({ params }: ItemPageProps) {
                 >
                   <div className="flex-1">
                     <p className="font-medium">{child.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      作成者: {child.createdBy.name}
-                    </p>
                   </div>
                 </div>
               ))}

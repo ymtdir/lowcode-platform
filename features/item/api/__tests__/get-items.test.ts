@@ -28,11 +28,6 @@ describe('getItems', () => {
       createdAt: new Date('2024-01-01'),
       updatedAt: new Date('2024-01-01'),
       createdById: 'user-1',
-      createdBy: {
-        id: 'user-1',
-        email: 'test@example.com',
-        name: 'テストユーザー',
-      },
       children: [],
       _count: {
         children: 0,
@@ -47,11 +42,6 @@ describe('getItems', () => {
       createdAt: new Date('2024-01-02'),
       updatedAt: new Date('2024-01-02'),
       createdById: 'user-1',
-      createdBy: {
-        id: 'user-1',
-        email: 'test@example.com',
-        name: 'テストユーザー',
-      },
       children: [],
       _count: {
         children: 0,
@@ -90,11 +80,6 @@ describe('getItems', () => {
       createdAt: new Date('2024-01-02'),
       updatedAt: new Date('2024-01-02'),
       createdById: 'user-1',
-      createdBy: {
-        id: 'user-1',
-        email: 'test@example.com',
-        name: 'テストユーザー',
-      },
       children: [],
       _count: {
         children: 0,
@@ -109,11 +94,6 @@ describe('getItems', () => {
       createdAt: new Date('2024-01-01'),
       updatedAt: new Date('2024-01-01'),
       createdById: 'user-1',
-      createdBy: {
-        id: 'user-1',
-        email: 'test@example.com',
-        name: 'テストユーザー',
-      },
       children: [mockChildFolder],
       _count: {
         children: 1,

@@ -26,11 +26,6 @@ describe('getItemById', () => {
       createdAt: new Date('2024-01-01'),
       updatedAt: new Date('2024-01-01'),
       createdById: 'user-1',
-      createdBy: {
-        id: 'user-1',
-        email: 'test@example.com',
-        name: 'テストユーザー',
-      },
       children: [],
       _count: {
         children: 0,
@@ -45,22 +40,7 @@ describe('getItemById', () => {
     expect(prisma.item.findUnique).toHaveBeenCalledWith({
       where: { id: itemId },
       include: {
-        createdBy: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-          },
-        },
         children: {
-          include: {
-            createdBy: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
           orderBy: {
             createdAt: 'asc',
           },
@@ -84,11 +64,6 @@ describe('getItemById', () => {
       createdAt: new Date('2024-01-01'),
       updatedAt: new Date('2024-01-01'),
       createdById: 'user-1',
-      createdBy: {
-        id: 'user-1',
-        email: 'test@example.com',
-        name: 'テストユーザー',
-      },
       children: [
         {
           id: 'child-1',
@@ -98,10 +73,6 @@ describe('getItemById', () => {
           createdAt: new Date('2024-01-02'),
           updatedAt: new Date('2024-01-02'),
           createdById: 'user-1',
-          createdBy: {
-            id: 'user-1',
-            name: 'テストユーザー',
-          },
         },
       ],
       _count: {

@@ -17,7 +17,6 @@ model User {
   updatedAt DateTime @updatedAt
 
   groupMembers GroupMember[]
-  items        Item[]
 }
 
 model Group {
@@ -60,14 +59,28 @@ model Item {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  parent    Item?  @relation("ItemHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
-  children  Item[] @relation("ItemHierarchy")
-  createdBy User   @relation(fields: [createdById], references: [id])
+  parent   Item?    @relation("ItemHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children Item[]   @relation("ItemHierarchy")
+  records  Record[]
 
   @@index([parentId])
   @@index([createdById])
   @@index([parentId, order])
   @@index([type])
+}
+
+model Record {
+  id          String   @id @default(uuid())
+  tableId     String
+  data        Json
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  table Item @relation(fields: [tableId], references: [id], onDelete: Cascade)
+
+  @@index([tableId])
+  @@index([createdById])
 }
 
 enum UserRole {
