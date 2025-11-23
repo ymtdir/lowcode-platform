@@ -24,7 +24,7 @@ import { Plus } from 'lucide-react';
 import { updateRecord } from '../api/update-record';
 import { createRecord } from '../api/create-record';
 import { createColumns } from './columns';
-import { ColumnManageDialog } from './column-manage-dialog';
+import { TableManageDialog } from './table-manage-button';
 import { BulkDeleteButton } from './bulk-delete-button';
 
 /**
@@ -165,13 +165,13 @@ export function RecordTable({
           className="max-w-sm"
         />
         <div className="flex items-center gap-2">
-          <ColumnManageDialog itemId={tableId} columns={columns} />
+          <TableManageDialog itemId={tableId} columns={columns} />
           <Button
             onClick={handleCreateRecord}
             disabled={isPending || columns.length === 0}
           >
             <Plus />
-            新規作成
+            レコード追加
           </Button>
         </div>
       </div>

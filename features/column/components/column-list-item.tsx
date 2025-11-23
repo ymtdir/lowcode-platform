@@ -33,12 +33,12 @@ export function ColumnListItem({ itemId, column }: ColumnListItemProps) {
     <div className="flex items-center gap-2 p-3 border rounded-lg bg-card hover:bg-accent/50 transition-colors">
       {/* ドラッグハンドル（将来実装） */}
       <div className="cursor-grab text-muted-foreground">
-        <GripVertical className="h-4 w-4" />
+        <GripVertical className="size-4" />
       </div>
 
       {/* アイコン */}
       <div className="shrink-0">
-        <Icon className="h-4 w-4 text-muted-foreground" />
+        <Icon className="size-4 text-muted-foreground" />
       </div>
 
       {/* カラム情報 */}
@@ -57,10 +57,10 @@ export function ColumnListItem({ itemId, column }: ColumnListItemProps) {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">
             <span className="sr-only">メニューを開く</span>
-            <MoreHorizontal className="h-4 w-4" />
+            <MoreHorizontal />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent side="bottom" align="end">
+        <DropdownMenuContent side="bottom">
           <EditColumnItem
             itemId={itemId}
             column={column}

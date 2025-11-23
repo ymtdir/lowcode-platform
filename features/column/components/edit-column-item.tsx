@@ -79,7 +79,7 @@ export function EditColumnItem({
   return (
     <>
       <DropdownMenuItem onClick={() => setOpen(true)}>
-        <Pencil className="mr-2 h-4 w-4" />
+        <Pencil />
         編集
       </DropdownMenuItem>
 

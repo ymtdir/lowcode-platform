@@ -1,10 +1,11 @@
 import {
+  CaseSensitive,
   AlignLeft,
-  Calendar,
-  CheckSquare,
   Hash,
+  Calendar,
   List,
-  Text,
+  Tags,
+  CheckSquare,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { ColumnType } from '../types/column';
@@ -25,19 +26,19 @@ export type ColumnConfig = {
  */
 export const COLUMN_CONFIGS: Record<ColumnType, ColumnConfig> = {
   TEXT: {
-    icon: Text,
-    label: 'テキスト（1行）',
-    description: '短いテキストを入力できます',
+    icon: CaseSensitive,
+    label: 'テキスト',
+    description: '短い文字列を入力できます',
     hasConfig: true,
     defaultConfig: {
-      maxLength: 255,
+      maxLength: 64,
       placeholder: '',
     },
   },
   TEXTAREA: {
     icon: AlignLeft,
-    label: 'テキスト（複数行）',
-    description: '長いテキストを入力できます',
+    label: 'テキストエリア',
+    description: '長い文章や詳細な説明を入力できます',
     hasConfig: true,
     defaultConfig: {
       maxLength: 5000,
@@ -58,7 +59,7 @@ export const COLUMN_CONFIGS: Record<ColumnType, ColumnConfig> = {
   DATE: {
     icon: Calendar,
     label: '日付',
-    description: '日付を選択できます',
+    description: 'カレンダーから日付を選択できます',
     hasConfig: true,
     defaultConfig: {
       format: 'YYYY-MM-DD',
@@ -66,8 +67,18 @@ export const COLUMN_CONFIGS: Record<ColumnType, ColumnConfig> = {
   },
   SELECT: {
     icon: List,
-    label: '選択肢',
+    label: 'セレクト',
     description: 'ドロップダウンから選択できます',
+    hasConfig: true,
+    defaultConfig: {
+      options: [],
+      allowCustom: false,
+    },
+  },
+  MULTI_SELECT: {
+    icon: Tags,
+    label: 'マルチセレクト',
+    description: '複数の選択肢から複数選択できます',
     hasConfig: true,
     defaultConfig: {
       options: [],
@@ -94,6 +105,7 @@ export const COLUMN_TYPE_LIST: ColumnType[] = [
   'NUMBER',
   'DATE',
   'SELECT',
+  'MULTI_SELECT',
   'CHECKBOX',
 ] as const;
 

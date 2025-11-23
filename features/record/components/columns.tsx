@@ -2,11 +2,12 @@
 
 import { ColumnDef } from '@tanstack/react-table';
 import { Checkbox } from '@/components/ui/checkbox';
-import type { Column, SelectColumn } from '@/features/column/types';
+import type { Column, SelectColumn, MultiSelectColumn } from '@/features/column/types';
 import type { Record, RecordData } from '../types';
 import { TextCell } from './cells/text-cell';
 import { NumberCell } from './cells/number-cell';
 import { SelectCell } from './cells/select-cell';
+import { MultiSelectCell } from './cells/multi-select-cell';
 import { CheckboxCell } from './cells/checkbox-cell';
 import { DateCell } from './cells/date-cell';
 import { TextareaCell } from './cells/textarea-cell';
@@ -111,6 +112,14 @@ export const createColumns = (
               value={(value as string) ?? null}
               onChange={handleChange}
               options={(column as SelectColumn).config?.options ?? []}
+            />
+          );
+        case 'MULTI_SELECT':
+          return (
+            <MultiSelectCell
+              value={(value as string[]) ?? null}
+              onChange={handleChange}
+              options={(column as MultiSelectColumn).config?.options ?? []}
             />
           );
         case 'CHECKBOX':

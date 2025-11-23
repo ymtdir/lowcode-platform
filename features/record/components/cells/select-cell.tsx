@@ -26,7 +26,7 @@ function getColorClass(color?: string): string {
 }
 
 /**
- * 選択セルコンポーネント
+ * セレクトセルコンポーネント
  */
 export function SelectCell({ value, onChange, options }: SelectCellProps) {
   const [isOpen, setIsOpen] = useState(false);
