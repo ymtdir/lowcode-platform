@@ -71,7 +71,15 @@ describe('createRecord', () => {
 
     const result = await createRecord({}, formData);
 
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({
+      success: true,
+      record: {
+        id: 'record-1',
+        tableId: 'table-1',
+        data: { name: 'テスト' },
+        createdById: 'db-user-1',
+      },
+    });
     expect(prisma.record.create).toHaveBeenCalledWith({
       data: {
         tableId: 'table-1',
@@ -148,7 +156,15 @@ describe('createRecord', () => {
 
     const result = await createRecord({}, formData);
 
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({
+      success: true,
+      record: {
+        id: 'record-1',
+        tableId: 'table-1',
+        data: {},
+        createdById: 'db-user-1',
+      },
+    });
     expect(prisma.record.create).toHaveBeenCalledWith({
       data: {
         tableId: 'table-1',

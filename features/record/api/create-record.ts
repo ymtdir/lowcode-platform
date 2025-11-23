@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 import type { InputJsonValue } from '@prisma/client/runtime/library';
+import type { Record as RecordType } from '../types';
 
 /**
  * Server Actionのレスポンス型
@@ -11,6 +12,7 @@ import type { InputJsonValue } from '@prisma/client/runtime/library';
 type FormState = {
   error?: string;
   success?: boolean;
+  record?: RecordType;
 };
 
 /**
@@ -60,7 +62,7 @@ export async function createRecord(
     // dataをパース（PrismaのJson型に対応）
     const data: InputJsonValue = dataString ? JSON.parse(dataString) : {};
 
-    await prisma.record.create({
+    const record = await prisma.record.create({
       data: {
         tableId,
         data,
@@ -69,7 +71,13 @@ export async function createRecord(
     });
 
     revalidatePath(`/${tableId}`);
-    return { success: true };
+    return {
+      success: true,
+      record: {
+        ...record,
+        data: record.data as Record<string, unknown>,
+      },
+    };
   } catch (error) {
     console.error('レコード作成エラー:', error);
     return { error: 'レコードの作成に失敗しました' };
