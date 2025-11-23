@@ -10,22 +10,7 @@ export async function getItemById(id: string): Promise<Item | null> {
   const item = await prisma.item.findUnique({
     where: { id },
     include: {
-      createdBy: {
-        select: {
-          id: true,
-          email: true,
-          name: true,
-        },
-      },
       children: {
-        include: {
-          createdBy: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
         orderBy: {
           createdAt: 'asc',
         },

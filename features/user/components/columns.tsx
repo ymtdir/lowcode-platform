@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -43,17 +43,7 @@ export const createColumns = (): ColumnDef<User>[] => [
   },
   {
     accessorKey: 'email',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          メールアドレス
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+    header: 'メールアドレス',
     cell: ({ row }) => <div className="lowercase">{row.getValue('email')}</div>,
     meta: { width: 'w-[30%]' },
   },

@@ -2,7 +2,7 @@
 
 import { SidebarGroup } from '@/components/ui/sidebar';
 
-import { WorkspaceItemsWrapper } from './items';
+import { WorkspaceItemsWrapper } from './workspace-items';
 import type { Item } from '@/features/item/types';
 
 /**

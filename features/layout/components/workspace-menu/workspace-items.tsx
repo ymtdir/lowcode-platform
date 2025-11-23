@@ -4,7 +4,7 @@ import { DndContext, DragOverlay, useDroppable } from '@dnd-kit/core';
 import Link from 'next/link';
 import { SidebarGroupLabel, SidebarMenu } from '@/components/ui/sidebar';
 import type { Item as ItemType } from '@/features/item/types';
-import { Item } from './item';
+import { Item } from './workspace-item';
 import { CreateItemButton } from './create-item-button';
 import { useMenuDrag } from './use-menu-drag';
 import { useItemDrag } from '@/features/layout/hooks/use-item-drag';

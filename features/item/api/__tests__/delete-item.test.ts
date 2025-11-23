@@ -47,7 +47,6 @@ describe('deleteItem', () => {
     const result = await deleteItem(itemId);
 
     expect(result).toEqual({
-      success: false,
       error: 'アイテムの削除に失敗しました',
     });
   });

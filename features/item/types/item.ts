@@ -1,11 +1,10 @@
-import type { Item as PrismaItem, User } from '@prisma/client';
+import type { Item as PrismaItem } from '@prisma/client';
 
 /**
  * 基本型（共通プロパティ）
  */
 type BaseItem = Omit<PrismaItem, 'type' | 'meta'> & {
   order: number;
-  createdBy: Pick<User, 'id' | 'email' | 'name'>;
   _count?: {
     children: number;
   };

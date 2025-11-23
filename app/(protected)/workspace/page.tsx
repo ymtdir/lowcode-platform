@@ -26,9 +26,6 @@ export default async function WorkspacePage() {
               >
                 <h2 className="font-semibold mb-2">{folder.name}</h2>
                 <div className="text-sm text-muted-foreground space-y-1">
-                  <p>
-                    作成者: {folder.createdBy.name || folder.createdBy.email}
-                  </p>
                   {folder._count && (
                     <p>子フォルダ数: {folder._count.children}</p>
                   )}

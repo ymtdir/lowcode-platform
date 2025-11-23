@@ -7,6 +7,7 @@ export const COLUMN_TYPES = {
   NUMBER: 'NUMBER',
   DATE: 'DATE',
   SELECT: 'SELECT',
+  MULTI_SELECT: 'MULTI_SELECT',
   CHECKBOX: 'CHECKBOX',
 } as const;
 
@@ -58,7 +59,10 @@ export type ColumnTypeConfig = {
   };
   SELECT: {
     options: SelectOption[];
-    multiple?: boolean; // 複数選択を許可するか（将来実装）
+    allowCustom?: boolean; // カスタム入力を許可するか
+  };
+  MULTI_SELECT: {
+    options: SelectOption[];
     allowCustom?: boolean; // カスタム入力を許可するか
   };
   CHECKBOX: {
@@ -117,6 +121,11 @@ export type SelectColumn = BaseColumn & {
   config: ColumnTypeConfig['SELECT']; // SELECT型はoptionsが必須
 };
 
+export type MultiSelectColumn = BaseColumn & {
+  type: 'MULTI_SELECT';
+  config: ColumnTypeConfig['MULTI_SELECT']; // MULTI_SELECT型はoptionsが必須
+};
+
 export type CheckboxColumn = BaseColumn & {
   type: 'CHECKBOX';
   config?: ColumnTypeConfig['CHECKBOX'];
@@ -131,6 +140,7 @@ export type Column =
   | NumberColumn
   | DateColumn
   | SelectColumn
+  | MultiSelectColumn
   | CheckboxColumn;
 
 /**

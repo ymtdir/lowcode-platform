@@ -30,7 +30,7 @@ export async function reorderItems(input: ReorderItemsInput) {
     });
 
     if (!item) {
-      return { success: false, error: 'アイテムが見つかりません' };
+      return { error: 'アイテムが見つかりません' };
     }
 
     // 循環参照チェック（自分自身または自分の子孫を親にできない）
@@ -38,7 +38,6 @@ export async function reorderItems(input: ReorderItemsInput) {
       const isDescendant = await checkIsDescendant(itemId, newParentId);
       if (itemId === newParentId || isDescendant) {
         return {
-          success: false,
           error: '自分自身または子アイテムを親にすることはできません',
         };
       }

@@ -35,7 +35,6 @@ describe('reorderItems', () => {
     const result = await reorderItems(input);
 
     expect(result).toEqual({
-      success: false,
       error: 'アイテムが見つかりません',
     });
   });
@@ -97,7 +96,6 @@ describe('reorderItems', () => {
     const result = await reorderItems(input);
 
     expect(result).toEqual({
-      success: false,
       error: '自分自身または子アイテムを親にすることはできません',
     });
   });
