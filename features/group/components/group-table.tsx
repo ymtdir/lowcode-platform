@@ -114,11 +114,9 @@ export function GroupTable({ groups, users }: GroupTableProps) {
               {table
                 .getAllColumns()
                 .filter((column) => column.getCanHide())
-                .map((column) => {
-                  return (
+                .map((column) => (
                     <DropdownMenuCheckboxItem
                       key={column.id}
-                      className="capitalize "
                       checked={column.getIsVisible()}
                       onCheckedChange={(value) =>
                         column.toggleVisibility(!!value)
@@ -127,10 +125,9 @@ export function GroupTable({ groups, users }: GroupTableProps) {
                         e.preventDefault();
                       }}
                     >
-                      {column.id}
+                      {column.columnDef.header as string}
                     </DropdownMenuCheckboxItem>
-                  );
-                })}
+                  ))}
             </DropdownMenuContent>
           </DropdownMenu>
           <CreateGroupButton groups={groups} />

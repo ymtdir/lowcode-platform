@@ -1,15 +1,21 @@
 'use client';
 
 import { useCallback, useMemo, useState, useTransition } from 'react';
-import Link from 'next/link';
 import {
   useReactTable,
   getCoreRowModel,
   getPaginationRowModel,
   flexRender,
   type RowSelectionState,
+  type VisibilityState,
 } from '@tanstack/react-table';
-import { Settings2 } from 'lucide-react';
+import { ChevronDown, Plus } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import type { Column } from '@/features/column/types';
 import type { Record, RecordData } from '@/features/record/types';
 import {
@@ -22,7 +28,6 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus } from 'lucide-react';
 import { updateRecord } from '@/features/record/api/update-record';
 import { createRecord } from '@/features/record/api/create-record';
 import { createColumns } from './columns';
@@ -49,6 +54,7 @@ export function DataTable({
   const [isPending, startTransition] = useTransition();
   const [searchValue, setSearchValue] = useState('');
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   // セル値の更新ハンドラ
   const handleCellChange = useCallback(
@@ -146,8 +152,10 @@ export function DataTable({
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onRowSelectionChange: setRowSelection,
+    onColumnVisibilityChange: setColumnVisibility,
     state: {
       rowSelection,
+      columnVisibility,
     },
   });
 
@@ -166,12 +174,32 @@ export function DataTable({
           className="max-w-sm"
         />
         <div className="flex items-center gap-2">
-          <Button variant="outline" asChild>
-            <Link href={`/${tableId}/edit`}>
-              <Settings2 />
-              テーブル管理
-            </Link>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                項目 <ChevronDown />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
+                      onSelect={(e) => {
+                        e.preventDefault();
+                      }}
+                    >
+                      {column.columnDef.header as string}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button
             onClick={handleCreateRecord}
             disabled={isPending || columns.length === 0}

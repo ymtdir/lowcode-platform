@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import { Ellipsis } from 'lucide-react';
+import type { ItemType } from '@prisma/client';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { RenameFolderItem } from './rename-item-button';
+import { ManageItemButton } from './manage-item-button';
 import { DeleteFolderItem } from './delete-item-button';
 
 /**
@@ -16,12 +18,17 @@ import { DeleteFolderItem } from './delete-item-button';
 type EditItemButtonProps = {
   itemId: string;
   itemName: string;
+  itemType: ItemType;
 };
 
 /**
  * アイテム編集ボタンコンポーネント
  */
-export function EditItemButton({ itemId, itemName }: EditItemButtonProps) {
+export function EditItemButton({
+  itemId,
+  itemName,
+  itemType,
+}: EditItemButtonProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -44,6 +51,7 @@ export function EditItemButton({ itemId, itemName }: EditItemButtonProps) {
           currentName={itemName}
           onOpenChange={setOpen}
         />
+        <ManageItemButton itemId={itemId} itemType={itemType} />
         <DeleteFolderItem
           folderId={itemId}
           folderName={itemName}
