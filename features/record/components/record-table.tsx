@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState, useTransition } from 'react';
+import Link from 'next/link';
 import {
   useReactTable,
   getCoreRowModel,
@@ -8,6 +9,7 @@ import {
   flexRender,
   type RowSelectionState,
 } from '@tanstack/react-table';
+import { Settings2 } from 'lucide-react';
 import type { Column } from '@/features/column/types';
 import type { Record, RecordData } from '../types';
 import {
@@ -24,7 +26,6 @@ import { Plus } from 'lucide-react';
 import { updateRecord } from '../api/update-record';
 import { createRecord } from '../api/create-record';
 import { createColumns } from './columns';
-import { TableManageDialog } from './table-manage-button';
 import { BulkDeleteButton } from './bulk-delete-button';
 
 /**
@@ -157,7 +158,7 @@ export function RecordTable({
   return (
     <div className="w-full">
       {/* ツールバー */}
-      <div className="flex items-center justify-between px-6 py-4">
+      <div className="flex items-center justify-between py-4">
         <Input
           placeholder="検索..."
           value={searchValue}
@@ -165,7 +166,12 @@ export function RecordTable({
           className="max-w-sm"
         />
         <div className="flex items-center gap-2">
-          <TableManageDialog itemId={tableId} columns={columns} />
+          <Button variant="outline" asChild>
+            <Link href={`/${tableId}/edit`}>
+              <Settings2 />
+              テーブル管理
+            </Link>
+          </Button>
           <Button
             onClick={handleCreateRecord}
             disabled={isPending || columns.length === 0}
@@ -235,7 +241,7 @@ export function RecordTable({
       </div>
 
       {/* ページネーション */}
-      <div className="flex items-center justify-end space-x-2 px-6 py-4">
+      <div className="flex items-center justify-end space-x-2 py-4">
         {selectedRows.length > 0 && (
           <div className="text-muted-foreground flex flex-1 items-center gap-2 text-sm">
             {selectedRows.length} / {table.getFilteredRowModel().rows.length}{' '}
