@@ -763,22 +763,35 @@ export default createJestConfig(config);
 - `clearMocks: true`でテスト間の独立性を確保
 - `moduleNameMapper`でパスエイリアス（`@/`）を解決
 
-#### テスト実装状況（2025-01-16時点）
+#### テスト実装状況（2025-11-23時点）
 
 **実装済みのテスト**:
 
-- **auth機能**: 3ファイル、10テスト
+- **auth機能**: 3ファイル、12テスト
   - `login.test.ts`: ログイン機能（4テスト）
   - `signup.test.ts`: サインアップ機能（5テスト）
   - `logout.test.ts`: ログアウト機能（3テスト）
 
-- **folder機能**: 6ファイル、26テスト
-  - `create-folder.test.ts`: フォルダ作成（7テスト）
-  - `delete-folder.test.ts`: フォルダ削除（2テスト）
-  - `get-folder-by-id.test.ts`: フォルダ個別取得（3テスト）
-  - `get-folders.test.ts`: フォルダ一覧取得（3テスト）
-  - `rename-folder.test.ts`: フォルダ名変更（7テスト）
-  - `reorder-folders.test.ts`: フォルダ並び替え（4テスト）
+- **item機能**: 7ファイル、36テスト
+  - `create-item.test.ts`: アイテム作成（7テスト）
+  - `create-folder.test.ts`: フォルダ作成ラッパー（2テスト）
+  - `delete-item.test.ts`: アイテム削除（5テスト）
+  - `get-item-by-id.test.ts`: アイテム個別取得（4テスト）
+  - `get-items.test.ts`: アイテム一覧取得（4テスト）
+  - `rename-item.test.ts`: アイテム名変更（10テスト）
+  - `reorder-items.test.ts`: アイテム並び替え（4テスト）
+
+- **column機能**: 4ファイル、32テスト
+  - `add-column.test.ts`: カラム追加（12テスト）
+  - `remove-column.test.ts`: カラム削除（10テスト）
+  - `update-column.test.ts`: カラム更新（10テスト）
+  - `reorder-columns.test.ts`: カラム並び替え（10テスト）
+
+- **record機能**: 4ファイル、31テスト
+  - `create-record.test.ts`: レコード作成（9テスト）
+  - `get-records.test.ts`: レコード一覧取得（6テスト）
+  - `update-record.test.ts`: レコード更新（9テスト）
+  - `delete-record.test.ts`: レコード削除（7テスト）
 
 - **group機能**: 7ファイル、33テスト
   - `add-members.test.ts`: メンバー追加（5テスト）
@@ -796,7 +809,7 @@ export default createJestConfig(config);
   - `update-user-password.test.ts`: パスワード更新（5テスト）
   - `update-user-profile.test.ts`: プロフィール更新（4テスト）
 
-**合計**: 21テストスイート、90テスト（全て成功）
+**合計**: 31テストスイート、154テスト（全て成功）
 
 **テストコマンド**:
 

@@ -91,8 +91,12 @@ lowcode-platform/
 ├── app/                    # Next.js App Router
 ├── components/             # 共通UIコンポーネント（shadcn/ui）
 ├── features/               # 機能別モジュール
+│   ├── auth/              # 認証機能
 │   ├── user/              # ユーザー管理
 │   ├── group/             # グループ管理
+│   ├── item/              # アイテム（フォルダ・テーブル）管理
+│   ├── column/            # テーブルカラム管理
+│   ├── record/            # レコード管理
 │   └── layout/            # レイアウトコンポーネント
 ├── lib/                    # ユーティリティ・設定
 ├── prisma/                 # Prismaスキーマ
