@@ -1,6 +1,6 @@
 'use client';
 
-import { Settings2 } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import Link from 'next/link';
 import type { ItemType } from '@prisma/client';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -18,16 +18,18 @@ type ManageItemButtonProps = {
  * アイテムタイプに応じて管理画面へのリンクを表示
  */
 export function ManageItemButton({ itemId, itemType }: ManageItemButtonProps) {
-  // TABLEの場合のみ表示
-  if (itemType !== 'TABLE') {
+  // FOLDERとTABLEの場合のみ表示
+  if (itemType !== 'TABLE' && itemType !== 'FOLDER') {
     return null;
   }
+
+  const label = itemType === 'TABLE' ? 'テーブル管理' : 'フォルダ管理';
 
   return (
     <DropdownMenuItem asChild>
       <Link href={`/${itemId}/edit`} className="cursor-pointer">
-        <Settings2 className="size-4" />
-        テーブル管理
+        <Settings />
+        {label}
       </Link>
     </DropdownMenuItem>
   );
