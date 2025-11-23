@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,25 +16,54 @@ import { EditColumnItem } from './edit-column-item';
 import { DeleteColumnItem } from './delete-column-item';
 
 /**
- * カラムリストアイテムのProps型
+ * カラムアイテムのProps型
  */
-type ColumnListItemProps = {
+type ColumnItemProps = {
   itemId: string;
   column: Column;
+  disabled?: boolean;
 };
 
 /**
- * カラムリストアイテムコンポーネント
+ * カラムアイテムコンポーネント（ドラッグ&ドロップ対応）
  */
-export function ColumnListItem({ itemId, column }: ColumnListItemProps) {
+export function ColumnItem({
+  itemId,
+  column,
+  disabled,
+}: ColumnItemProps) {
   const [open, setOpen] = useState(false);
   const config = COLUMN_CONFIGS[column.type];
   const Icon = config.icon;
 
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: column.id, disabled });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
   return (
-    <div className="flex items-center gap-2 p-3 border rounded-lg bg-card hover:bg-accent/50 transition-colors">
-      {/* ドラッグハンドル（将来実装） */}
-      <div className="cursor-grab text-muted-foreground">
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-center gap-2 p-3 border rounded-lg bg-card hover:bg-accent/50 transition-colors ${
+        isDragging ? 'opacity-50 shadow-lg z-50' : ''
+      } ${disabled ? 'opacity-70' : ''}`}
+    >
+      {/* ドラッグハンドル */}
+      <div
+        {...attributes}
+        {...listeners}
+        className={`text-muted-foreground ${disabled ? 'cursor-not-allowed' : 'cursor-grab active:cursor-grabbing'}`}
+      >
         <GripVertical className="size-4" />
       </div>
 
@@ -41,15 +72,17 @@ export function ColumnListItem({ itemId, column }: ColumnListItemProps) {
         <Icon className="size-4 text-muted-foreground" />
       </div>
 
-      {/* カラム情報 */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <div className="font-medium truncate">{column.name}</div>
-          {column.validation?.required && (
-            <span className="text-xs text-destructive">*</span>
-          )}
-        </div>
-        <div className="text-xs text-muted-foreground">{config.label}</div>
+      {/* カラム名 */}
+      <div className="flex-1 min-w-0 flex items-center gap-1.5">
+        <span className="font-medium truncate">{column.name}</span>
+        {column.validation?.required && (
+          <span className="text-xs text-destructive">*</span>
+        )}
+      </div>
+
+      {/* カラムタイプ */}
+      <div className="shrink-0 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
+        {config.label}
       </div>
 
       {/* アクションメニュー */}

@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 import { getColumnSchema, createTableMeta } from '../types/schema';
-import { reorderColumnInSchema } from '../utils/schema-operations';
+import type { Column } from '../types/column';
 
 type FormState = {
   error?: string;
@@ -12,12 +12,13 @@ type FormState = {
 };
 
 /**
- * カラムを並び替えるServer Action
+ * カラムの順序を一括更新するServer Action
+ * @param itemId テーブルID
+ * @param orderedColumnIds 並び替え後のカラムIDの配列
  */
-export async function reorderColumn(
+export async function reorderColumns(
   itemId: string,
-  columnId: string,
-  newOrder: number
+  orderedColumnIds: string[]
 ): Promise<FormState> {
   // セッションからユーザー情報を取得
   const supabase = await createClient();
@@ -37,11 +38,6 @@ export async function reorderColumn(
 
   if (!dbUser) {
     return { error: 'ユーザー情報が取得できませんでした' };
-  }
-
-  // バリデーション
-  if (newOrder < 0) {
-    return { error: '並び順は0以上である必要があります' };
   }
 
   try {
@@ -70,8 +66,29 @@ export async function reorderColumn(
       return { error: 'スキーマが見つかりません' };
     }
 
-    // カラムを並び替え
-    const newSchema = reorderColumnInSchema(schema, columnId, newOrder);
+    // カラムをIDでマップ化
+    const columnMap = new Map<string, Column>();
+    for (const column of schema.columns) {
+      columnMap.set(column.id, column);
+    }
+
+    // 新しい順序でカラムを並び替え
+    const reorderedColumns: Column[] = [];
+    for (let i = 0; i < orderedColumnIds.length; i++) {
+      const column = columnMap.get(orderedColumnIds[i]);
+      if (column) {
+        reorderedColumns.push({
+          ...column,
+          order: i,
+        });
+      }
+    }
+
+    // 新しいスキーマを作成
+    const newSchema = {
+      ...schema,
+      columns: reorderedColumns,
+    };
 
     // TableMetaを更新
     const newTableMeta = createTableMeta(newSchema);
@@ -88,17 +105,6 @@ export async function reorderColumn(
     return { success: true };
   } catch (error) {
     console.error('カラム並び替えエラー:', error);
-
-    // エラーメッセージを解析
-    if (error instanceof Error) {
-      if (error.message.includes('not found')) {
-        return { error: 'カラムが見つかりません' };
-      }
-      if (error.message.includes('Invalid order')) {
-        return { error: '無効な並び順です' };
-      }
-    }
-
     return { error: 'カラムの並び替えに失敗しました' };
   }
 }

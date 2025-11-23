@@ -75,49 +75,6 @@ export function removeColumnFromSchema(
 }
 
 /**
- * カラムの並び替え
- * @param schema 現在のスキーマ
- * @param columnId 移動するカラムのID
- * @param newOrder 新しい並び順（0-indexed）
- */
-export function reorderColumnInSchema(
-  schema: ColumnSchema,
-  columnId: string,
-  newOrder: number
-): ColumnSchema {
-  const columnIndex = schema.columns.findIndex((col) => col.id === columnId);
-
-  if (columnIndex === -1) {
-    throw new Error(`Column with id ${columnId} not found`);
-  }
-
-  if (newOrder < 0 || newOrder >= schema.columns.length) {
-    throw new Error(
-      `Invalid order: ${newOrder}. Must be between 0 and ${schema.columns.length - 1}`
-    );
-  }
-
-  // カラムを配列から取り出す
-  const [movedColumn] = schema.columns.splice(columnIndex, 1);
-
-  // 新しい位置に挿入
-  const newColumns = [...schema.columns];
-  newColumns.splice(newOrder, 0, movedColumn);
-
-  // order値を再計算
-  const reorderedColumns = newColumns.map((col, index) => ({
-    ...col,
-    order: index,
-    updatedAt: new Date(),
-  }));
-
-  return {
-    ...schema,
-    columns: reorderedColumns,
-  };
-}
-
-/**
  * カラムIDでカラムを取得
  */
 export function getColumnById(
