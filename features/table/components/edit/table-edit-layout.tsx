@@ -43,15 +43,22 @@ export function TableEditLayout({
             レコード一覧
           </Link>
           <TabsList>
+            <TabsTrigger value="settings">基本設定</TabsTrigger>
             <TabsTrigger value="columns">項目</TabsTrigger>
-            <TabsTrigger value="settings">設定</TabsTrigger>
+            <TabsTrigger value="access">権限</TabsTrigger>
+
+            <TabsTrigger value="style">スタイル</TabsTrigger>
+            <TabsTrigger value="client-script">
+              クライアントスクリプト
+            </TabsTrigger>
+            <TabsTrigger value="server-script">サーバースクリプト</TabsTrigger>
           </TabsList>
         </div>
-        <TabsContent value="columns" className="flex-1 mt-6">
-          <ColumnsContent itemId={itemId} columns={columns} />
-        </TabsContent>
         <TabsContent value="settings" className="flex-1 mt-6">
           <SettingsContent itemId={itemId} itemName={itemName} />
+        </TabsContent>
+        <TabsContent value="columns" className="flex-1 mt-6">
+          <ColumnsContent itemId={itemId} columns={columns} />
         </TabsContent>
       </Tabs>
     </div>

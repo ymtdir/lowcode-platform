@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Pencil } from 'lucide-react';
+import type { ItemType } from '@prisma/client';
 import {
   Dialog,
   DialogContent,
@@ -17,10 +18,18 @@ import { toast } from 'sonner';
 import { renameItem } from '@/features/item/api';
 
 /**
- * フォルダ名変更アイテムのProps型
+ * アイテムタイプに応じたラベルを取得
  */
-type RenameFolderItemProps = {
-  folderId: string;
+const getItemLabel = (itemType: ItemType) => {
+  return itemType === 'TABLE' ? 'テーブル' : 'フォルダ';
+};
+
+/**
+ * 名前変更アイテムのProps型
+ */
+type RenameItemButtonProps = {
+  itemId: string;
+  itemType: ItemType;
   currentName: string;
   onOpenChange: (open: boolean) => void;
 };
@@ -29,7 +38,8 @@ type RenameFolderItemProps = {
  * 名前変更コンテンツのProps型
  */
 type RenameContentProps = {
-  folderId: string;
+  itemId: string;
+  itemType: ItemType;
   currentName: string;
   onClose: () => void;
 };
@@ -37,15 +47,21 @@ type RenameContentProps = {
 /**
  * 名前変更コンテンツコンポーネント
  */
-function RenameContent({ folderId, currentName, onClose }: RenameContentProps) {
+function RenameContent({
+  itemId,
+  itemType,
+  currentName,
+  onClose,
+}: RenameContentProps) {
   const [name, setName] = useState(currentName);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const label = getItemLabel(itemType);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const result = await renameItem(folderId, name);
+    const result = await renameItem(itemId, name);
 
     setIsSubmitting(false);
 
@@ -65,13 +81,13 @@ function RenameContent({ folderId, currentName, onClose }: RenameContentProps) {
     <form onSubmit={handleSubmit}>
       <div className="grid gap-4 py-4">
         <div className="grid gap-2">
-          <Label htmlFor="name">フォルダ名</Label>
+          <Label htmlFor="name">{label}名</Label>
           <Input
             id="name"
             name="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="フォルダ名を入力"
+            placeholder={`${label}名を入力`}
             autoFocus
             required
             disabled={isSubmitting}
@@ -97,15 +113,17 @@ function RenameContent({ folderId, currentName, onClose }: RenameContentProps) {
 }
 
 /**
- * フォルダ名変更アイテムコンポーネント
+ * 名前変更アイテムコンポーネント
  */
-export function RenameFolderItem({
-  folderId,
+export function RenameItemButton({
+  itemId,
+  itemType,
   currentName,
   onOpenChange: onDropdownOpenChange,
-}: RenameFolderItemProps) {
+}: RenameItemButtonProps) {
   const [open, setOpen] = useState(false);
   const [resetKey, setResetKey] = useState(0);
+  const label = getItemLabel(itemType);
 
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
@@ -134,11 +152,12 @@ export function RenameFolderItem({
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>フォルダ名を変更</DialogTitle>
+            <DialogTitle>{label}名を変更</DialogTitle>
           </DialogHeader>
           <RenameContent
             key={resetKey}
-            folderId={folderId}
+            itemId={itemId}
+            itemType={itemType}
             currentName={currentName}
             onClose={handleClose}
           />

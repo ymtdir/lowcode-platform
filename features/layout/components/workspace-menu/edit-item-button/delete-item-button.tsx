@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Trash2, AlertCircle } from 'lucide-react';
+import type { ItemType } from '@prisma/client';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,30 +20,40 @@ import { toast } from 'sonner';
 import { deleteItem } from '@/features/item/api';
 
 /**
- * フォルダ削除アイテムのProps型
+ * アイテムタイプに応じたラベルを取得
  */
-type DeleteFolderItemProps = {
-  folderId: string;
-  folderName: string;
+const getItemLabel = (itemType: ItemType) => {
+  return itemType === 'TABLE' ? 'テーブル' : 'フォルダ';
+};
+
+/**
+ * 削除アイテムのProps型
+ */
+type DeleteItemButtonProps = {
+  itemId: string;
+  itemType: ItemType;
+  itemName: string;
   onOpenChange: (open: boolean) => void;
 };
 
 /**
- * フォルダ削除アイテムコンポーネント
+ * 削除アイテムコンポーネント
  */
-export function DeleteFolderItem({
-  folderId,
-  folderName,
+export function DeleteItemButton({
+  itemId,
+  itemType,
+  itemName,
   onOpenChange: onDropdownOpenChange,
-}: DeleteFolderItemProps) {
+}: DeleteItemButtonProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const label = getItemLabel(itemType);
 
   const handleDelete = async () => {
     setIsDeleting(true);
 
-    const result = await deleteItem(folderId);
+    const result = await deleteItem(itemId);
 
     setOpen(false);
     setIsDeleting(false);
@@ -52,8 +63,8 @@ export function DeleteFolderItem({
         description: result.error,
       });
     } else {
-      toast.success('フォルダを削除しました', {
-        description: `${folderName}を削除しました`,
+      toast.success(`${label}を削除しました`, {
+        description: `${itemName}を削除しました`,
       });
       router.push('/workspace');
     }
@@ -82,13 +93,13 @@ export function DeleteFolderItem({
           <div className="flex items-center space-x-2">
             <AlertCircle className="text-destructive" />
             <AlertDialogTitle className="text-destructive">
-              {folderName}を削除
+              {itemName}を削除
             </AlertDialogTitle>
           </div>
           <AlertDialogDescription>
-            削除したフォルダは復元できません。
+            削除した{label}は復元できません。
             <br />
-            フォルダ内のすべてのデータが完全に削除されます。
+            {label}内のすべてのデータが完全に削除されます。
             <br />
             本当に削除しますか？
           </AlertDialogDescription>
