@@ -73,6 +73,8 @@ function RenameContent({
       toast.success('名前を変更しました', {
         description: `${currentName} → ${name}`,
       });
+      // パンくずリストの強制更新イベントを発火
+      window.dispatchEvent(new CustomEvent('refreshBreadcrumb'));
       onClose();
     }
   };

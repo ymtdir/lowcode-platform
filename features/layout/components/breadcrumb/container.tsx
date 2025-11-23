@@ -28,6 +28,7 @@ export function BreadcrumbContainer() {
   const pathname = usePathname();
   const itemId = params?.itemId as string | undefined;
   const [ancestors, setAncestors] = useState<BreadcrumbItemType[]>([]);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     if (!itemId) {
@@ -48,7 +49,20 @@ export function BreadcrumbContainer() {
     return () => {
       cancelled = true;
     };
-  }, [itemId]);
+  }, [itemId, refreshTrigger]);
+
+  // カスタムイベントリスナーを追加（パンくずリスト強制更新用）
+  useEffect(() => {
+    const handleRefreshBreadcrumb = () => {
+      setRefreshTrigger((prev) => prev + 1);
+    };
+
+    window.addEventListener('refreshBreadcrumb', handleRefreshBreadcrumb);
+
+    return () => {
+      window.removeEventListener('refreshBreadcrumb', handleRefreshBreadcrumb);
+    };
+  }, []);
 
   // パンくずリストアイテムを構築
   const breadcrumbItems: Array<{ label: string; href: string }> = [];
