@@ -138,7 +138,11 @@ export function Item({
             <Link href={`/${item.id}`} className="flex-1">
               <span>{item.name}</span>
             </Link>
-            <EditItemButton itemId={item.id} itemName={item.name} />
+            <EditItemButton
+              itemId={item.id}
+              itemName={item.name}
+              itemType={item.type}
+            />
             {config.showAddButton && <CreateItemButton parentId={item.id} />}
           </div>
         </SidebarMenuButton>
@@ -222,7 +226,11 @@ export function Item({
           <Link href={`/${item.id}`} className="flex-1">
             <span>{item.name}</span>
           </Link>
-          <EditItemButton itemId={item.id} itemName={item.name} />
+          <EditItemButton
+            itemId={item.id}
+            itemName={item.name}
+            itemType={item.type}
+          />
           {config.showAddButton && <CreateItemButton parentId={item.id} />}
         </div>
       </SidebarMenuSubButton>

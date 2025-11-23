@@ -1,0 +1,33 @@
+import type { Column } from '@/features/column/types';
+import type { Record } from '@/features/record/types';
+import { DataTable } from './data-table';
+
+/**
+ * TableLayoutのProps型
+ */
+type TableLayoutProps = {
+  itemId: string;
+  itemName: string;
+  columns: Column[];
+  records: Record[];
+};
+
+/**
+ * テーブル一覧画面のレイアウトコンポーネント
+ */
+export function TableLayout({
+  itemId,
+  itemName,
+  columns,
+  records,
+}: TableLayoutProps) {
+  return (
+    <div className="w-full p-6">
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{itemName}</h1>
+      </div>
+
+      <DataTable tableId={itemId} columns={columns} initialRecords={records} />
+    </div>
+  );
+}

@@ -7,9 +7,17 @@ import {
   getPaginationRowModel,
   flexRender,
   type RowSelectionState,
+  type VisibilityState,
 } from '@tanstack/react-table';
+import { ChevronDown, Plus } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import type { Column } from '@/features/column/types';
-import type { Record, RecordData } from '../types';
+import type { Record, RecordData } from '@/features/record/types';
 import {
   Table,
   TableBody,
@@ -20,34 +28,33 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus } from 'lucide-react';
-import { updateRecord } from '../api/update-record';
-import { createRecord } from '../api/create-record';
+import { updateRecord } from '@/features/record/api/update-record';
+import { createRecord } from '@/features/record/api/create-record';
 import { createColumns } from './columns';
-import { TableManageDialog } from './table-manage-button';
 import { BulkDeleteButton } from './bulk-delete-button';
 
 /**
- * レコードテーブルのProps型
+ * データテーブルのProps型
  */
-type RecordTableProps = {
+type DataTableProps = {
   tableId: string;
   columns: Column[];
   initialRecords: Record[];
 };
 
 /**
- * レコードテーブルコンポーネント
+ * データテーブルコンポーネント
  */
-export function RecordTable({
+export function DataTable({
   tableId,
   columns,
   initialRecords,
-}: RecordTableProps) {
+}: DataTableProps) {
   const [records, setRecords] = useState<Record[]>(initialRecords);
   const [isPending, startTransition] = useTransition();
   const [searchValue, setSearchValue] = useState('');
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   // セル値の更新ハンドラ
   const handleCellChange = useCallback(
@@ -145,8 +152,10 @@ export function RecordTable({
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onRowSelectionChange: setRowSelection,
+    onColumnVisibilityChange: setColumnVisibility,
     state: {
       rowSelection,
+      columnVisibility,
     },
   });
 
@@ -157,7 +166,7 @@ export function RecordTable({
   return (
     <div className="w-full">
       {/* ツールバー */}
-      <div className="flex items-center justify-between px-6 py-4">
+      <div className="flex items-center justify-between py-4">
         <Input
           placeholder="検索..."
           value={searchValue}
@@ -165,7 +174,32 @@ export function RecordTable({
           className="max-w-sm"
         />
         <div className="flex items-center gap-2">
-          <TableManageDialog itemId={tableId} columns={columns} />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                項目 <ChevronDown />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) =>
+                      column.toggleVisibility(!!value)
+                    }
+                    onSelect={(e) => {
+                      e.preventDefault();
+                    }}
+                  >
+                    {column.columnDef.header as string}
+                  </DropdownMenuCheckboxItem>
+                ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button
             onClick={handleCreateRecord}
             disabled={isPending || columns.length === 0}
@@ -235,7 +269,7 @@ export function RecordTable({
       </div>
 
       {/* ページネーション */}
-      <div className="flex items-center justify-end space-x-2 px-6 py-4">
+      <div className="flex items-center justify-end space-x-2 py-4">
         {selectedRows.length > 0 && (
           <div className="text-muted-foreground flex flex-1 items-center gap-2 text-sm">
             {selectedRows.length} / {table.getFilteredRowModel().rows.length}{' '}
