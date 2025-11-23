@@ -1,0 +1,88 @@
+'use client';
+
+import { useState, useRef, useEffect } from 'react';
+import { Input } from '@/components/ui/input';
+
+type NumberCellProps = {
+  value: number | null;
+  onChange: (value: number | null) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+  placeholder?: string;
+};
+
+/**
+ * 数値セルコンポーネント
+ */
+export function NumberCell({
+  value,
+  onChange,
+  min,
+  max,
+  step,
+  placeholder,
+}: NumberCellProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // 編集開始時にpropsの値をローカルステートにコピー
+  const handleStartEdit = () => {
+    setEditValue(value?.toString() ?? '');
+    setIsEditing(true);
+  };
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  const handleSave = () => {
+    setIsEditing(false);
+    const parsed = editValue === '' ? null : parseFloat(editValue);
+    if (parsed !== value) {
+      onChange(parsed);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSave();
+    } else if (e.key === 'Escape') {
+      setEditValue(value?.toString() ?? '');
+      setIsEditing(false);
+    }
+  };
+
+  if (isEditing) {
+    return (
+      <Input
+        ref={inputRef}
+        type="number"
+        value={editValue}
+        onChange={(e) => setEditValue(e.target.value)}
+        onBlur={handleSave}
+        onKeyDown={handleKeyDown}
+        min={min}
+        max={max}
+        step={step}
+        placeholder={placeholder}
+        className="h-8 w-full border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-primary"
+      />
+    );
+  }
+
+  return (
+    <div
+      className="cursor-text min-h-[32px] px-2 py-1 hover:bg-muted/50 rounded flex items-center w-full"
+      onClick={handleStartEdit}
+    >
+      <span className={value != null ? '' : 'text-muted-foreground'}>
+        {value ?? placeholder ?? '-'}
+      </span>
+    </div>
+  );
+}

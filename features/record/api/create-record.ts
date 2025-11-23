@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
-import type { RecordData } from '../types';
+import type { InputJsonValue } from '@prisma/client/runtime/library';
 
 /**
  * Server Actionのレスポンス型
@@ -57,8 +57,8 @@ export async function createRecord(
   }
 
   try {
-    // dataをパース
-    const data: RecordData = dataString ? JSON.parse(dataString) : {};
+    // dataをパース（PrismaのJson型に対応）
+    const data: InputJsonValue = dataString ? JSON.parse(dataString) : {};
 
     await prisma.record.create({
       data: {

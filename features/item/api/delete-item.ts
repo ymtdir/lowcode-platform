@@ -4,9 +4,17 @@ import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 
 /**
+ * アイテム削除結果の型
+ */
+export type DeleteItemResult = {
+  error?: string;
+  success?: boolean;
+};
+
+/**
  * アイテムを削除するServer Action
  */
-export async function deleteItem(itemId: string) {
+export async function deleteItem(itemId: string): Promise<DeleteItemResult> {
   try {
     // アイテムを削除（Cascadeで子アイテムも削除される）
     await prisma.item.delete({
@@ -22,9 +30,6 @@ export async function deleteItem(itemId: string) {
     };
   } catch (error) {
     console.error('アイテム削除エラー:', error);
-    return {
-      success: false,
-      error: 'アイテムの削除に失敗しました',
-    };
+    return { error: 'アイテムの削除に失敗しました' };
   }
 }

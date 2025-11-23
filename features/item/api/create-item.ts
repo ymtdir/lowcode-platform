@@ -27,7 +27,7 @@ export async function createItem(
     return { error: '認証が必要です' };
   }
 
-  // DB からユーザー ID を取得
+  // DBからユーザーIDを取得
   const dbUser = await prisma.user.findUnique({
     where: { email: user.email! },
     select: { id: true },
