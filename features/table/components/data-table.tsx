@@ -11,7 +11,7 @@ import {
 } from '@tanstack/react-table';
 import { Settings2 } from 'lucide-react';
 import type { Column } from '@/features/column/types';
-import type { Record, RecordData } from '../types';
+import type { Record, RecordData } from '@/features/record/types';
 import {
   Table,
   TableBody,
@@ -23,28 +23,28 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus } from 'lucide-react';
-import { updateRecord } from '../api/update-record';
-import { createRecord } from '../api/create-record';
+import { updateRecord } from '@/features/record/api/update-record';
+import { createRecord } from '@/features/record/api/create-record';
 import { createColumns } from './columns';
 import { BulkDeleteButton } from './bulk-delete-button';
 
 /**
- * レコードテーブルのProps型
+ * データテーブルのProps型
  */
-type RecordTableProps = {
+type DataTableProps = {
   tableId: string;
   columns: Column[];
   initialRecords: Record[];
 };
 
 /**
- * レコードテーブルコンポーネント
+ * データテーブルコンポーネント
  */
-export function RecordTable({
+export function DataTable({
   tableId,
   columns,
   initialRecords,
-}: RecordTableProps) {
+}: DataTableProps) {
   const [records, setRecords] = useState<Record[]>(initialRecords);
   const [isPending, startTransition] = useTransition();
   const [searchValue, setSearchValue] = useState('');

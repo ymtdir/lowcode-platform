@@ -27,7 +27,7 @@ export default async function ProtectedLayout({
   return (
     <SidebarProvider>
       <AppSidebar userName={userName} />
-      <main>
+      <main className="w-full">
         <SidebarTrigger className="m-4" />
         {children}
       </main>

@@ -7,7 +7,7 @@ import type {
   SelectColumn,
   MultiSelectColumn,
 } from '@/features/column/types';
-import type { Record, RecordData } from '../types';
+import type { Record, RecordData } from '@/features/record/types';
 import { TextCell } from './cells/text-cell';
 import { NumberCell } from './cells/number-cell';
 import { SelectCell } from './cells/select-cell';

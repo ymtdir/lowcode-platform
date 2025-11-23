@@ -15,7 +15,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { deleteRecord } from '../api/delete-record';
+import { deleteRecord } from '@/features/record/api/delete-record';
 
 /**
  * 一括削除ボタンのProps型
