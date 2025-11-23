@@ -185,19 +185,19 @@ export function DataTable({
                 .getAllColumns()
                 .filter((column) => column.getCanHide())
                 .map((column) => (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
-                      onSelect={(e) => {
-                        e.preventDefault();
-                      }}
-                    >
-                      {column.columnDef.header as string}
-                    </DropdownMenuCheckboxItem>
-                  ))}
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) =>
+                      column.toggleVisibility(!!value)
+                    }
+                    onSelect={(e) => {
+                      e.preventDefault();
+                    }}
+                  >
+                    {column.columnDef.header as string}
+                  </DropdownMenuCheckboxItem>
+                ))}
             </DropdownMenuContent>
           </DropdownMenu>
           <Button
