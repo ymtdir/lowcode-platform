@@ -2,7 +2,11 @@
 
 import { ColumnDef } from '@tanstack/react-table';
 import { Checkbox } from '@/components/ui/checkbox';
-import type { Column, SelectColumn, MultiSelectColumn } from '@/features/column/types';
+import type {
+  Column,
+  SelectColumn,
+  MultiSelectColumn,
+} from '@/features/column/types';
 import type { Record, RecordData } from '../types';
 import { TextCell } from './cells/text-cell';
 import { NumberCell } from './cells/number-cell';

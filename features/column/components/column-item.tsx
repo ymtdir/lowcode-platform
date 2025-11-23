@@ -22,6 +22,11 @@ type ColumnItemProps = {
   itemId: string;
   column: Column;
   disabled?: boolean;
+  onDeleted?: () => void;
+  onUpdated?: (updated: {
+    name: string;
+    validation?: { required: boolean };
+  }) => void;
 };
 
 /**
@@ -31,6 +36,8 @@ export function ColumnItem({
   itemId,
   column,
   disabled,
+  onDeleted,
+  onUpdated,
 }: ColumnItemProps) {
   const [open, setOpen] = useState(false);
   const config = COLUMN_CONFIGS[column.type];
@@ -98,11 +105,13 @@ export function ColumnItem({
             itemId={itemId}
             column={column}
             onOpenChange={setOpen}
+            onUpdated={onUpdated}
           />
           <DeleteColumnItem
             itemId={itemId}
             column={column}
             onOpenChange={setOpen}
+            onDeleted={onDeleted}
           />
         </DropdownMenuContent>
       </DropdownMenu>

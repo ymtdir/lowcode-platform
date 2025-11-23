@@ -43,6 +43,25 @@ export function ColumnsContent({ itemId, columns }: ColumnsContentProps) {
     })
   );
 
+  // カラム削除時のハンドラ
+  const handleColumnDeleted = (columnId: string) => {
+    setLocalColumns((prev) => prev.filter((col) => col.id !== columnId));
+  };
+
+  // カラム更新時のハンドラ
+  const handleColumnUpdated = (
+    columnId: string,
+    updated: { name: string; validation?: { required: boolean } }
+  ) => {
+    setLocalColumns((prev) =>
+      prev.map((col) =>
+        col.id === columnId
+          ? { ...col, name: updated.name, validation: updated.validation }
+          : col
+      )
+    );
+  };
+
   // ドラッグ終了時のハンドラ
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -92,6 +111,10 @@ export function ColumnsContent({ itemId, columns }: ColumnsContentProps) {
                   itemId={itemId}
                   column={column}
                   disabled={isPending}
+                  onDeleted={() => handleColumnDeleted(column.id)}
+                  onUpdated={(updated) =>
+                    handleColumnUpdated(column.id, updated)
+                  }
                 />
               ))}
               {/* 項目を追加ボタン */}

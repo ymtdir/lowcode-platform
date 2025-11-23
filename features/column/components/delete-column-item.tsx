@@ -25,6 +25,7 @@ type DeleteColumnItemProps = {
   itemId: string;
   column: Column;
   onOpenChange: (open: boolean) => void;
+  onDeleted?: () => void;
 };
 
 /**
@@ -34,6 +35,7 @@ export function DeleteColumnItem({
   itemId,
   column,
   onOpenChange: onDropdownOpenChange,
+  onDeleted,
 }: DeleteColumnItemProps) {
   const [open, setOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -54,6 +56,7 @@ export function DeleteColumnItem({
       toast.success('カラムを削除しました', {
         description: `${column.name}を削除しました`,
       });
+      onDeleted?.();
     }
   };
 
