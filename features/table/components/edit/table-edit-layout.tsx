@@ -32,7 +32,7 @@ export function TableEditLayout({
       </div>
 
       {/* タブ */}
-      <Tabs defaultValue="columns">
+      <Tabs defaultValue="settings">
         {/* ツールバー */}
         <div className="flex items-center gap-4 py-4">
           <Link
