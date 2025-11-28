@@ -53,14 +53,29 @@ export function ColumnsContent({ itemId, columns }: ColumnsContentProps) {
   // カラム更新時のハンドラ
   const handleColumnUpdated = (
     columnId: string,
-    updated: { name: string; validation?: { required: boolean } }
+    updated: {
+      name: string;
+      validation?: { required: boolean };
+      config?: unknown;
+    }
   ) => {
     setLocalColumns((prev) =>
-      prev.map((col) =>
-        col.id === columnId
-          ? { ...col, name: updated.name, validation: updated.validation }
-          : col
-      )
+      prev.map((col) => {
+        if (col.id !== columnId) return col;
+
+        const updatedCol = {
+          ...col,
+          name: updated.name,
+          validation: updated.validation,
+        };
+
+        // configが提供されている場合は更新
+        if (updated.config !== undefined) {
+          return { ...updatedCol, config: updated.config } as Column;
+        }
+
+        return updatedCol;
+      })
     );
   };
 

@@ -30,6 +30,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { updateRecord } from '@/features/record/api/update-record';
 import { createRecord } from '@/features/record/api/create-record';
+import { applyDefaultValues } from '@/features/column/utils';
 import { createColumns } from './columns';
 import { BulkDeleteButton } from './bulk-delete-button';
 
@@ -90,9 +91,12 @@ export function DataTable({
   // 新規レコード作成
   const handleCreateRecord = useCallback(() => {
     startTransition(async () => {
+      // デフォルト値を適用
+      const defaultData = applyDefaultValues(columns);
+
       const formData = new FormData();
       formData.set('tableId', tableId);
-      formData.set('data', JSON.stringify({}));
+      formData.set('data', JSON.stringify(defaultData));
 
       const result = await createRecord({}, formData);
       if (result.error) {
@@ -105,7 +109,7 @@ export function DataTable({
         setRecords((prev) => [...prev, result.record as Record]);
       }
     });
-  }, [tableId]);
+  }, [tableId, columns]);
 
   // 削除完了時のハンドラ
   const handleDeleteComplete = useCallback((deletedIds: string[]) => {

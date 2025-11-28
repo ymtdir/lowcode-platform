@@ -17,7 +17,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateColumn } from '../api/update-column';
-import type { Column } from '../types/column';
+import type { Column, SelectOption } from '../types/column';
+import { SelectOptionsEditor } from './config/select-options-editor';
 
 /**
  * カラム編集アイテムのProps型
@@ -29,6 +30,7 @@ type EditColumnItemProps = {
   onUpdated?: (updated: {
     name: string;
     validation?: { required: boolean };
+    config?: unknown;
   }) => void;
 };
 
@@ -48,38 +50,86 @@ export function EditColumnItem({
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // SELECT/MULTI_SELECT用の状態
+  const [selectOptions, setSelectOptions] = useState<SelectOption[]>([]);
+  const [defaultValue, setDefaultValue] = useState<string | string[]>('');
+
   // ダイアログが開かれたときに最新の値をセット
   useEffect(() => {
     if (open) {
       setColumnName(column.name);
       setIsRequired(column.validation?.required || false);
+
+      // SELECT/MULTI_SELECTの場合、configから値を取得
+      if (column.type === 'SELECT' || column.type === 'MULTI_SELECT') {
+        const config = column.config;
+        setSelectOptions(config?.options || []);
+        setDefaultValue(
+          config?.defaultValue || (column.type === 'MULTI_SELECT' ? [] : '')
+        );
+      }
     }
   }, [open, column]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // SELECT/MULTI_SELECTの場合、選択肢が必須
+    if (
+      (column.type === 'SELECT' || column.type === 'MULTI_SELECT') &&
+      selectOptions.length === 0
+    ) {
+      toast.error('選択肢を少なくとも1つ追加してください');
+      return;
+    }
+
+    // 空ラベルのチェック
+    if (
+      (column.type === 'SELECT' || column.type === 'MULTI_SELECT') &&
+      selectOptions.some((opt) => !opt.label.trim())
+    ) {
+      toast.error('すべての選択肢にラベルを入力してください');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
+      // configの構築
+      let config;
+      if (column.type === 'SELECT') {
+        config = {
+          options: selectOptions,
+          defaultValue: defaultValue as string,
+        };
+      } else if (column.type === 'MULTI_SELECT') {
+        config = {
+          options: selectOptions,
+          defaultValue: defaultValue as string[],
+        };
+      }
+
       const result = await updateColumn(itemId, column.id, {
         name: columnName,
-        validation: isRequired ? { required: true } : { required: false },
+        validation: isRequired ? { required: true } : undefined,
+        config: config as never,
       });
 
       if (result.error) {
-        toast.error('カラムの更新に失敗しました', {
+        toast.error('項目の更新に失敗しました', {
           description: result.error,
         });
       } else if (result.success) {
-        toast.success('カラムを更新しました');
+        toast.success('項目を更新しました');
         setOpen(false);
         onUpdated?.({
           name: columnName,
           validation: { required: isRequired },
+          config: config as never,
         });
       }
     } catch {
-      toast.error('カラムの更新に失敗しました');
+      toast.error('項目の更新に失敗しました');
     } finally {
       setIsSubmitting(false);
     }
@@ -101,22 +151,37 @@ export function EditColumnItem({
           編集
         </DropdownMenuItem>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>カラムを編集</DialogTitle>
+          <DialogTitle>項目を編集</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="edit-name">カラム名</Label>
+              <Label htmlFor="edit-name">項目名</Label>
               <Input
                 id="edit-name"
                 value={columnName}
                 onChange={(e) => setColumnName(e.target.value)}
-                placeholder="顧客名"
+                placeholder="項目名"
                 required
               />
             </div>
+
+            {/* SELECT/MULTI_SELECT用の選択肢設定 */}
+            {(column.type === 'SELECT' || column.type === 'MULTI_SELECT') && (
+              <SelectOptionsEditor
+                options={selectOptions}
+                defaultValue={defaultValue}
+                isMultiSelect={column.type === 'MULTI_SELECT'}
+                onChange={(options, defValue) => {
+                  setSelectOptions(options);
+                  setDefaultValue(
+                    defValue || (column.type === 'MULTI_SELECT' ? [] : '')
+                  );
+                }}
+              />
+            )}
 
             <div className="flex items-center space-x-2">
               <Checkbox

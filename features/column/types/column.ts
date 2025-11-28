@@ -59,11 +59,11 @@ export type ColumnTypeConfig = {
   };
   SELECT: {
     options: SelectOption[];
-    allowCustom?: boolean; // カスタム入力を許可するか
+    defaultValue?: string; // デフォルト値（選択肢のID）
   };
   MULTI_SELECT: {
     options: SelectOption[];
-    allowCustom?: boolean; // カスタム入力を許可するか
+    defaultValue?: string[]; // デフォルト値（選択肢のIDの配列）
   };
   CHECKBOX: {
     multiple?: boolean; // 複数選択を許可するか（将来実装）

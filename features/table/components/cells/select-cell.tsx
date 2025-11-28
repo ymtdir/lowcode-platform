@@ -9,20 +9,27 @@ type SelectCellProps = {
   options: SelectOption[];
 };
 
-// タグの背景色
-const TAG_COLORS: Record<string, string> = {
-  gray: 'bg-gray-500/20 text-gray-300',
-  red: 'bg-red-500/20 text-red-300',
-  orange: 'bg-orange-500/20 text-orange-300',
-  yellow: 'bg-yellow-500/20 text-yellow-300',
-  green: 'bg-green-500/20 text-green-300',
-  blue: 'bg-blue-500/20 text-blue-300',
-  purple: 'bg-purple-500/20 text-purple-300',
-  pink: 'bg-pink-500/20 text-pink-300',
-};
+/**
+ * hex色から背景色と文字色のスタイルを生成
+ */
+function getColorStyles(color?: string): React.CSSProperties {
+  if (!color) {
+    return {
+      backgroundColor: 'rgba(107, 114, 128, 0.2)', // gray-500/20
+      color: 'rgb(209, 213, 219)', // gray-300
+    };
+  }
 
-function getColorClass(color?: string): string {
-  return TAG_COLORS[color || 'gray'] || TAG_COLORS.gray;
+  // hex色をrgbaに変換して20%透明度の背景色を作成
+  const hex = color.replace('#', '');
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+
+  return {
+    backgroundColor: `rgba(${r}, ${g}, ${b}, 0.2)`,
+    color: `rgb(${r}, ${g}, ${b})`,
+  };
 }
 
 /**
@@ -73,7 +80,8 @@ export function SelectCell({ value, onChange, options }: SelectCellProps) {
       >
         {selectedOption ? (
           <span
-            className={`inline-flex items-center px-2 py-0.5 rounded text-sm ${getColorClass(selectedOption.color)}`}
+            className="inline-flex items-center px-2 py-0.5 rounded text-sm"
+            style={getColorStyles(selectedOption.color)}
           >
             {selectedOption.label}
           </span>
@@ -98,7 +106,8 @@ export function SelectCell({ value, onChange, options }: SelectCellProps) {
                 onClick={() => handleSelect(option.id)}
               >
                 <span
-                  className={`inline-flex items-center px-2 py-0.5 rounded text-sm ${getColorClass(option.color)}`}
+                  className="inline-flex items-center px-2 py-0.5 rounded text-sm"
+                  style={getColorStyles(option.color)}
                 >
                   {option.label}
                 </span>

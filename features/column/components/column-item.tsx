@@ -26,6 +26,7 @@ type ColumnItemProps = {
   onUpdated?: (updated: {
     name: string;
     validation?: { required: boolean };
+    config?: unknown;
   }) => void;
 };
 
