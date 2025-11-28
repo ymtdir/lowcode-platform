@@ -252,4 +252,143 @@ describe('updateColumn', () => {
       error: 'カラムの更新に失敗しました',
     });
   });
+
+  describe('SELECT/MULTI_SELECTカラムの選択肢設定', () => {
+    const mockSelectItem = {
+      id: 'item-1',
+      type: 'TABLE',
+      createdById: 'user-1',
+      meta: {
+        schema: {
+          columns: [
+            {
+              id: 'col-1',
+              name: 'ステータス',
+              type: 'SELECT',
+              order: 0,
+              config: {
+                options: [
+                  { id: 'opt-1', label: '未着手', color: '#gray' },
+                  { id: 'opt-2', label: '進行中', color: '#blue' },
+                ],
+              },
+            },
+          ],
+        },
+        version: 1,
+      },
+    };
+
+    it('SELECTカラムの選択肢を更新できる', async () => {
+      (createClient as jest.Mock).mockResolvedValue(mockUser);
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+      (prisma.item.findUnique as jest.Mock).mockResolvedValue(mockSelectItem);
+      (prisma.item.update as jest.Mock).mockResolvedValue(mockSelectItem);
+
+      const result = await updateColumn('item-1', 'col-1', {
+        config: {
+          options: [
+            { id: 'opt-1', label: '未着手', color: '#gray' },
+            { id: 'opt-2', label: '進行中', color: '#blue' },
+            { id: 'opt-3', label: '完了', color: '#green' },
+          ],
+          defaultValue: 'opt-1',
+        } as never,
+      });
+
+      expect(result).toEqual({ success: true });
+      expect(prisma.item.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'item-1' },
+          data: {
+            meta: expect.objectContaining({
+              schema: expect.objectContaining({
+                columns: expect.arrayContaining([
+                  expect.objectContaining({
+                    id: 'col-1',
+                    config: expect.objectContaining({
+                      options: expect.arrayContaining([
+                        expect.objectContaining({ id: 'opt-3', label: '完了' }),
+                      ]),
+                      defaultValue: 'opt-1',
+                    }),
+                  }),
+                ]),
+              }),
+            }),
+          },
+        })
+      );
+    });
+
+    it('MULTI_SELECTカラムの選択肢を更新できる', async () => {
+      const mockMultiSelectItem = {
+        ...mockSelectItem,
+        meta: {
+          schema: {
+            columns: [
+              {
+                id: 'col-1',
+                name: 'タグ',
+                type: 'MULTI_SELECT',
+                order: 0,
+                config: {
+                  options: [
+                    { id: 'opt-1', label: 'タグ1', color: '#red' },
+                    { id: 'opt-2', label: 'タグ2', color: '#blue' },
+                  ],
+                },
+              },
+            ],
+          },
+          version: 1,
+        },
+      };
+
+      (createClient as jest.Mock).mockResolvedValue(mockUser);
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+      (prisma.item.findUnique as jest.Mock).mockResolvedValue(
+        mockMultiSelectItem
+      );
+      (prisma.item.update as jest.Mock).mockResolvedValue(mockMultiSelectItem);
+
+      const result = await updateColumn('item-1', 'col-1', {
+        config: {
+          options: [
+            { id: 'opt-1', label: 'タグ1', color: '#red' },
+            { id: 'opt-2', label: 'タグ2', color: '#blue' },
+            { id: 'opt-3', label: 'タグ3', color: '#green' },
+          ],
+          defaultValue: ['opt-1', 'opt-2'],
+        } as never,
+      });
+
+      expect(result).toEqual({ success: true });
+      expect(prisma.item.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'item-1' },
+          data: {
+            meta: expect.objectContaining({
+              schema: expect.objectContaining({
+                columns: expect.arrayContaining([
+                  expect.objectContaining({
+                    id: 'col-1',
+                    config: expect.objectContaining({
+                      options: expect.arrayContaining([
+                        expect.objectContaining({
+                          id: 'opt-3',
+                          label: 'タグ3',
+                        }),
+                      ]),
+                      defaultValue: ['opt-1', 'opt-2'],
+                    }),
+                  }),
+                ]),
+              }),
+            }),
+          },
+        })
+      );
+    });
+  });
 });

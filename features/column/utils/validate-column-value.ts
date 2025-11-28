@@ -2,6 +2,7 @@ import type {
   Column,
   CheckboxColumn,
   DateColumn,
+  MultiSelectColumn,
   NumberColumn,
   SelectColumn,
   TextColumn,
@@ -42,6 +43,8 @@ export function validateColumnValue(
       return validateDateValue(value, column);
     case 'SELECT':
       return validateSelectValue(value, column);
+    case 'MULTI_SELECT':
+      return validateMultiSelectValue(value, column);
     case 'CHECKBOX':
       return validateCheckboxValue(value, column);
     default:
@@ -206,45 +209,64 @@ function validateSelectValue(
   value: unknown,
   column: SelectColumn
 ): ValidationError | null {
-  // 単一選択の場合
-  if (typeof value === 'string') {
-    const validOptionIds = column.config.options.map((opt) => opt.id);
+  if (typeof value !== 'string') {
+    return {
+      columnId: column.id,
+      columnName: column.name,
+      message: `${column.name}は文字列である必要があります`,
+    };
+  }
 
-    if (!validOptionIds.includes(value)) {
-      return {
-        columnId: column.id,
-        columnName: column.name,
-        message: `${column.name}は有効な選択肢から選んでください`,
-      };
-    }
+  const validOptionIds = column.config.options.map((opt) => opt.id);
 
+  // 選択肢のIDにマッチしない場合はエラー
+  if (!validOptionIds.includes(value)) {
+    return {
+      columnId: column.id,
+      columnName: column.name,
+      message: `${column.name}は有効な選択肢から選んでください`,
+    };
+  }
+
+  return null;
+}
+
+/**
+ * MULTI_SELECT型のバリデーション
+ */
+function validateMultiSelectValue(
+  value: unknown,
+  column: MultiSelectColumn
+): ValidationError | null {
+  if (!Array.isArray(value)) {
+    return {
+      columnId: column.id,
+      columnName: column.name,
+      message: `${column.name}は配列である必要があります`,
+    };
+  }
+
+  // 空配列の場合はOK
+  if (value.length === 0) {
     return null;
   }
 
-  // 複数選択の場合（将来実装）
-  if (Array.isArray(value)) {
-    const validOptionIds = column.config.options.map((opt) => opt.id);
+  const validOptionIds = column.config.options.map((opt) => opt.id);
 
-    const invalidValues = value.filter(
-      (v) => typeof v !== 'string' || !validOptionIds.includes(v)
-    );
+  // すべての値が選択肢のIDにマッチするかチェック
+  const invalidValues = value.filter(
+    (v) => typeof v !== 'string' || !validOptionIds.includes(v)
+  );
 
-    if (invalidValues.length > 0) {
-      return {
-        columnId: column.id,
-        columnName: column.name,
-        message: `${column.name}は有効な選択肢から選んでください`,
-      };
-    }
-
-    return null;
+  if (invalidValues.length > 0) {
+    return {
+      columnId: column.id,
+      columnName: column.name,
+      message: `${column.name}は有効な選択肢から選んでください`,
+    };
   }
 
-  return {
-    columnId: column.id,
-    columnName: column.name,
-    message: `${column.name}は文字列または配列である必要があります`,
-  };
+  return null;
 }
 
 /**
