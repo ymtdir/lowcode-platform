@@ -23,7 +23,8 @@ import { toast } from 'sonner';
 import { addColumn } from '../api/add-column';
 import type { ColumnType, SelectOption } from '../types/column';
 import { COLUMN_TYPE_LIST, COLUMN_CONFIGS } from '../constants';
-import { SelectOptionsEditor } from './config/select-options-editor';
+import { SelectConfigEditor } from './config/select-config-editor';
+import { NumberConfigEditor } from './config/number-config-editor';
 
 /**
  * カラム追加ダイアログのProps型
@@ -53,6 +54,17 @@ export function AddColumnDialog({
   const [selectOptions, setSelectOptions] = useState<SelectOption[]>([]);
   const [defaultValue, setDefaultValue] = useState<string | string[]>('');
 
+  // NUMBER用の状態
+  const [numberConfig, setNumberConfig] = useState<{
+    min?: number;
+    max?: number;
+    unit?: string;
+    unitPosition?: 'prefix' | 'suffix';
+    thousandSeparator?: boolean;
+    defaultValue?: number;
+    step?: number;
+  }>({});
+
   // ダイアログが閉じられたときに状態をリセット
   useEffect(() => {
     if (!open) {
@@ -61,6 +73,7 @@ export function AddColumnDialog({
       setIsRequired(false);
       setSelectOptions([]);
       setDefaultValue('');
+      setNumberConfig({});
     }
   }, [open]);
 
@@ -100,6 +113,11 @@ export function AddColumnDialog({
           options: selectOptions,
           defaultValue: defaultValue as string[],
         };
+      } else if (
+        columnType === 'NUMBER' &&
+        Object.keys(numberConfig).length > 0
+      ) {
+        config = numberConfig;
       }
 
       const result = await addColumn(itemId, {
@@ -177,7 +195,7 @@ export function AddColumnDialog({
 
             {/* SELECT/MULTI_SELECT用の選択肢設定 */}
             {(columnType === 'SELECT' || columnType === 'MULTI_SELECT') && (
-              <SelectOptionsEditor
+              <SelectConfigEditor
                 options={selectOptions}
                 defaultValue={defaultValue}
                 isMultiSelect={columnType === 'MULTI_SELECT'}
@@ -187,6 +205,15 @@ export function AddColumnDialog({
                     defValue || (columnType === 'MULTI_SELECT' ? [] : '')
                   );
                 }}
+              />
+            )}
+
+            {/* NUMBER用の設定 */}
+            {columnType === 'NUMBER' && (
+              <NumberConfigEditor
+                key={open ? 'open' : 'closed'}
+                config={numberConfig}
+                onChange={setNumberConfig}
               />
             )}
 

@@ -10,6 +10,9 @@ type NumberCellProps = {
   max?: number;
   step?: number;
   placeholder?: string;
+  unit?: string;
+  unitPosition?: 'prefix' | 'suffix';
+  thousandSeparator?: boolean;
 };
 
 /**
@@ -22,6 +25,9 @@ export function NumberCell({
   max,
   step,
   placeholder,
+  unit,
+  unitPosition = 'suffix',
+  thousandSeparator = false,
 }: NumberCellProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
@@ -57,6 +63,31 @@ export function NumberCell({
     }
   };
 
+  /**
+   * 数値をフォーマットして表示
+   */
+  const formatNumber = (num: number): string => {
+    let formatted = num.toString();
+
+    // 千の位区切りを適用
+    if (thousandSeparator) {
+      const parts = formatted.split('.');
+      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      formatted = parts.join('.');
+    }
+
+    // 単位を適用
+    if (unit) {
+      if (unitPosition === 'prefix') {
+        formatted = unit + formatted;
+      } else {
+        formatted = formatted + unit;
+      }
+    }
+
+    return formatted;
+  };
+
   if (isEditing) {
     return (
       <Input
@@ -81,7 +112,7 @@ export function NumberCell({
       onClick={handleStartEdit}
     >
       <span className={value != null ? '' : 'text-muted-foreground'}>
-        {value ?? placeholder ?? '-'}
+        {value != null ? formatNumber(value) : (placeholder ?? '-')}
       </span>
     </div>
   );

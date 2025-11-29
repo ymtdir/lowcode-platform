@@ -3,6 +3,7 @@ import type {
   SelectColumn,
   MultiSelectColumn,
   TextColumn,
+  NumberColumn,
 } from '../../types/column';
 
 describe('applyDefaultValues', () => {
@@ -152,5 +153,66 @@ describe('applyDefaultValues', () => {
     const result = applyDefaultValues([]);
 
     expect(result).toEqual({});
+  });
+
+  it('NUMBER型のデフォルト値を適用する', () => {
+    const columns: NumberColumn[] = [
+      {
+        id: 'col-1',
+        name: '金額',
+        type: 'NUMBER',
+        order: 0,
+        config: {
+          defaultValue: 100,
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ];
+
+    const result = applyDefaultValues(columns);
+
+    expect(result).toEqual({
+      'col-1': 100,
+    });
+  });
+
+  it('デフォルト値がないNUMBER型は値を設定しない', () => {
+    const columns: NumberColumn[] = [
+      {
+        id: 'col-1',
+        name: '金額',
+        type: 'NUMBER',
+        order: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ];
+
+    const result = applyDefaultValues(columns);
+
+    expect(result).toEqual({});
+  });
+
+  it('NUMBER型のデフォルト値が0の場合も適用する', () => {
+    const columns: NumberColumn[] = [
+      {
+        id: 'col-1',
+        name: '金額',
+        type: 'NUMBER',
+        order: 0,
+        config: {
+          defaultValue: 0,
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ];
+
+    const result = applyDefaultValues(columns);
+
+    expect(result).toEqual({
+      'col-1': 0,
+    });
   });
 });

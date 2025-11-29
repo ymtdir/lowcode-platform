@@ -18,7 +18,8 @@ import { Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateColumn } from '../api/update-column';
 import type { Column, SelectOption } from '../types/column';
-import { SelectOptionsEditor } from './config/select-options-editor';
+import { SelectConfigEditor } from './config/select-config-editor';
+import { NumberConfigEditor } from './config/number-config-editor';
 
 /**
  * カラム編集アイテムのProps型
@@ -54,6 +55,17 @@ export function EditColumnItem({
   const [selectOptions, setSelectOptions] = useState<SelectOption[]>([]);
   const [defaultValue, setDefaultValue] = useState<string | string[]>('');
 
+  // NUMBER用の状態
+  const [numberConfig, setNumberConfig] = useState<{
+    min?: number;
+    max?: number;
+    unit?: string;
+    unitPosition?: 'prefix' | 'suffix';
+    thousandSeparator?: boolean;
+    defaultValue?: number;
+    step?: number;
+  }>({});
+
   // ダイアログが開かれたときに最新の値をセット
   useEffect(() => {
     if (open) {
@@ -67,6 +79,12 @@ export function EditColumnItem({
         setDefaultValue(
           config?.defaultValue || (column.type === 'MULTI_SELECT' ? [] : '')
         );
+      }
+
+      // NUMBERの場合、configから値を取得
+      if (column.type === 'NUMBER') {
+        const config = column.config;
+        setNumberConfig(config || {});
       }
     }
   }, [open, column]);
@@ -107,6 +125,11 @@ export function EditColumnItem({
           options: selectOptions,
           defaultValue: defaultValue as string[],
         };
+      } else if (
+        column.type === 'NUMBER' &&
+        Object.keys(numberConfig).length > 0
+      ) {
+        config = numberConfig;
       }
 
       const result = await updateColumn(itemId, column.id, {
@@ -170,7 +193,7 @@ export function EditColumnItem({
 
             {/* SELECT/MULTI_SELECT用の選択肢設定 */}
             {(column.type === 'SELECT' || column.type === 'MULTI_SELECT') && (
-              <SelectOptionsEditor
+              <SelectConfigEditor
                 options={selectOptions}
                 defaultValue={defaultValue}
                 isMultiSelect={column.type === 'MULTI_SELECT'}
@@ -180,6 +203,15 @@ export function EditColumnItem({
                     defValue || (column.type === 'MULTI_SELECT' ? [] : '')
                   );
                 }}
+              />
+            )}
+
+            {/* NUMBER用の設定 */}
+            {column.type === 'NUMBER' && (
+              <NumberConfigEditor
+                key={open ? column.id : 'closed'}
+                config={numberConfig}
+                onChange={setNumberConfig}
               />
             )}
 

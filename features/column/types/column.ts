@@ -47,9 +47,13 @@ export type ColumnTypeConfig = {
     rows?: number;
   };
   NUMBER: {
-    min?: number;
-    max?: number;
-    step?: number;
+    min?: number; // 最小値
+    max?: number; // 最大値
+    unit?: string; // 単位（円、個など）表示専用
+    unitPosition?: 'prefix' | 'suffix'; // 単位の位置
+    thousandSeparator?: boolean; // 千の位区切り表示
+    defaultValue?: number; // デフォルト値
+    step?: number; // 増減のステップ値（デフォルト: 1）
     placeholder?: string;
   };
   DATE: {

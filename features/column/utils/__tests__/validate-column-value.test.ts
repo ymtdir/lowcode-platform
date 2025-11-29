@@ -3,6 +3,7 @@ import type {
   SelectColumn,
   MultiSelectColumn,
   TextColumn,
+  NumberColumn,
 } from '../../types/column';
 
 describe('validateColumnValue', () => {
@@ -118,6 +119,61 @@ describe('validateColumnValue', () => {
         columnId: 'col-1',
         columnName: 'タグ',
         message: 'タグは配列である必要があります',
+      });
+    });
+  });
+
+  describe('NUMBER型のバリデーション', () => {
+    const numberColumn: NumberColumn = {
+      id: 'col-1',
+      name: '金額',
+      type: 'NUMBER',
+      order: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    it('有効な数値はバリデーションを通過する', () => {
+      const result = validateColumnValue(100, numberColumn);
+      expect(result).toBeNull();
+    });
+
+    it('min値未満の場合はエラーを返す', () => {
+      const columnWithMin: NumberColumn = {
+        ...numberColumn,
+        config: { min: 0 },
+      };
+      const result = validateColumnValue(-10, columnWithMin);
+      expect(result).toEqual({
+        columnId: 'col-1',
+        columnName: '金額',
+        message: '金額は0以上である必要があります',
+      });
+    });
+
+    it('max値超過の場合はエラーを返す', () => {
+      const columnWithMax: NumberColumn = {
+        ...numberColumn,
+        config: { max: 100 },
+      };
+      const result = validateColumnValue(200, columnWithMax);
+      expect(result).toEqual({
+        columnId: 'col-1',
+        columnName: '金額',
+        message: '金額は100以下である必要があります',
+      });
+    });
+
+    it('required=trueで空値の場合はエラーを返す', () => {
+      const requiredColumn: NumberColumn = {
+        ...numberColumn,
+        validation: { required: true },
+      };
+      const result = validateColumnValue(null, requiredColumn);
+      expect(result).toEqual({
+        columnId: 'col-1',
+        columnName: '金額',
+        message: '金額は必須項目です',
       });
     });
   });
