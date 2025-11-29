@@ -209,6 +209,7 @@ export function EditColumnItem({
             {/* NUMBER用の設定 */}
             {column.type === 'NUMBER' && (
               <NumberConfigEditor
+                key={open ? column.id : 'closed'}
                 config={numberConfig}
                 onChange={setNumberConfig}
               />

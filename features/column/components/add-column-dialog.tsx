@@ -211,6 +211,7 @@ export function AddColumnDialog({
             {/* NUMBER用の設定 */}
             {columnType === 'NUMBER' && (
               <NumberConfigEditor
+                key={open ? 'open' : 'closed'}
                 config={numberConfig}
                 onChange={setNumberConfig}
               />

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -42,13 +42,6 @@ export function NumberConfigEditor({
 }: NumberConfigEditorProps) {
   const [localConfig, setLocalConfig] = useState<NumberConfig>(config || {});
 
-  // 親から受け取ったconfigが変更されたらローカルステートを更新
-  useEffect(() => {
-    if (config) {
-      setLocalConfig(config);
-    }
-  }, [config]);
-
   const handleChange = (updates: Partial<NumberConfig>) => {
     const newConfig = { ...localConfig, ...updates };
     setLocalConfig(newConfig);
@@ -57,10 +50,10 @@ export function NumberConfigEditor({
 
   const handleNumberInput = (field: keyof NumberConfig, value: string) => {
     if (value === '') {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { [field]: _, ...rest } = localConfig;
-      setLocalConfig(rest);
-      onChange(rest);
+      const newConfig = { ...localConfig };
+      delete newConfig[field];
+      setLocalConfig(newConfig);
+      onChange(newConfig);
       return;
     }
 
@@ -148,10 +141,11 @@ export function NumberConfigEditor({
             onChange={(e) => {
               const value = e.target.value;
               if (value === '') {
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const { unit: _, unitPosition: __, ...rest } = localConfig;
-                setLocalConfig(rest);
-                onChange(rest);
+                const newConfig = { ...localConfig };
+                delete newConfig.unit;
+                delete newConfig.unitPosition;
+                setLocalConfig(newConfig);
+                onChange(newConfig);
               } else {
                 handleChange({ unit: value });
               }
