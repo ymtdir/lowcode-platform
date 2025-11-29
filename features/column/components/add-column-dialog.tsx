@@ -25,6 +25,9 @@ import type { ColumnType, SelectOption } from '../types/column';
 import { COLUMN_TYPE_LIST, COLUMN_CONFIGS } from '../constants';
 import { SelectConfigEditor } from './config/select-config-editor';
 import { NumberConfigEditor } from './config/number-config-editor';
+import { DateConfigEditor } from './config/date-config-editor';
+import type { DatePrecision } from '../types/column';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 /**
  * カラム追加ダイアログのProps型
@@ -65,6 +68,17 @@ export function AddColumnDialog({
     step?: number;
   }>({});
 
+  // DATE用の状態
+  const [dateConfig, setDateConfig] = useState<{
+    precision?: DatePrecision;
+    defaultValue?: number;
+    min?: string;
+    max?: string;
+    allowPast?: boolean;
+    allowFuture?: boolean;
+    placeholder?: string;
+  }>({});
+
   // ダイアログが閉じられたときに状態をリセット
   useEffect(() => {
     if (!open) {
@@ -74,6 +88,7 @@ export function AddColumnDialog({
       setSelectOptions([]);
       setDefaultValue('');
       setNumberConfig({});
+      setDateConfig({});
     }
   }, [open]);
 
@@ -118,6 +133,8 @@ export function AddColumnDialog({
         Object.keys(numberConfig).length > 0
       ) {
         config = numberConfig;
+      } else if (columnType === 'DATE' && Object.keys(dateConfig).length > 0) {
+        config = dateConfig;
       }
 
       const result = await addColumn(itemId, {
@@ -145,93 +162,106 @@ export function AddColumnDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] p-0">
+        <DialogHeader className="px-6 py-6">
           <DialogTitle>項目を追加</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">項目名</Label>
-              <Input
-                id="name"
-                value={columnName}
-                onChange={(e) => setColumnName(e.target.value)}
-                placeholder="項目名"
-                required
-              />
-            </div>
+          <ScrollArea className="[&>div[data-radix-scroll-area-viewport]]:max-h-[50vh] px-6">
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="name">項目名</Label>
+                <Input
+                  id="name"
+                  value={columnName}
+                  onChange={(e) => setColumnName(e.target.value)}
+                  placeholder="項目名"
+                  required
+                />
+              </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="type">タイプ</Label>
-              <div className="flex items-center gap-3">
-                <Select
-                  value={columnType}
-                  onValueChange={(value) => setColumnType(value as ColumnType)}
+              <div className="grid gap-2">
+                <Label htmlFor="type">タイプ</Label>
+                <div className="flex items-center gap-3">
+                  <Select
+                    value={columnType}
+                    onValueChange={(value) =>
+                      setColumnType(value as ColumnType)
+                    }
+                  >
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COLUMN_TYPE_LIST.map((type) => {
+                        const config = COLUMN_CONFIGS[type];
+                        const Icon = config.icon;
+                        return (
+                          <SelectItem key={type} value={type}>
+                            <div className="flex items-center gap-2">
+                              <Icon className="h-4 w-4" />
+                              <span>{config.label}</span>
+                            </div>
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground flex-1">
+                    {COLUMN_CONFIGS[columnType].description}
+                  </p>
+                </div>
+              </div>
+
+              {/* SELECT/MULTI_SELECT用の選択肢設定 */}
+              {(columnType === 'SELECT' || columnType === 'MULTI_SELECT') && (
+                <SelectConfigEditor
+                  options={selectOptions}
+                  defaultValue={defaultValue}
+                  isMultiSelect={columnType === 'MULTI_SELECT'}
+                  onChange={(options, defValue) => {
+                    setSelectOptions(options);
+                    setDefaultValue(
+                      defValue || (columnType === 'MULTI_SELECT' ? [] : '')
+                    );
+                  }}
+                />
+              )}
+
+              {/* NUMBER用の設定 */}
+              {columnType === 'NUMBER' && (
+                <NumberConfigEditor
+                  key={open ? 'open' : 'closed'}
+                  config={numberConfig}
+                  onChange={setNumberConfig}
+                />
+              )}
+
+              {/* DATE用の設定 */}
+              {columnType === 'DATE' && (
+                <DateConfigEditor
+                  key={open ? 'open' : 'closed'}
+                  config={dateConfig}
+                  onChange={setDateConfig}
+                />
+              )}
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="required"
+                  checked={isRequired}
+                  onCheckedChange={(checked) => setIsRequired(checked === true)}
+                />
+                <label
+                  htmlFor="required"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {COLUMN_TYPE_LIST.map((type) => {
-                      const config = COLUMN_CONFIGS[type];
-                      const Icon = config.icon;
-                      return (
-                        <SelectItem key={type} value={type}>
-                          <div className="flex items-center gap-2">
-                            <Icon className="h-4 w-4" />
-                            <span>{config.label}</span>
-                          </div>
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground flex-1">
-                  {COLUMN_CONFIGS[columnType].description}
-                </p>
+                  必須項目にする
+                </label>
               </div>
             </div>
-
-            {/* SELECT/MULTI_SELECT用の選択肢設定 */}
-            {(columnType === 'SELECT' || columnType === 'MULTI_SELECT') && (
-              <SelectConfigEditor
-                options={selectOptions}
-                defaultValue={defaultValue}
-                isMultiSelect={columnType === 'MULTI_SELECT'}
-                onChange={(options, defValue) => {
-                  setSelectOptions(options);
-                  setDefaultValue(
-                    defValue || (columnType === 'MULTI_SELECT' ? [] : '')
-                  );
-                }}
-              />
-            )}
-
-            {/* NUMBER用の設定 */}
-            {columnType === 'NUMBER' && (
-              <NumberConfigEditor
-                key={open ? 'open' : 'closed'}
-                config={numberConfig}
-                onChange={setNumberConfig}
-              />
-            )}
-
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="required"
-                checked={isRequired}
-                onCheckedChange={(checked) => setIsRequired(checked === true)}
-              />
-              <label
-                htmlFor="required"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                必須項目にする
-              </label>
-            </div>
-          </div>
-          <DialogFooter>
+          </ScrollArea>
+          <DialogFooter className="px-6 py-6">
             <Button
               type="button"
               variant="outline"

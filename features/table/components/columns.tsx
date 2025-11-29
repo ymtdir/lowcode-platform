@@ -109,8 +109,10 @@ export const createColumns = (
             <DateCell
               value={(value as string) ?? null}
               onChange={handleChange}
+              precision={column.config?.precision}
               min={column.config?.min}
               max={column.config?.max}
+              placeholder={column.config?.placeholder}
             />
           );
         case 'SELECT':

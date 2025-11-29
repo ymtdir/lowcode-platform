@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DatePickerCalendar } from '@/components/ui/date-picker-calendar';
 import {
@@ -12,18 +11,57 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import type { DatePrecision } from '@/features/column/types/column';
 
 type DateCellProps = {
   value: string | null;
   onChange: (value: string | null) => void;
+  precision?: DatePrecision;
   min?: string;
   max?: string;
+  placeholder?: string;
 };
+
+/**
+ * 精度に応じたフォーマット文字列を取得
+ */
+function getFormatString(precision?: DatePrecision): string {
+  const formats: Record<DatePrecision, string> = {
+    year: 'yyyy',
+    month: 'yyyy/MM',
+    day: 'yyyy/MM/dd',
+    day_weekday: 'yyyy/MM/dd（E）',
+  };
+
+  return formats[precision || 'day'];
+}
+
+/**
+ * 精度に応じた保存形式を取得
+ * day_weekday は day と同じフォーマットで保存
+ */
+function getSaveFormat(precision?: DatePrecision): string {
+  const formats: Record<DatePrecision, string> = {
+    year: 'yyyy',
+    month: 'yyyy-MM',
+    day: 'yyyy-MM-dd',
+    day_weekday: 'yyyy-MM-dd',
+  };
+
+  return formats[precision || 'day'];
+}
 
 /**
  * 日付セルコンポーネント
  */
-export function DateCell({ value, onChange, min, max }: DateCellProps) {
+export function DateCell({
+  value,
+  onChange,
+  precision = 'day',
+  min,
+  max,
+  placeholder = '-',
+}: DateCellProps) {
   const [open, setOpen] = useState(false);
 
   const date = value ? new Date(value) : undefined;
@@ -32,8 +70,8 @@ export function DateCell({ value, onChange, min, max }: DateCellProps) {
 
   const handleSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
-      // YYYY-MM-DD形式で保存
-      const formatted = format(selectedDate, 'yyyy-MM-dd');
+      const saveFormat = getSaveFormat(precision);
+      const formatted = format(selectedDate, saveFormat);
       onChange(formatted);
     } else {
       onChange(null);
@@ -42,9 +80,10 @@ export function DateCell({ value, onChange, min, max }: DateCellProps) {
   };
 
   const formatDisplayDate = (dateStr: string | null) => {
-    if (!dateStr) return '-';
+    if (!dateStr) return placeholder;
     try {
-      return format(new Date(dateStr), 'yyyy/MM/dd', { locale: ja });
+      const displayFormat = getFormatString(precision);
+      return format(new Date(dateStr), displayFormat, { locale: ja });
     } catch {
       return dateStr;
     }
@@ -60,7 +99,6 @@ export function DateCell({ value, onChange, min, max }: DateCellProps) {
             !value && 'text-muted-foreground'
           )}
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
           {formatDisplayDate(value)}
         </Button>
       </PopoverTrigger>
