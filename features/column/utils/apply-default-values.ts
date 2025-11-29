@@ -18,6 +18,11 @@ export function applyDefaultValues(columns: Column[]): RecordData {
       column.config?.defaultValue !== undefined
     ) {
       data[column.id] = column.config.defaultValue;
+    } else if (
+      column.type === 'NUMBER' &&
+      column.config?.defaultValue !== undefined
+    ) {
+      data[column.id] = column.config.defaultValue;
     }
     // 他のカラムタイプは明示的に値を設定しない（undefined）
   }

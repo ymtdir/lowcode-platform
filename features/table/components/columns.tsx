@@ -99,6 +99,9 @@ export const createColumns = (
               max={column.config?.max}
               step={column.config?.step}
               placeholder={column.config?.placeholder}
+              unit={column.config?.unit}
+              unitPosition={column.config?.unitPosition}
+              thousandSeparator={column.config?.thousandSeparator}
             />
           );
         case 'DATE':

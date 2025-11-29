@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, GripVertical, Trash2, Check } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import {
@@ -31,9 +31,9 @@ import { COLOR_PALETTE, DEFAULT_COLOR } from '../../constants';
 import type { SelectOption } from '../../types';
 
 /**
- * SelectOptionsEditorのProps型
+ * SelectConfigEditorのProps型
  */
-type SelectOptionsEditorProps = {
+type SelectConfigEditorProps = {
   options: SelectOption[];
   defaultValue?: string | string[];
   isMultiSelect?: boolean;
@@ -166,18 +166,27 @@ function OptionItem({
 }
 
 /**
- * SELECT/MULTI_SELECT用の選択肢エディターコンポーネント
+ * SELECT/MULTI_SELECT用の設定エディターコンポーネント
  */
-export function SelectOptionsEditor({
+export function SelectConfigEditor({
   options,
   defaultValue,
   isMultiSelect = false,
   onChange,
-}: SelectOptionsEditorProps) {
+}: SelectConfigEditorProps) {
   const [localOptions, setLocalOptions] = useState<SelectOption[]>(options);
   const [localDefaultValue, setLocalDefaultValue] = useState<string | string[]>(
     defaultValue || (isMultiSelect ? [] : '')
   );
+
+  // 親から受け取ったpropsが変更されたらローカルステートを更新
+  useEffect(() => {
+    setLocalOptions(options);
+  }, [options]);
+
+  useEffect(() => {
+    setLocalDefaultValue(defaultValue || (isMultiSelect ? [] : ''));
+  }, [defaultValue, isMultiSelect]);
 
   // DnDセンサーの設定
   const sensors = useSensors(
