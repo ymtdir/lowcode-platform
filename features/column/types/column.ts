@@ -25,7 +25,7 @@ export type SelectOption = {
 /**
  * 日付精度の型
  */
-export type DatePrecision = 'year' | 'month' | 'day';
+export type DatePrecision = 'year' | 'month' | 'day' | 'day_weekday';
 
 /**
  * 日付フォーマットの型
@@ -66,7 +66,6 @@ export type ColumnTypeConfig = {
     max?: string; // 入力可能な最大日付（ISO 8601形式）
     allowPast?: boolean; // 過去日付を許可（デフォルト: true）
     allowFuture?: boolean; // 未来日付を許可（デフォルト: true）
-    showWeekday?: boolean; // 曜日を表示
     placeholder?: string; // プレースホルダー
   };
   SELECT: {
