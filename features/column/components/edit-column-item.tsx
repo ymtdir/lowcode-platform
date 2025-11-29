@@ -20,6 +20,8 @@ import { updateColumn } from '../api/update-column';
 import type { Column, SelectOption } from '../types/column';
 import { SelectConfigEditor } from './config/select-config-editor';
 import { NumberConfigEditor } from './config/number-config-editor';
+import { DateConfigEditor } from './config/date-config-editor';
+import type { DatePrecision } from '../types/column';
 
 /**
  * カラム編集アイテムのProps型
@@ -66,6 +68,18 @@ export function EditColumnItem({
     step?: number;
   }>({});
 
+  // DATE用の状態
+  const [dateConfig, setDateConfig] = useState<{
+    precision?: DatePrecision;
+    defaultValue?: number;
+    min?: string;
+    max?: string;
+    allowPast?: boolean;
+    allowFuture?: boolean;
+    showWeekday?: boolean;
+    placeholder?: string;
+  }>({});
+
   // ダイアログが開かれたときに最新の値をセット
   useEffect(() => {
     if (open) {
@@ -85,6 +99,12 @@ export function EditColumnItem({
       if (column.type === 'NUMBER') {
         const config = column.config;
         setNumberConfig(config || {});
+      }
+
+      // DATEの場合、configから値を取得
+      if (column.type === 'DATE') {
+        const config = column.config;
+        setDateConfig(config || {});
       }
     }
   }, [open, column]);
@@ -130,6 +150,8 @@ export function EditColumnItem({
         Object.keys(numberConfig).length > 0
       ) {
         config = numberConfig;
+      } else if (column.type === 'DATE' && Object.keys(dateConfig).length > 0) {
+        config = dateConfig;
       }
 
       const result = await updateColumn(itemId, column.id, {
@@ -212,6 +234,15 @@ export function EditColumnItem({
                 key={open ? column.id : 'closed'}
                 config={numberConfig}
                 onChange={setNumberConfig}
+              />
+            )}
+
+            {/* DATE用の設定 */}
+            {column.type === 'DATE' && (
+              <DateConfigEditor
+                key={open ? column.id : 'closed'}
+                config={dateConfig}
+                onChange={setDateConfig}
               />
             )}
 

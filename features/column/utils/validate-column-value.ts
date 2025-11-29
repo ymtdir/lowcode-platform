@@ -199,6 +199,34 @@ function validateDateValue(
     };
   }
 
+  // 過去日付の許可チェック
+  const allowPast = column.config?.allowPast !== false; // デフォルトtrue
+  if (!allowPast) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (date < today) {
+      return {
+        columnId: column.id,
+        columnName: column.name,
+        message: `${column.name}は今日以降の日付を入力してください`,
+      };
+    }
+  }
+
+  // 未来日付の許可チェック
+  const allowFuture = column.config?.allowFuture !== false; // デフォルトtrue
+  if (!allowFuture) {
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    if (date > today) {
+      return {
+        columnId: column.id,
+        columnName: column.name,
+        message: `${column.name}は今日以前の日付を入力してください`,
+      };
+    }
+  }
+
   return null;
 }
 

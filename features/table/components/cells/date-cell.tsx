@@ -12,18 +12,62 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import type { DatePrecision } from '@/features/column/types/column';
 
 type DateCellProps = {
   value: string | null;
   onChange: (value: string | null) => void;
+  precision?: DatePrecision;
   min?: string;
   max?: string;
+  showWeekday?: boolean;
+  placeholder?: string;
 };
+
+/**
+ * 精度に応じたフォーマット文字列を取得
+ */
+function getFormatString(precision?: DatePrecision, showWeekday?: boolean): string {
+  const baseFormats = {
+    year: 'yyyy',
+    month: 'yyyy/MM',
+    day: 'yyyy/MM/dd',
+  };
+
+  const baseFormat = baseFormats[precision || 'day'];
+
+  if (showWeekday && (precision === 'day' || !precision)) {
+    return `${baseFormat}（E）`;
+  }
+
+  return baseFormat;
+}
+
+/**
+ * 精度に応じた保存形式を取得
+ */
+function getSaveFormat(precision?: DatePrecision): string {
+  const formats = {
+    year: 'yyyy',
+    month: 'yyyy-MM',
+    day: 'yyyy-MM-dd',
+  };
+
+  return formats[precision || 'day'];
+}
 
 /**
  * 日付セルコンポーネント
  */
-export function DateCell({ value, onChange, min, max }: DateCellProps) {
+export function DateCell({
+  value,
+  onChange,
+  precision = 'day',
+  min,
+  max,
+  showWeekday = false,
+  placeholder = '-',
+}: DateCellProps) {
   const [open, setOpen] = useState(false);
 
   const date = value ? new Date(value) : undefined;
@@ -32,8 +76,8 @@ export function DateCell({ value, onChange, min, max }: DateCellProps) {
 
   const handleSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
-      // YYYY-MM-DD形式で保存
-      const formatted = format(selectedDate, 'yyyy-MM-dd');
+      const saveFormat = getSaveFormat(precision);
+      const formatted = format(selectedDate, saveFormat);
       onChange(formatted);
     } else {
       onChange(null);
@@ -42,9 +86,10 @@ export function DateCell({ value, onChange, min, max }: DateCellProps) {
   };
 
   const formatDisplayDate = (dateStr: string | null) => {
-    if (!dateStr) return '-';
+    if (!dateStr) return placeholder;
     try {
-      return format(new Date(dateStr), 'yyyy/MM/dd', { locale: ja });
+      const displayFormat = getFormatString(precision, showWeekday);
+      return format(new Date(dateStr), displayFormat, { locale: ja });
     } catch {
       return dateStr;
     }

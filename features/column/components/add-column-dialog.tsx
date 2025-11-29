@@ -25,6 +25,8 @@ import type { ColumnType, SelectOption } from '../types/column';
 import { COLUMN_TYPE_LIST, COLUMN_CONFIGS } from '../constants';
 import { SelectConfigEditor } from './config/select-config-editor';
 import { NumberConfigEditor } from './config/number-config-editor';
+import { DateConfigEditor } from './config/date-config-editor';
+import type { DatePrecision } from '../types/column';
 
 /**
  * カラム追加ダイアログのProps型
@@ -65,6 +67,18 @@ export function AddColumnDialog({
     step?: number;
   }>({});
 
+  // DATE用の状態
+  const [dateConfig, setDateConfig] = useState<{
+    precision?: DatePrecision;
+    defaultValue?: number;
+    min?: string;
+    max?: string;
+    allowPast?: boolean;
+    allowFuture?: boolean;
+    showWeekday?: boolean;
+    placeholder?: string;
+  }>({});
+
   // ダイアログが閉じられたときに状態をリセット
   useEffect(() => {
     if (!open) {
@@ -74,6 +88,7 @@ export function AddColumnDialog({
       setSelectOptions([]);
       setDefaultValue('');
       setNumberConfig({});
+      setDateConfig({});
     }
   }, [open]);
 
@@ -118,6 +133,8 @@ export function AddColumnDialog({
         Object.keys(numberConfig).length > 0
       ) {
         config = numberConfig;
+      } else if (columnType === 'DATE' && Object.keys(dateConfig).length > 0) {
+        config = dateConfig;
       }
 
       const result = await addColumn(itemId, {
@@ -214,6 +231,15 @@ export function AddColumnDialog({
                 key={open ? 'open' : 'closed'}
                 config={numberConfig}
                 onChange={setNumberConfig}
+              />
+            )}
+
+            {/* DATE用の設定 */}
+            {columnType === 'DATE' && (
+              <DateConfigEditor
+                key={open ? 'open' : 'closed'}
+                config={dateConfig}
+                onChange={setDateConfig}
               />
             )}
 

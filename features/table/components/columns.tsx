@@ -109,8 +109,11 @@ export const createColumns = (
             <DateCell
               value={(value as string) ?? null}
               onChange={handleChange}
+              precision={column.config?.precision}
               min={column.config?.min}
               max={column.config?.max}
+              showWeekday={column.config?.showWeekday}
+              placeholder={column.config?.placeholder}
             />
           );
         case 'SELECT':
