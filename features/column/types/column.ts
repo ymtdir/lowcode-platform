@@ -23,15 +23,17 @@ export type SelectOption = {
 };
 
 /**
+ * 日付精度の型
+ */
+export type DatePrecision = 'year' | 'month' | 'day';
+
+/**
  * 日付フォーマットの型
- * 将来的に年月のみ、日時、秒数までなど細かい設定に対応可能
  */
 export type DateFormatType =
   | 'YYYY-MM-DD' // 日付のみ
   | 'YYYY/MM/DD' // 日付のみ（スラッシュ区切り）
-  | 'YYYY-MM' // 年月のみ（将来実装）
-  | 'YYYY-MM-DD HH:mm' // 日時（将来実装）
-  | 'YYYY-MM-DD HH:mm:ss'; // 日時秒（将来実装）
+  | 'YYYY-MM'; // 年月のみ
 
 /**
  * 各カラムタイプ固有の設定
@@ -57,9 +59,15 @@ export type ColumnTypeConfig = {
     placeholder?: string;
   };
   DATE: {
-    format?: DateFormatType;
-    min?: string; // ISO 8601形式
-    max?: string; // ISO 8601形式
+    precision?: DatePrecision; // 精度（デフォルト: 'day'）
+    format?: DateFormatType; // 表示フォーマット
+    defaultValue?: number; // デフォルト値（相対日数: 0=今日、正数=未来、負数=過去）
+    min?: string; // 入力可能な最小日付（ISO 8601形式）
+    max?: string; // 入力可能な最大日付（ISO 8601形式）
+    allowPast?: boolean; // 過去日付を許可（デフォルト: true）
+    allowFuture?: boolean; // 未来日付を許可（デフォルト: true）
+    showWeekday?: boolean; // 曜日を表示
+    placeholder?: string; // プレースホルダー
   };
   SELECT: {
     options: SelectOption[];
