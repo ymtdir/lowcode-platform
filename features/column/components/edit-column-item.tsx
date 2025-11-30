@@ -24,6 +24,7 @@ import { NumberConfigEditor } from './config/number-config-editor';
 import { DateConfigEditor } from './config/date-config-editor';
 import { TextConfigEditor } from './config/text-config-editor';
 import { TextareaConfigEditor } from './config/textarea-config-editor';
+import { CheckboxConfigEditor } from './config/checkbox-config-editor';
 import type { DatePrecision } from '../types/column';
 
 /**
@@ -94,6 +95,14 @@ export function EditColumnItem({
     placeholder?: string;
   }>({});
 
+  // CHECKBOX用の状態
+  const [checkboxConfig, setCheckboxConfig] = useState<{
+    checkedLabel?: string;
+    uncheckedLabel?: string;
+    defaultValue?: boolean;
+    displayStyle?: 'checkbox' | 'switch';
+  }>({});
+
   // ダイアログが開かれたときに最新の値をセット
   useEffect(() => {
     if (open) {
@@ -131,6 +140,12 @@ export function EditColumnItem({
       if (column.type === 'DATE') {
         const config = column.config;
         setDateConfig(config || {});
+      }
+
+      // CHECKBOXの場合、configから値を取得
+      if (column.type === 'CHECKBOX') {
+        const config = column.config;
+        setCheckboxConfig(config || {});
       }
     }
   }, [open, column]);
@@ -185,6 +200,11 @@ export function EditColumnItem({
         config = numberConfig;
       } else if (column.type === 'DATE' && Object.keys(dateConfig).length > 0) {
         config = dateConfig;
+      } else if (
+        column.type === 'CHECKBOX' &&
+        Object.keys(checkboxConfig).length > 0
+      ) {
+        config = checkboxConfig;
       }
 
       const result = await updateColumn(itemId, column.id, {
@@ -298,19 +318,33 @@ export function EditColumnItem({
                 />
               )}
 
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="edit-required"
-                  checked={isRequired}
-                  onCheckedChange={(checked) => setIsRequired(checked === true)}
+              {/* CHECKBOX用の設定 */}
+              {column.type === 'CHECKBOX' && (
+                <CheckboxConfigEditor
+                  key={open ? column.id : 'closed'}
+                  config={checkboxConfig}
+                  onChange={setCheckboxConfig}
                 />
-                <label
-                  htmlFor="edit-required"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  必須項目にする
-                </label>
-              </div>
+              )}
+
+              {/* CHECKBOXは常にtrue/falseなので必須項目は不要 */}
+              {column.type !== 'CHECKBOX' && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="edit-required"
+                    checked={isRequired}
+                    onCheckedChange={(checked) =>
+                      setIsRequired(checked === true)
+                    }
+                  />
+                  <label
+                    htmlFor="edit-required"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    必須項目にする
+                  </label>
+                </div>
+              )}
             </div>
           </ScrollArea>
           <DialogFooter className="px-6 py-6">

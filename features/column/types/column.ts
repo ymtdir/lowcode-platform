@@ -76,9 +76,10 @@ export type ColumnTypeConfig = {
     defaultValue?: string[]; // デフォルト値（選択肢のIDの配列）
   };
   CHECKBOX: {
-    multiple?: boolean; // 複数選択を許可するか（将来実装）
-    options?: SelectOption[]; // multiple=trueの場合に使用（将来実装）
-    defaultValue?: boolean; // 単一選択の場合のデフォルト値
+    checkedLabel?: string; // チェック時のラベル（例: 「完了」）
+    uncheckedLabel?: string; // 未チェック時のラベル（例: 「未完了」）
+    defaultValue?: boolean; // デフォルト値
+    displayStyle?: 'checkbox' | 'switch'; // 表示スタイル（デフォルト: 'checkbox'）
   };
 };
 

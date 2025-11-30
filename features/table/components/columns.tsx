@@ -134,6 +134,9 @@ export const createColumns = (
             <CheckboxCell
               value={(value as boolean) ?? false}
               onChange={handleChange}
+              displayStyle={column.config?.displayStyle}
+              checkedLabel={column.config?.checkedLabel}
+              uncheckedLabel={column.config?.uncheckedLabel}
             />
           );
         default:

@@ -28,6 +28,7 @@ import { NumberConfigEditor } from './config/number-config-editor';
 import { DateConfigEditor } from './config/date-config-editor';
 import { TextConfigEditor } from './config/text-config-editor';
 import { TextareaConfigEditor } from './config/textarea-config-editor';
+import { CheckboxConfigEditor } from './config/checkbox-config-editor';
 import type { DatePrecision } from '../types/column';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -93,6 +94,14 @@ export function AddColumnDialog({
     placeholder?: string;
   }>({});
 
+  // CHECKBOX用の状態
+  const [checkboxConfig, setCheckboxConfig] = useState<{
+    checkedLabel?: string;
+    uncheckedLabel?: string;
+    defaultValue?: boolean;
+    displayStyle?: 'checkbox' | 'switch';
+  }>({});
+
   // ダイアログが閉じられたときに状態をリセット
   useEffect(() => {
     if (!open) {
@@ -105,6 +114,7 @@ export function AddColumnDialog({
       setTextareaConfig({});
       setNumberConfig({});
       setDateConfig({});
+      setCheckboxConfig({});
     }
   }, [open]);
 
@@ -158,6 +168,11 @@ export function AddColumnDialog({
         config = numberConfig;
       } else if (columnType === 'DATE' && Object.keys(dateConfig).length > 0) {
         config = dateConfig;
+      } else if (
+        columnType === 'CHECKBOX' &&
+        Object.keys(checkboxConfig).length > 0
+      ) {
+        config = checkboxConfig;
       }
 
       const result = await addColumn(itemId, {
@@ -287,19 +302,33 @@ export function AddColumnDialog({
                 />
               )}
 
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="required"
-                  checked={isRequired}
-                  onCheckedChange={(checked) => setIsRequired(checked === true)}
+              {/* CHECKBOX用の設定 */}
+              {columnType === 'CHECKBOX' && (
+                <CheckboxConfigEditor
+                  key={open ? 'open' : 'closed'}
+                  config={checkboxConfig}
+                  onChange={setCheckboxConfig}
                 />
-                <label
-                  htmlFor="required"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  必須項目にする
-                </label>
-              </div>
+              )}
+
+              {/* CHECKBOXは常にtrue/falseなので必須項目は不要 */}
+              {columnType !== 'CHECKBOX' && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="required"
+                    checked={isRequired}
+                    onCheckedChange={(checked) =>
+                      setIsRequired(checked === true)
+                    }
+                  />
+                  <label
+                    htmlFor="required"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    必須項目にする
+                  </label>
+                </div>
+              )}
             </div>
           </ScrollArea>
           <DialogFooter className="px-6 py-6">
