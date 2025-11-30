@@ -24,7 +24,7 @@ import { cn } from '@/lib/utils';
 import type { DatePrecision, DateFormatType } from '../../types/column';
 
 /**
- * DATE設定の型
+ * DATE型カラムの設定
  */
 type DateConfig = {
   precision?: DatePrecision;
@@ -38,7 +38,7 @@ type DateConfig = {
 };
 
 /**
- * DateConfigEditorのProps型
+ * DateConfigEditorのProps
  */
 type DateConfigEditorProps = {
   config?: DateConfig;
@@ -56,7 +56,7 @@ const PRECISION_OPTIONS: { value: DatePrecision; label: string }[] = [
 ];
 
 /**
- * DATE用の設定エディターコンポーネント
+ * DATE型カラムの設定エディタコンポーネント
  */
 export function DateConfigEditor({ config, onChange }: DateConfigEditorProps) {
   const [localConfig, setLocalConfig] = useState<DateConfig>(config || {});

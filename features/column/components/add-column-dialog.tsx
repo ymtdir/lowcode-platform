@@ -26,6 +26,7 @@ import { COLUMN_TYPE_LIST, COLUMN_CONFIGS } from '../constants';
 import { SelectConfigEditor } from './config/select-config-editor';
 import { NumberConfigEditor } from './config/number-config-editor';
 import { DateConfigEditor } from './config/date-config-editor';
+import { TextConfigEditor } from './config/text-config-editor';
 import type { DatePrecision } from '../types/column';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -57,6 +58,12 @@ export function AddColumnDialog({
   const [selectOptions, setSelectOptions] = useState<SelectOption[]>([]);
   const [defaultValue, setDefaultValue] = useState<string | string[]>('');
 
+  // TEXT用の状態
+  const [textConfig, setTextConfig] = useState<{
+    placeholder?: string;
+    defaultValue?: string;
+  }>({});
+
   // NUMBER用の状態
   const [numberConfig, setNumberConfig] = useState<{
     min?: number;
@@ -87,6 +94,7 @@ export function AddColumnDialog({
       setIsRequired(false);
       setSelectOptions([]);
       setDefaultValue('');
+      setTextConfig({});
       setNumberConfig({});
       setDateConfig({});
     }
@@ -118,7 +126,9 @@ export function AddColumnDialog({
     try {
       // configの構築
       let config;
-      if (columnType === 'SELECT') {
+      if (columnType === 'TEXT' && Object.keys(textConfig).length > 0) {
+        config = textConfig;
+      } else if (columnType === 'SELECT') {
         config = {
           options: selectOptions,
           defaultValue: defaultValue as string,
@@ -212,6 +222,15 @@ export function AddColumnDialog({
                   </p>
                 </div>
               </div>
+
+              {/* TEXT用の設定 */}
+              {columnType === 'TEXT' && (
+                <TextConfigEditor
+                  key={open ? 'open' : 'closed'}
+                  config={textConfig}
+                  onChange={setTextConfig}
+                />
+              )}
 
               {/* SELECT/MULTI_SELECT用の選択肢設定 */}
               {(columnType === 'SELECT' || columnType === 'MULTI_SELECT') && (
