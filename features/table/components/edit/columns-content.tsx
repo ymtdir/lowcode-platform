@@ -45,6 +45,11 @@ export function ColumnsContent({ itemId, columns }: ColumnsContentProps) {
     })
   );
 
+  // カラム追加時のハンドラ
+  const handleColumnAdded = (column: Column) => {
+    setLocalColumns((prev) => [...prev, column]);
+  };
+
   // カラム削除時のハンドラ
   const handleColumnDeleted = (columnId: string) => {
     setLocalColumns((prev) => prev.filter((col) => col.id !== columnId));
@@ -145,6 +150,7 @@ export function ColumnsContent({ itemId, columns }: ColumnsContentProps) {
         open={isAddDialogOpen}
         onOpenChange={setIsAddDialogOpen}
         nextOrder={localColumns.length}
+        onAdded={handleColumnAdded}
       />
     </>
   );

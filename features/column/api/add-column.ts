@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
-import type { CreateColumnInput } from '../types/column';
+import type { Column, CreateColumnInput } from '../types/column';
 import { createTableMeta, getColumnSchema } from '../types/schema';
 import {
   addColumnToSchema,
@@ -13,6 +13,7 @@ import {
 type FormState = {
   error?: string;
   success?: boolean;
+  column?: Column;
 };
 
 /**
@@ -98,8 +99,11 @@ export async function addColumn(
       },
     });
 
-    revalidatePath(`/tables/${itemId}`);
-    return { success: true };
+    // 追加されたカラムを取得（最後に追加されたもの）
+    const addedColumn = newSchema.columns[newSchema.columns.length - 1];
+
+    revalidatePath(`/${itemId}`);
+    return { success: true, column: addedColumn };
   } catch (error) {
     console.error('カラム追加エラー:', error);
     return { error: 'カラムの追加に失敗しました' };

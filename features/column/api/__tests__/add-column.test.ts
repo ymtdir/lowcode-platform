@@ -83,7 +83,14 @@ describe('addColumn', () => {
       order: 0,
     });
 
-    expect(result).toEqual({ success: true });
+    expect(result.success).toBe(true);
+    expect(result.column).toEqual(
+      expect.objectContaining({
+        name: '顧客名',
+        type: 'TEXT',
+        order: 0,
+      })
+    );
     expect(prisma.item.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'item-1' },
@@ -133,7 +140,14 @@ describe('addColumn', () => {
       order: 0,
     });
 
-    expect(result).toEqual({ success: true });
+    expect(result.success).toBe(true);
+    expect(result.column).toEqual(
+      expect.objectContaining({
+        name: '顧客名',
+        type: 'TEXT',
+        order: 0,
+      })
+    );
     expect(prisma.item.update).toHaveBeenCalled();
   });
 
@@ -243,7 +257,14 @@ describe('addColumn', () => {
       order: 0,
     });
 
-    expect(result).toEqual({ success: true });
+    expect(result.success).toBe(true);
+    expect(result.column).toEqual(
+      expect.objectContaining({
+        name: '顧客名',
+        type: 'TEXT',
+        order: 0,
+      })
+    );
     expect(prisma.item.update).toHaveBeenCalled();
   });
 

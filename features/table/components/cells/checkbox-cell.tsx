@@ -1,22 +1,40 @@
 'use client';
 
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 
 type CheckboxCellProps = {
   value: boolean;
   onChange: (value: boolean) => void;
+  displayStyle?: 'checkbox' | 'switch';
+  checkedLabel?: string;
+  uncheckedLabel?: string;
 };
 
 /**
  * チェックボックスセルコンポーネント
  */
-export function CheckboxCell({ value, onChange }: CheckboxCellProps) {
+export function CheckboxCell({
+  value,
+  onChange,
+  displayStyle = 'checkbox',
+  checkedLabel,
+  uncheckedLabel,
+}: CheckboxCellProps) {
+  // ラベルを取得
+  const label = value ? checkedLabel : uncheckedLabel;
+
   return (
-    <div className="min-h-[32px] px-2 py-1 flex items-center justify-center w-full">
-      <Checkbox
-        checked={value}
-        onCheckedChange={(checked) => onChange(checked === true)}
-      />
+    <div className="min-h-[32px] px-2 py-1 flex items-center gap-2 w-full">
+      {displayStyle === 'switch' ? (
+        <Switch checked={value} onCheckedChange={onChange} />
+      ) : (
+        <Checkbox
+          checked={value}
+          onCheckedChange={(checked) => onChange(checked === true)}
+        />
+      )}
+      {label && <span className="text-sm">{label}</span>}
     </div>
   );
 }
