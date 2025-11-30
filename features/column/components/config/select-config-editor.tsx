@@ -31,7 +31,7 @@ import { COLOR_PALETTE, DEFAULT_COLOR } from '../../constants';
 import type { SelectOption } from '../../types';
 
 /**
- * SelectConfigEditorのProps型
+ * SelectConfigEditorのProps
  */
 type SelectConfigEditorProps = {
   options: SelectOption[];
@@ -41,7 +41,7 @@ type SelectConfigEditorProps = {
 };
 
 /**
- * 選択肢アイテムのProps型
+ * OptionItemのProps
  */
 type OptionItemProps = {
   option: SelectOption;
@@ -166,7 +166,7 @@ function OptionItem({
 }
 
 /**
- * SELECT/MULTI_SELECT用の設定エディターコンポーネント
+ * SELECT/MULTI_SELECT型カラムの設定エディタコンポーネント
  */
 export function SelectConfigEditor({
   options,

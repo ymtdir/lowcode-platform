@@ -192,26 +192,5 @@ describe('validateColumnValue', () => {
       const result = validateColumnValue('テスト', textColumn);
       expect(result).toBeNull();
     });
-
-    it('TEXT型でmaxLengthを超える場合はエラー', () => {
-      const textColumn: TextColumn = {
-        id: 'col-1',
-        name: '顧客名',
-        type: 'TEXT',
-        order: 0,
-        config: {
-          maxLength: 5,
-        },
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      const result = validateColumnValue('あいうえおかきくけこ', textColumn);
-      expect(result).toEqual({
-        columnId: 'col-1',
-        columnName: '顧客名',
-        message: '顧客名は5文字以内で入力してください',
-      });
-    });
   });
 });

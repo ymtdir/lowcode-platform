@@ -7,18 +7,12 @@ type TextCellProps = {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
-  maxLength?: number;
 };
 
 /**
  * テキストセルコンポーネント
  */
-export function TextCell({
-  value,
-  onChange,
-  placeholder,
-  maxLength,
-}: TextCellProps) {
+export function TextCell({ value, onChange, placeholder }: TextCellProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -61,7 +55,6 @@ export function TextCell({
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        maxLength={maxLength}
         className="h-8 w-full border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-primary"
       />
     );

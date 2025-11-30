@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/select';
 
 /**
- * NUMBER設定の型
+ * NUMBER型カラムの設定
  */
 type NumberConfig = {
   min?: number;
@@ -26,7 +26,7 @@ type NumberConfig = {
 };
 
 /**
- * NumberConfigEditorのProps型
+ * NumberConfigEditorのProps
  */
 type NumberConfigEditorProps = {
   config?: NumberConfig;
@@ -34,7 +34,7 @@ type NumberConfigEditorProps = {
 };
 
 /**
- * NUMBER用の設定エディターコンポーネント
+ * NUMBER型カラムの設定エディタコンポーネント
  */
 export function NumberConfigEditor({
   config,

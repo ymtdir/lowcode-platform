@@ -40,8 +40,8 @@ export type DateFormatType =
  */
 export type ColumnTypeConfig = {
   TEXT: {
-    maxLength?: number;
-    placeholder?: string;
+    placeholder?: string; // プレースホルダー
+    defaultValue?: string; // デフォルト値
   };
   TEXTAREA: {
     maxLength?: number;

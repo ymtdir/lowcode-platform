@@ -22,6 +22,7 @@ import type { Column, SelectOption } from '../types/column';
 import { SelectConfigEditor } from './config/select-config-editor';
 import { NumberConfigEditor } from './config/number-config-editor';
 import { DateConfigEditor } from './config/date-config-editor';
+import { TextConfigEditor } from './config/text-config-editor';
 import type { DatePrecision } from '../types/column';
 
 /**
@@ -58,6 +59,12 @@ export function EditColumnItem({
   const [selectOptions, setSelectOptions] = useState<SelectOption[]>([]);
   const [defaultValue, setDefaultValue] = useState<string | string[]>('');
 
+  // TEXT用の状態
+  const [textConfig, setTextConfig] = useState<{
+    placeholder?: string;
+    defaultValue?: string;
+  }>({});
+
   // NUMBER用の状態
   const [numberConfig, setNumberConfig] = useState<{
     min?: number;
@@ -85,6 +92,12 @@ export function EditColumnItem({
     if (open) {
       setColumnName(column.name);
       setIsRequired(column.validation?.required || false);
+
+      // TEXTの場合、configから値を取得
+      if (column.type === 'TEXT') {
+        const config = column.config;
+        setTextConfig(config || {});
+      }
 
       // SELECT/MULTI_SELECTの場合、configから値を取得
       if (column.type === 'SELECT' || column.type === 'MULTI_SELECT') {
@@ -135,7 +148,9 @@ export function EditColumnItem({
     try {
       // configの構築
       let config;
-      if (column.type === 'SELECT') {
+      if (column.type === 'TEXT' && Object.keys(textConfig).length > 0) {
+        config = textConfig;
+      } else if (column.type === 'SELECT') {
         config = {
           options: selectOptions,
           defaultValue: defaultValue as string,
@@ -213,6 +228,15 @@ export function EditColumnItem({
                   required
                 />
               </div>
+
+              {/* TEXT用の設定 */}
+              {column.type === 'TEXT' && (
+                <TextConfigEditor
+                  key={open ? column.id : 'closed'}
+                  config={textConfig}
+                  onChange={setTextConfig}
+                />
+              )}
 
               {/* SELECT/MULTI_SELECT用の選択肢設定 */}
               {(column.type === 'SELECT' || column.type === 'MULTI_SELECT') && (
