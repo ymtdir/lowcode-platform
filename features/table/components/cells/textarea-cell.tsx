@@ -7,7 +7,6 @@ type TextareaCellProps = {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
-  maxLength?: number;
 };
 
 /**
@@ -17,7 +16,6 @@ export function TextareaCell({
   value,
   onChange,
   placeholder,
-  maxLength,
 }: TextareaCellProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
@@ -61,19 +59,22 @@ export function TextareaCell({
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        maxLength={maxLength}
+        rows={3}
         className="min-h-[60px] w-full border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-primary resize-none"
       />
     );
   }
+
+  // 最初の1行だけを表示
+  const firstLine = value ? value.split('\n')[0] : '';
 
   return (
     <div
       className="cursor-text min-h-[32px] px-2 py-1 hover:bg-muted/50 rounded flex items-center w-full"
       onClick={handleStartEdit}
     >
-      <span className={value ? 'line-clamp-2' : 'text-muted-foreground'}>
-        {value || placeholder || '-'}
+      <span className={firstLine ? '' : 'text-muted-foreground'}>
+        {firstLine || placeholder || '-'}
       </span>
     </div>
   );

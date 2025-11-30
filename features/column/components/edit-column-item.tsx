@@ -23,6 +23,7 @@ import { SelectConfigEditor } from './config/select-config-editor';
 import { NumberConfigEditor } from './config/number-config-editor';
 import { DateConfigEditor } from './config/date-config-editor';
 import { TextConfigEditor } from './config/text-config-editor';
+import { TextareaConfigEditor } from './config/textarea-config-editor';
 import type { DatePrecision } from '../types/column';
 
 /**
@@ -65,6 +66,12 @@ export function EditColumnItem({
     defaultValue?: string;
   }>({});
 
+  // TEXTAREA用の状態
+  const [textareaConfig, setTextareaConfig] = useState<{
+    placeholder?: string;
+    defaultValue?: string;
+  }>({});
+
   // NUMBER用の状態
   const [numberConfig, setNumberConfig] = useState<{
     min?: number;
@@ -97,6 +104,12 @@ export function EditColumnItem({
       if (column.type === 'TEXT') {
         const config = column.config;
         setTextConfig(config || {});
+      }
+
+      // TEXTAREAの場合、configから値を取得
+      if (column.type === 'TEXTAREA') {
+        const config = column.config;
+        setTextareaConfig(config || {});
       }
 
       // SELECT/MULTI_SELECTの場合、configから値を取得
@@ -150,6 +163,11 @@ export function EditColumnItem({
       let config;
       if (column.type === 'TEXT' && Object.keys(textConfig).length > 0) {
         config = textConfig;
+      } else if (
+        column.type === 'TEXTAREA' &&
+        Object.keys(textareaConfig).length > 0
+      ) {
+        config = textareaConfig;
       } else if (column.type === 'SELECT') {
         config = {
           options: selectOptions,
@@ -235,6 +253,15 @@ export function EditColumnItem({
                   key={open ? column.id : 'closed'}
                   config={textConfig}
                   onChange={setTextConfig}
+                />
+              )}
+
+              {/* TEXTAREA用の設定 */}
+              {column.type === 'TEXTAREA' && (
+                <TextareaConfigEditor
+                  key={open ? column.id : 'closed'}
+                  config={textareaConfig}
+                  onChange={setTextareaConfig}
                 />
               )}
 

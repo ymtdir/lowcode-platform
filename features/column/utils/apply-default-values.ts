@@ -12,6 +12,8 @@ export function applyDefaultValues(columns: Column[]): RecordData {
     // デフォルト値が定義されているカラムタイプを処理
     if (column.type === 'TEXT' && column.config?.defaultValue) {
       data[column.id] = column.config.defaultValue;
+    } else if (column.type === 'TEXTAREA' && column.config?.defaultValue) {
+      data[column.id] = column.config.defaultValue;
     } else if (column.type === 'SELECT' && column.config?.defaultValue) {
       data[column.id] = column.config.defaultValue;
     } else if (column.type === 'MULTI_SELECT' && column.config?.defaultValue) {

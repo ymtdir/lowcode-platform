@@ -86,7 +86,6 @@ export const createColumns = (
               value={(value as string) ?? ''}
               onChange={handleChange}
               placeholder={column.config?.placeholder}
-              maxLength={column.config?.maxLength}
             />
           );
         case 'NUMBER':

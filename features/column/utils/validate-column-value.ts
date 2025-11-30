@@ -97,15 +97,6 @@ function validateTextareaValue(
     };
   }
 
-  const maxLength = column.config?.maxLength;
-  if (maxLength && value.length > maxLength) {
-    return {
-      columnId: column.id,
-      columnName: column.name,
-      message: `${column.name}は${maxLength}文字以内で入力してください`,
-    };
-  }
-
   return null;
 }
 
