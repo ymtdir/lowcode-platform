@@ -27,6 +27,7 @@ import { SelectConfigEditor } from './config/select-config-editor';
 import { NumberConfigEditor } from './config/number-config-editor';
 import { DateConfigEditor } from './config/date-config-editor';
 import { TextConfigEditor } from './config/text-config-editor';
+import { TextareaConfigEditor } from './config/textarea-config-editor';
 import type { DatePrecision } from '../types/column';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -64,6 +65,12 @@ export function AddColumnDialog({
     defaultValue?: string;
   }>({});
 
+  // TEXTAREA用の状態
+  const [textareaConfig, setTextareaConfig] = useState<{
+    placeholder?: string;
+    defaultValue?: string;
+  }>({});
+
   // NUMBER用の状態
   const [numberConfig, setNumberConfig] = useState<{
     min?: number;
@@ -95,6 +102,7 @@ export function AddColumnDialog({
       setSelectOptions([]);
       setDefaultValue('');
       setTextConfig({});
+      setTextareaConfig({});
       setNumberConfig({});
       setDateConfig({});
     }
@@ -128,6 +136,11 @@ export function AddColumnDialog({
       let config;
       if (columnType === 'TEXT' && Object.keys(textConfig).length > 0) {
         config = textConfig;
+      } else if (
+        columnType === 'TEXTAREA' &&
+        Object.keys(textareaConfig).length > 0
+      ) {
+        config = textareaConfig;
       } else if (columnType === 'SELECT') {
         config = {
           options: selectOptions,
@@ -229,6 +242,15 @@ export function AddColumnDialog({
                   key={open ? 'open' : 'closed'}
                   config={textConfig}
                   onChange={setTextConfig}
+                />
+              )}
+
+              {/* TEXTAREA用の設定 */}
+              {columnType === 'TEXTAREA' && (
+                <TextareaConfigEditor
+                  key={open ? 'open' : 'closed'}
+                  config={textareaConfig}
+                  onChange={setTextareaConfig}
                 />
               )}
 

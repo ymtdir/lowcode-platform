@@ -44,9 +44,8 @@ export type ColumnTypeConfig = {
     defaultValue?: string; // デフォルト値
   };
   TEXTAREA: {
-    maxLength?: number;
-    placeholder?: string;
-    rows?: number;
+    placeholder?: string; // プレースホルダー
+    defaultValue?: string; // デフォルト値
   };
   NUMBER: {
     min?: number; // 最小値
