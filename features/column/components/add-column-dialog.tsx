@@ -21,7 +21,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { addColumn } from '../api/add-column';
-import type { ColumnType, SelectOption } from '../types/column';
+import type { Column, ColumnType, SelectOption } from '../types/column';
 import { COLUMN_TYPE_LIST, COLUMN_CONFIGS } from '../constants';
 import { SelectConfigEditor } from './config/select-config-editor';
 import { NumberConfigEditor } from './config/number-config-editor';
@@ -40,6 +40,7 @@ type AddColumnDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   nextOrder: number;
+  onAdded?: (column: Column) => void;
 };
 
 /**
@@ -50,6 +51,7 @@ export function AddColumnDialog({
   open,
   onOpenChange,
   nextOrder,
+  onAdded,
 }: AddColumnDialogProps) {
   const [columnType, setColumnType] = useState<ColumnType>('TEXT');
   const [columnName, setColumnName] = useState('');
@@ -187,8 +189,9 @@ export function AddColumnDialog({
         toast.error('項目の追加に失敗しました', {
           description: result.error,
         });
-      } else if (result.success) {
+      } else if (result.success && result.column) {
         toast.success('項目を追加しました');
+        onAdded?.(result.column);
         onOpenChange(false);
       }
     } catch {
