@@ -286,41 +286,14 @@ function validateCheckboxValue(
   value: unknown,
   column: CheckboxColumn
 ): ValidationError | null {
-  // 単一選択の場合
+  // CHECKBOXはboolean値のみ
   if (typeof value === 'boolean') {
-    return null;
-  }
-
-  // 複数選択の場合（将来実装）
-  if (Array.isArray(value)) {
-    if (!column.config?.options) {
-      return {
-        columnId: column.id,
-        columnName: column.name,
-        message: `${column.name}の選択肢が定義されていません`,
-      };
-    }
-
-    const validOptionIds = column.config.options.map((opt) => opt.id);
-
-    const invalidValues = value.filter(
-      (v) => typeof v !== 'string' || !validOptionIds.includes(v)
-    );
-
-    if (invalidValues.length > 0) {
-      return {
-        columnId: column.id,
-        columnName: column.name,
-        message: `${column.name}は有効な選択肢から選んでください`,
-      };
-    }
-
     return null;
   }
 
   return {
     columnId: column.id,
     columnName: column.name,
-    message: `${column.name}はブール値または配列である必要があります`,
+    message: `${column.name}はブール値である必要があります`,
   };
 }
