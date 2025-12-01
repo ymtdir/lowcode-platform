@@ -51,7 +51,6 @@ export function Item({
   userRole,
 }: ItemProps) {
   const [isOpen, setIsOpen] = useState(true);
-  const canEdit = canManageStructure(userRole);
   const config = ITEM_CONFIGS[item.type];
   const Icon = config.icon;
   const hasChildren =
@@ -77,6 +76,7 @@ export function Item({
       type: 'item',
       item,
     },
+    disabled: !canManageStructure(userRole), // 権限がない場合はドラッグ不可
   });
 
   const { setNodeRef: setDropRef } = useDroppable({
@@ -85,6 +85,7 @@ export function Item({
       type: 'item',
       item,
     },
+    disabled: !canManageStructure(userRole), // 権限がない場合はドロップ不可
   });
 
   // refを結合
@@ -113,8 +114,8 @@ export function Item({
           }
         >
           <div
-            {...attributes}
-            {...listeners}
+            {...(canManageStructure(userRole) ? attributes : {})}
+            {...(canManageStructure(userRole) ? listeners : {})}
             className="flex items-center w-full group/item touch-none"
           >
             <button
@@ -143,14 +144,14 @@ export function Item({
             <Link href={`/${item.id}`} className="flex-1">
               <span>{item.name}</span>
             </Link>
-            {canEdit && (
+            {canManageStructure(userRole) && (
               <EditItemButton
                 itemId={item.id}
                 itemName={item.name}
                 itemType={item.type}
               />
             )}
-            {canEdit && config.showAddButton && (
+            {canManageStructure(userRole) && config.showAddButton && (
               <CreateItemButton parentId={item.id} />
             )}
           </div>
@@ -208,8 +209,8 @@ export function Item({
         }
       >
         <div
-          {...attributes}
-          {...listeners}
+          {...(canManageStructure(userRole) ? attributes : {})}
+          {...(canManageStructure(userRole) ? listeners : {})}
           className="flex items-center w-full group/item touch-none"
         >
           <button
@@ -236,14 +237,14 @@ export function Item({
           <Link href={`/${item.id}`} className="flex-1">
             <span>{item.name}</span>
           </Link>
-          {canEdit && (
+          {canManageStructure(userRole) && (
             <EditItemButton
               itemId={item.id}
               itemName={item.name}
               itemType={item.type}
             />
           )}
-          {canEdit && config.showAddButton && (
+          {canManageStructure(userRole) && config.showAddButton && (
             <CreateItemButton parentId={item.id} />
           )}
         </div>
