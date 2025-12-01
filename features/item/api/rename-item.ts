@@ -1,13 +1,36 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
+import { canManageStructure } from '@/lib/permissions';
 
 /**
  * アイテム名を変更するServer Action
+ * ADMIN/DEVELOPERロールのみ実行可能
  */
 export async function renameItem(itemId: string, newName: string) {
   try {
+    // 認証チェック
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { error: '認証が必要です' };
+    }
+
+    // 権限チェック
+    const currentUser = await prisma.user.findUnique({
+      where: { email: user.email! },
+      select: { role: true },
+    });
+
+    if (!currentUser || !canManageStructure(currentUser.role)) {
+      return { error: 'この操作を行う権限がありません' };
+    }
+
     // 名前のバリデーション
     if (!newName || newName.trim() === '') {
       return {

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
+import type { UserRole } from '@prisma/client';
 import {
   SidebarMenuButton,
   SidebarMenuItem,
@@ -15,6 +16,7 @@ import { CreateItemButton } from './create-item-button';
 import { EditItemButton } from './edit-item-button';
 import type { Item as ItemType } from '@/features/item/types';
 import { ITEM_CONFIGS } from '@/features/item/constants';
+import { canManageStructure } from '@/lib/permissions';
 
 /**
  * ドロップ位置の型
@@ -32,6 +34,7 @@ type ItemProps = {
   insideTargetId?: string | null;
   isUnderInsideTarget?: boolean;
   activeItem?: ItemType | null;
+  userRole: UserRole;
 };
 
 /**
@@ -45,6 +48,7 @@ export function Item({
   insideTargetId,
   isUnderInsideTarget = false,
   activeItem,
+  userRole,
 }: ItemProps) {
   const [isOpen, setIsOpen] = useState(true);
   const config = ITEM_CONFIGS[item.type];
@@ -72,6 +76,7 @@ export function Item({
       type: 'item',
       item,
     },
+    disabled: !canManageStructure(userRole), // 権限がない場合はドラッグ不可
   });
 
   const { setNodeRef: setDropRef } = useDroppable({
@@ -80,6 +85,7 @@ export function Item({
       type: 'item',
       item,
     },
+    disabled: !canManageStructure(userRole), // 権限がない場合はドロップ不可
   });
 
   // refを結合
@@ -108,8 +114,8 @@ export function Item({
           }
         >
           <div
-            {...attributes}
-            {...listeners}
+            {...(canManageStructure(userRole) ? attributes : {})}
+            {...(canManageStructure(userRole) ? listeners : {})}
             className="flex items-center w-full group/item touch-none"
           >
             <button
@@ -138,12 +144,16 @@ export function Item({
             <Link href={`/${item.id}`} className="flex-1">
               <span>{item.name}</span>
             </Link>
-            <EditItemButton
-              itemId={item.id}
-              itemName={item.name}
-              itemType={item.type}
-            />
-            {config.showAddButton && <CreateItemButton parentId={item.id} />}
+            {canManageStructure(userRole) && (
+              <EditItemButton
+                itemId={item.id}
+                itemName={item.name}
+                itemType={item.type}
+              />
+            )}
+            {canManageStructure(userRole) && config.showAddButton && (
+              <CreateItemButton parentId={item.id} />
+            )}
           </div>
         </SidebarMenuButton>
 
@@ -161,6 +171,7 @@ export function Item({
                   shouldHighlight && dropPosition === 'inside'
                 }
                 activeItem={activeItem}
+                userRole={userRole}
               />
             ))}
           </SidebarMenuSub>
@@ -198,8 +209,8 @@ export function Item({
         }
       >
         <div
-          {...attributes}
-          {...listeners}
+          {...(canManageStructure(userRole) ? attributes : {})}
+          {...(canManageStructure(userRole) ? listeners : {})}
           className="flex items-center w-full group/item touch-none"
         >
           <button
@@ -226,12 +237,16 @@ export function Item({
           <Link href={`/${item.id}`} className="flex-1">
             <span>{item.name}</span>
           </Link>
-          <EditItemButton
-            itemId={item.id}
-            itemName={item.name}
-            itemType={item.type}
-          />
-          {config.showAddButton && <CreateItemButton parentId={item.id} />}
+          {canManageStructure(userRole) && (
+            <EditItemButton
+              itemId={item.id}
+              itemName={item.name}
+              itemType={item.type}
+            />
+          )}
+          {canManageStructure(userRole) && config.showAddButton && (
+            <CreateItemButton parentId={item.id} />
+          )}
         </div>
       </SidebarMenuSubButton>
 
@@ -247,6 +262,7 @@ export function Item({
               insideTargetId={insideTargetId}
               isUnderInsideTarget={shouldHighlight && dropPosition === 'inside'}
               activeItem={activeItem}
+              userRole={userRole}
             />
           ))}
         </SidebarMenuSub>

@@ -27,29 +27,30 @@ jest.mock('@/lib/prisma', () => ({
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 
+// DEVELOPERユーザーのモック
+const mockDeveloperUser = {
+  auth: {
+    getUser: jest.fn().mockResolvedValue({
+      data: { user: { email: 'developer@example.com' } },
+    }),
+  },
+};
+
 describe('createFolder', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // デフォルトでDEVELOPERユーザーを設定
+    (createClient as jest.Mock).mockResolvedValue(mockDeveloperUser);
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+      role: 'DEVELOPER',
+    });
   });
 
   it('FOLDERタイプのアイテムを作成できる', async () => {
     const formData = new FormData();
     formData.append('name', 'テストフォルダ');
     formData.append('parentId', '');
-
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: {
-            user: { email: 'test@example.com' },
-          },
-        }),
-      },
-    });
-
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-    });
 
     (prisma.item.findFirst as jest.Mock).mockResolvedValue(null);
 
@@ -81,20 +82,6 @@ describe('createFolder', () => {
     const formData = new FormData();
     formData.append('name', '子フォルダ');
     formData.append('parentId', 'parent-1');
-
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: {
-            user: { email: 'test@example.com' },
-          },
-        }),
-      },
-    });
-
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-    });
 
     (prisma.item.findFirst as jest.Mock).mockResolvedValue({ order: 2 });
 
@@ -128,20 +115,6 @@ describe('createFolder', () => {
     formData.append('parentId', '');
     // typeを明示的に設定しても上書きされる
     formData.append('type', 'TABLE');
-
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: {
-            user: { email: 'test@example.com' },
-          },
-        }),
-      },
-    });
-
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-    });
 
     (prisma.item.findFirst as jest.Mock).mockResolvedValue(null);
 

@@ -27,29 +27,30 @@ jest.mock('@/lib/prisma', () => ({
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 
+// DEVELOPERユーザーのモック
+const mockDeveloperUser = {
+  auth: {
+    getUser: jest.fn().mockResolvedValue({
+      data: { user: { email: 'developer@example.com' } },
+    }),
+  },
+};
+
 describe('createTable', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // デフォルトでDEVELOPERユーザーを設定
+    (createClient as jest.Mock).mockResolvedValue(mockDeveloperUser);
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+      role: 'DEVELOPER',
+    });
   });
 
   it('TABLEタイプのアイテムを作成できる', async () => {
     const formData = new FormData();
     formData.append('name', 'テストテーブル');
     formData.append('parentId', '');
-
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: {
-            user: { email: 'test@example.com' },
-          },
-        }),
-      },
-    });
-
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-    });
 
     (prisma.item.findFirst as jest.Mock).mockResolvedValue(null);
 
@@ -77,24 +78,41 @@ describe('createTable', () => {
     });
   });
 
-  it('親フォルダを指定してTABLEを作成できる', async () => {
-    const formData = new FormData();
-    formData.append('name', '子テーブル');
-    formData.append('parentId', 'parent-1');
-
+  it('認証されていない場合はエラーを返す', async () => {
     (createClient as jest.Mock).mockResolvedValue({
       auth: {
         getUser: jest.fn().mockResolvedValue({
-          data: {
-            user: { email: 'test@example.com' },
-          },
+          data: { user: null },
         }),
       },
     });
 
+    const formData = new FormData();
+    formData.append('name', 'テストテーブル');
+
+    const result = await createTable({}, formData);
+
+    expect(result).toEqual({ error: '認証が必要です' });
+  });
+
+  it('MEMBER権限ではエラーを返す', async () => {
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
       id: 'user-1',
+      role: 'MEMBER',
     });
+
+    const formData = new FormData();
+    formData.append('name', 'テストテーブル');
+
+    const result = await createTable({}, formData);
+
+    expect(result).toEqual({ error: 'この操作を行う権限がありません' });
+  });
+
+  it('親フォルダを指定してTABLEを作成できる', async () => {
+    const formData = new FormData();
+    formData.append('name', '子テーブル');
+    formData.append('parentId', 'parent-1');
 
     (prisma.item.findFirst as jest.Mock).mockResolvedValue({ order: 2 });
 
@@ -128,20 +146,6 @@ describe('createTable', () => {
     formData.append('parentId', '');
     // typeを明示的に設定しても上書きされる
     formData.append('type', 'FOLDER');
-
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: {
-            user: { email: 'test@example.com' },
-          },
-        }),
-      },
-    });
-
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-    });
 
     (prisma.item.findFirst as jest.Mock).mockResolvedValue(null);
 

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 import { Prisma, type ItemType } from '@prisma/client';
+import { canManageStructure } from '@/lib/permissions';
 
 type FormState = {
   error?: string;
@@ -12,6 +13,7 @@ type FormState = {
 
 /**
  * アイテムを作成するServer Action
+ * ADMIN/DEVELOPERロールのみ実行可能
  */
 export async function createItem(
   _prevState: FormState,
@@ -27,14 +29,19 @@ export async function createItem(
     return { error: '認証が必要です' };
   }
 
-  // DBからユーザーIDを取得
+  // DBからユーザー情報を取得
   const dbUser = await prisma.user.findUnique({
     where: { email: user.email! },
-    select: { id: true },
+    select: { id: true, role: true },
   });
 
   if (!dbUser) {
     return { error: 'ユーザー情報が取得できませんでした' };
+  }
+
+  // 権限チェック
+  if (!canManageStructure(dbUser.role)) {
+    return { error: 'この操作を行う権限がありません' };
   }
 
   const name = formData.get('name') as string;

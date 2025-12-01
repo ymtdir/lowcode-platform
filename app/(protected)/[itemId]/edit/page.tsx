@@ -1,8 +1,10 @@
+import { redirect, notFound } from 'next/navigation';
+import { getCurrentUser } from '@/lib/auth';
+import { canManageStructure } from '@/lib/permissions';
 import { getItemById } from '@/features/item/api';
 import { getColumnSchema } from '@/features/column/types/schema';
 import { TableEditLayout } from '@/features/table/components/edit';
 import { FolderEditLayout } from '@/features/folder/components/edit';
-import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,8 +17,15 @@ type ItemEditPageProps = {
 
 /**
  * アイテム編集ページ（フォルダ/テーブル管理画面）
+ * DEVELOPERロール以上がアクセス可能
  */
 export default async function ItemEditPage({ params }: ItemEditPageProps) {
+  // 権限チェック
+  const currentUser = await getCurrentUser();
+  if (!currentUser || !canManageStructure(currentUser.role)) {
+    redirect('/');
+  }
+
   const { itemId } = await params;
 
   const item = await getItemById(itemId);

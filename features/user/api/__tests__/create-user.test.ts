@@ -1,7 +1,13 @@
 import { createUser } from '../create-user';
+import { createClient } from '@/lib/supabase/server';
 
 // Supabase Admin Clientのモック関数を定義
 const mockCreateUserFn = jest.fn();
+
+// Supabaseクライアントをモック化
+jest.mock('@/lib/supabase/server', () => ({
+  createClient: jest.fn(),
+}));
 
 // Supabase Admin Clientをモック化
 jest.mock('@/lib/supabase/admin', () => ({
@@ -18,6 +24,7 @@ jest.mock('@/lib/supabase/admin', () => ({
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     user: {
+      findUnique: jest.fn(),
       create: jest.fn(),
     },
   },
@@ -25,9 +32,23 @@ jest.mock('@/lib/prisma', () => ({
 
 import { prisma } from '@/lib/prisma';
 
+// ADMINユーザーのモック
+const mockAdminUser = {
+  auth: {
+    getUser: jest.fn().mockResolvedValue({
+      data: { user: { email: 'admin@example.com' } },
+    }),
+  },
+};
+
 describe('createUser', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // デフォルトでADMINユーザーを設定
+    (createClient as jest.Mock).mockResolvedValue(mockAdminUser);
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      role: 'ADMIN',
+    });
   });
 
   it('ユーザーを作成できる', async () => {
@@ -70,6 +91,42 @@ describe('createUser', () => {
         role: 'MEMBER',
       },
     });
+  });
+
+  it('認証されていない場合はエラーを返す', async () => {
+    (createClient as jest.Mock).mockResolvedValue({
+      auth: {
+        getUser: jest.fn().mockResolvedValue({
+          data: { user: null },
+        }),
+      },
+    });
+
+    const formData = new FormData();
+    formData.append('name', 'テストユーザー');
+    formData.append('email', 'test@example.com');
+    formData.append('password', 'password123');
+    formData.append('confirmPassword', 'password123');
+
+    const result = await createUser({}, formData);
+
+    expect(result).toEqual({ error: '認証が必要です' });
+  });
+
+  it('ADMIN以外のロールはエラーを返す', async () => {
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      role: 'MEMBER',
+    });
+
+    const formData = new FormData();
+    formData.append('name', 'テストユーザー');
+    formData.append('email', 'test@example.com');
+    formData.append('password', 'password123');
+    formData.append('confirmPassword', 'password123');
+
+    const result = await createUser({}, formData);
+
+    expect(result).toEqual({ error: 'この操作を行う権限がありません' });
   });
 
   it('名前が空の場合はエラーを返す', async () => {

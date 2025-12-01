@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
+import { canManageColumns } from '@/lib/permissions';
 import { getColumnSchema, createTableMeta } from '../types/schema';
 import { removeColumnFromSchema } from '../utils/schema-operations';
 
@@ -13,6 +14,7 @@ type FormState = {
 
 /**
  * カラムを削除するServer Action
+ * ADMIN/DEVELOPERロールのみ実行可能
  */
 export async function removeColumn(
   itemId: string,
@@ -28,7 +30,7 @@ export async function removeColumn(
     return { error: '認証が必要です' };
   }
 
-  // DB からユーザー ID を取得
+  // DB からユーザー情報を取得
   const dbUser = await prisma.user.findUnique({
     where: { email: user.email! },
     select: { id: true, role: true },
@@ -36,6 +38,11 @@ export async function removeColumn(
 
   if (!dbUser) {
     return { error: 'ユーザー情報が取得できませんでした' };
+  }
+
+  // 権限チェック
+  if (!canManageColumns(dbUser.role)) {
+    return { error: 'この操作を行う権限がありません' };
   }
 
   try {
@@ -50,11 +57,6 @@ export async function removeColumn(
 
     if (item.type !== 'TABLE') {
       return { error: 'テーブルではありません' };
-    }
-
-    // TODO: 権限チェック（将来実装）
-    if (item.createdById !== dbUser.id && dbUser.role !== 'ADMIN') {
-      return { error: 'カラムを削除する権限がありません' };
     }
 
     // 現在のスキーマを取得

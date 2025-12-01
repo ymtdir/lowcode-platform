@@ -28,6 +28,7 @@ jest.mock('@/lib/supabase/admin', () => ({
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     user: {
+      findUnique: jest.fn(),
       delete: jest.fn(),
     },
   },
@@ -38,17 +39,19 @@ import { prisma } from '@/lib/prisma';
 describe('deleteUser', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // デフォルトでADMINユーザーを設定
+    mockGetUser.mockResolvedValue({
+      data: {
+        user: { id: 'current-user', email: 'admin@example.com' },
+      },
+    });
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      role: 'ADMIN',
+    });
   });
 
   it('ユーザーを削除できる', async () => {
     const userId = 'user-1';
-    const currentUserId = 'current-user';
-
-    mockGetUser.mockResolvedValue({
-      data: {
-        user: { id: currentUserId },
-      },
-    });
 
     mockDeleteUser.mockResolvedValue({
       error: null,
@@ -80,12 +83,22 @@ describe('deleteUser', () => {
     expect(mockDeleteUser).not.toHaveBeenCalled();
   });
 
+  it('ADMIN以外のロールはエラーを返す', async () => {
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      role: 'MEMBER',
+    });
+
+    const result = await deleteUser('user-1');
+
+    expect(result).toEqual({ error: 'この操作を行う権限がありません' });
+  });
+
   it('自分自身を削除しようとするとエラーを返す', async () => {
-    const userId = 'user-1';
+    const userId = 'current-user';
 
     mockGetUser.mockResolvedValue({
       data: {
-        user: { id: userId },
+        user: { id: userId, email: 'admin@example.com' },
       },
     });
 
@@ -99,13 +112,6 @@ describe('deleteUser', () => {
 
   it('Supabase Auth でエラーが発生した場合はエラーを返す', async () => {
     const userId = 'user-1';
-    const currentUserId = 'current-user';
-
-    mockGetUser.mockResolvedValue({
-      data: {
-        user: { id: currentUserId },
-      },
-    });
 
     mockDeleteUser.mockResolvedValue({
       error: { message: 'Delete failed' },
@@ -121,13 +127,6 @@ describe('deleteUser', () => {
 
   it('Prisma でエラーが発生した場合はエラーを返す', async () => {
     const userId = 'user-1';
-    const currentUserId = 'current-user';
-
-    mockGetUser.mockResolvedValue({
-      data: {
-        user: { id: currentUserId },
-      },
-    });
 
     mockDeleteUser.mockResolvedValue({
       error: null,

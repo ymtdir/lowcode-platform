@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
+import { canManageColumns } from '@/lib/permissions';
 import type { Column, CreateColumnInput } from '../types/column';
 import { createTableMeta, getColumnSchema } from '../types/schema';
 import {
@@ -18,6 +19,7 @@ type FormState = {
 
 /**
  * カラムを追加するServer Action
+ * ADMIN/DEVELOPERロールのみ実行可能
  */
 export async function addColumn(
   itemId: string,
@@ -33,7 +35,7 @@ export async function addColumn(
     return { error: '認証が必要です' };
   }
 
-  // DB からユーザー ID を取得
+  // DB からユーザー情報を取得
   const dbUser = await prisma.user.findUnique({
     where: { email: user.email! },
     select: { id: true, role: true },
@@ -41,6 +43,11 @@ export async function addColumn(
 
   if (!dbUser) {
     return { error: 'ユーザー情報が取得できませんでした' };
+  }
+
+  // 権限チェック
+  if (!canManageColumns(dbUser.role)) {
+    return { error: 'この操作を行う権限がありません' };
   }
 
   // バリデーション
@@ -60,12 +67,6 @@ export async function addColumn(
 
     if (item.type !== 'TABLE') {
       return { error: 'テーブルではありません' };
-    }
-
-    // TODO: 権限チェック（将来実装）
-    // 現在は作成者のみ編集可能とする簡易実装
-    if (item.createdById !== dbUser.id && dbUser.role !== 'ADMIN') {
-      return { error: 'カラムを追加する権限がありません' };
     }
 
     // 現在のスキーマを取得

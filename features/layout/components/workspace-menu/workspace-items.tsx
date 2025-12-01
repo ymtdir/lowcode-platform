@@ -1,8 +1,10 @@
 'use client';
 
+import type { UserRole } from '@prisma/client';
 import { DndContext, DragOverlay, useDroppable } from '@dnd-kit/core';
 import Link from 'next/link';
 import { SidebarGroupLabel, SidebarMenu } from '@/components/ui/sidebar';
+import { canManageStructure } from '@/lib/permissions';
 import type { Item as ItemType } from '@/features/item/types';
 import { Item } from './workspace-item';
 import { CreateItemButton } from './create-item-button';
@@ -19,12 +21,18 @@ import { ITEM_CONFIGS } from '@/features/item/constants';
  */
 type WorkspaceItemsWrapperProps = {
   items: ItemType[];
+  userRole: UserRole;
 };
 
 /**
  * ワークスペースアイテムラッパーコンポーネント
  */
-export function WorkspaceItemsWrapper({ items }: WorkspaceItemsWrapperProps) {
+export function WorkspaceItemsWrapper({
+  items,
+  userRole,
+}: WorkspaceItemsWrapperProps) {
+  // 構造管理権限があるか（CreateItemButtonの表示判定用）
+  const canEdit = canManageStructure(userRole);
   // メニュー固有のUI状態管理
   const {
     sensors,
@@ -84,7 +92,7 @@ export function WorkspaceItemsWrapper({ items }: WorkspaceItemsWrapperProps) {
             <Link href="/workspace" className="flex-1">
               <span>ワークスペース</span>
             </Link>
-            <CreateItemButton parentId="" />
+            {canEdit && <CreateItemButton parentId="" />}
           </div>
         </SidebarGroupLabel>
         <SidebarMenu ref={setWorkspaceMenuRef}>
@@ -116,7 +124,7 @@ export function WorkspaceItemsWrapper({ items }: WorkspaceItemsWrapperProps) {
           <Link href="/workspace" className="flex-1">
             <span>ワークスペース</span>
           </Link>
-          <CreateItemButton parentId="" />
+          {canEdit && <CreateItemButton parentId="" />}
         </div>
       </SidebarGroupLabel>
       <SidebarMenu ref={setWorkspaceMenuRef} className="min-h-[200px]">
@@ -128,6 +136,7 @@ export function WorkspaceItemsWrapper({ items }: WorkspaceItemsWrapperProps) {
             dropPosition={dropPosition}
             insideTargetId={insideTargetId}
             activeItem={activeItem}
+            userRole={userRole}
           />
         ))}
       </SidebarMenu>

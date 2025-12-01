@@ -85,6 +85,7 @@ model Record {
 
 enum UserRole {
   ADMIN
+  DEVELOPER
   MEMBER
 }
 

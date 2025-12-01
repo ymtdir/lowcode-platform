@@ -1,8 +1,17 @@
 import { deleteGroup } from '../delete-group';
+import { createClient } from '@/lib/supabase/server';
+
+// Supabaseクライアントをモック化
+jest.mock('@/lib/supabase/server', () => ({
+  createClient: jest.fn(),
+}));
 
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
+    user: {
+      findUnique: jest.fn(),
+    },
     group: {
       findMany: jest.fn(),
       delete: jest.fn(),
@@ -12,9 +21,23 @@ jest.mock('@/lib/prisma', () => ({
 
 import { prisma } from '@/lib/prisma';
 
+// ADMINユーザーのモック
+const mockAdminUser = {
+  auth: {
+    getUser: jest.fn().mockResolvedValue({
+      data: { user: { email: 'admin@example.com' } },
+    }),
+  },
+};
+
 describe('deleteGroup', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // デフォルトでADMINユーザーを設定
+    (createClient as jest.Mock).mockResolvedValue(mockAdminUser);
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      role: 'ADMIN',
+    });
   });
 
   it('グループを削除できる', async () => {
@@ -36,6 +59,30 @@ describe('deleteGroup', () => {
     expect(prisma.group.delete).toHaveBeenCalledWith({
       where: { id: groupId },
     });
+  });
+
+  it('認証されていない場合はエラーを返す', async () => {
+    (createClient as jest.Mock).mockResolvedValue({
+      auth: {
+        getUser: jest.fn().mockResolvedValue({
+          data: { user: null },
+        }),
+      },
+    });
+
+    const result = await deleteGroup('group-1');
+
+    expect(result).toEqual({ error: '認証が必要です' });
+  });
+
+  it('ADMIN以外のロールはエラーを返す', async () => {
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      role: 'MEMBER',
+    });
+
+    const result = await deleteGroup('group-1');
+
+    expect(result).toEqual({ error: 'この操作を行う権限がありません' });
   });
 
   it('子グループが存在する場合は削除できない', async () => {

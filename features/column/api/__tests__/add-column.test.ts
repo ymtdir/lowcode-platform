@@ -31,17 +31,18 @@ describe('addColumn', () => {
     jest.clearAllMocks();
   });
 
+  // DEVELOPERユーザーのモック（権限あり）
   const mockUser = {
     auth: {
       getUser: jest.fn().mockResolvedValue({
-        data: { user: { email: 'test@example.com' } },
+        data: { user: { email: 'developer@example.com' } },
       }),
     },
   };
 
   const mockDbUser = {
     id: 'user-1',
-    role: 'MEMBER',
+    role: 'DEVELOPER',
   };
 
   const mockItem = {
@@ -170,6 +171,23 @@ describe('addColumn', () => {
     expect(prisma.item.update).not.toHaveBeenCalled();
   });
 
+  it('MEMBER権限ではエラーを返す', async () => {
+    (createClient as jest.Mock).mockResolvedValue(mockUser);
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      ...mockDbUser,
+      role: 'MEMBER',
+    });
+
+    const result = await addColumn('item-1', {
+      name: '顧客名',
+      type: 'TEXT',
+      order: 0,
+    });
+
+    expect(result).toEqual({ error: 'この操作を行う権限がありません' });
+    expect(prisma.item.update).not.toHaveBeenCalled();
+  });
+
   it('カラム名が空の場合はエラーを返す', async () => {
     (createClient as jest.Mock).mockResolvedValue(mockUser);
     (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
@@ -219,27 +237,7 @@ describe('addColumn', () => {
     expect(prisma.item.update).not.toHaveBeenCalled();
   });
 
-  it('権限がない場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue(mockUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
-    (prisma.item.findUnique as jest.Mock).mockResolvedValue({
-      ...mockItem,
-      createdById: 'other-user',
-    });
-
-    const result = await addColumn('item-1', {
-      name: '顧客名',
-      type: 'TEXT',
-      order: 0,
-    });
-
-    expect(result).toEqual({
-      error: 'カラムを追加する権限がありません',
-    });
-    expect(prisma.item.update).not.toHaveBeenCalled();
-  });
-
-  it('ADMIN権限の場合は他人のテーブルにもカラムを追加できる', async () => {
+  it('ADMIN権限の場合もカラムを追加できる', async () => {
     (createClient as jest.Mock).mockResolvedValue(mockUser);
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
       ...mockDbUser,

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
+import { canManageUsers } from '@/lib/permissions';
 
 /**
  * ユーザー削除結果の型
@@ -15,6 +16,7 @@ type DeleteResult = {
 
 /**
  * ユーザーを削除するServer Action
+ * ADMINロールのみ実行可能
  */
 export async function deleteUser(userId: string): Promise<DeleteResult> {
   try {
@@ -26,6 +28,16 @@ export async function deleteUser(userId: string): Promise<DeleteResult> {
 
     if (!currentUser) {
       return { error: '認証エラーが発生しました' };
+    }
+
+    // 権限チェック
+    const dbUser = await prisma.user.findUnique({
+      where: { email: currentUser.email! },
+      select: { role: true },
+    });
+
+    if (!dbUser || !canManageUsers(dbUser.role)) {
+      return { error: 'この操作を行う権限がありません' };
     }
 
     // 自分自身を削除しようとしている場合はエラー
