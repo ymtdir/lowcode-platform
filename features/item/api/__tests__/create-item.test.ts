@@ -27,27 +27,30 @@ jest.mock('@/lib/prisma', () => ({
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 
+// DEVELOPERユーザーのモック
+const mockDeveloperUser = {
+  auth: {
+    getUser: jest.fn().mockResolvedValue({
+      data: { user: { email: 'developer@example.com' } },
+    }),
+  },
+};
+
 describe('createItem', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // デフォルトでDEVELOPERユーザーを設定
+    (createClient as jest.Mock).mockResolvedValue(mockDeveloperUser);
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+      role: 'DEVELOPER',
+    });
   });
 
   it('アイテムを作成できる', async () => {
     const formData = new FormData();
     formData.append('name', 'テストアイテム');
     formData.append('parentId', '');
-
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: { email: 'test@example.com' } },
-        }),
-      },
-    });
-
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-    });
 
     (prisma.item.findFirst as jest.Mock).mockResolvedValue(null);
 
@@ -78,18 +81,6 @@ describe('createItem', () => {
     const formData = new FormData();
     formData.append('name', '子アイテム');
     formData.append('parentId', 'parent-1');
-
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: { email: 'test@example.com' } },
-        }),
-      },
-    });
-
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-    });
 
     (prisma.item.findFirst as jest.Mock).mockResolvedValue({ order: 2 }); // 最大order値
 
@@ -135,22 +126,26 @@ describe('createItem', () => {
     expect(prisma.item.create).not.toHaveBeenCalled();
   });
 
+  it('MEMBER権限ではエラーを返す', async () => {
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+      role: 'MEMBER',
+    });
+
+    const formData = new FormData();
+    formData.append('name', 'テストアイテム');
+    formData.append('parentId', '');
+
+    const result = await createItem({}, formData);
+
+    expect(result).toEqual({ error: 'この操作を行う権限がありません' });
+    expect(prisma.item.create).not.toHaveBeenCalled();
+  });
+
   it('アイテム名が空の場合はエラーを返す', async () => {
     const formData = new FormData();
     formData.append('name', '');
     formData.append('parentId', '');
-
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: { email: 'test@example.com' } },
-        }),
-      },
-    });
-
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-    });
 
     const result = await createItem({}, formData);
 
@@ -165,18 +160,6 @@ describe('createItem', () => {
     formData.append('name', 'test/folder');
     formData.append('parentId', '');
 
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: { email: 'test@example.com' } },
-        }),
-      },
-    });
-
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-    });
-
     const result = await createItem({}, formData);
 
     expect(result).toEqual({
@@ -185,22 +168,10 @@ describe('createItem', () => {
     expect(prisma.item.create).not.toHaveBeenCalled();
   });
 
-  it('同じ名前のアイテムが既に存在する場合はエラーを返す', async () => {
+  it('同じ名前のアイテムが既に存在する場合でも作成できる', async () => {
     const formData = new FormData();
     formData.append('name', '既存アイテム');
     formData.append('parentId', '');
-
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: { email: 'test@example.com' } },
-        }),
-      },
-    });
-
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-    });
 
     (prisma.item.findFirst as jest.Mock).mockResolvedValue({ order: 0 });
 
@@ -218,18 +189,6 @@ describe('createItem', () => {
     const formData = new FormData();
     formData.append('name', 'テストアイテム');
     formData.append('parentId', '');
-
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: { email: 'test@example.com' } },
-        }),
-      },
-    });
-
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-    });
 
     (prisma.item.findFirst as jest.Mock).mockResolvedValue(null);
 

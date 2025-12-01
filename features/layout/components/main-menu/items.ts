@@ -20,11 +20,13 @@ export const mainMenuItems: MainMenuItem[] = [
     title: 'ユーザー',
     url: '/users',
     icon: Users,
+    requiredRole: 'ADMIN',
   },
   {
     title: 'グループ',
     url: '/groups',
     icon: Building,
+    requiredRole: 'ADMIN',
   },
   {
     title: '設定',

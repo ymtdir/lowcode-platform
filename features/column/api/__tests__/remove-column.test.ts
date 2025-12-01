@@ -41,7 +41,7 @@ describe('removeColumn', () => {
 
   const mockDbUser = {
     id: 'user-1',
-    role: 'MEMBER',
+    role: 'DEVELOPER',
   };
 
   const mockItem = {
@@ -151,18 +151,17 @@ describe('removeColumn', () => {
     expect(prisma.item.update).not.toHaveBeenCalled();
   });
 
-  it('権限がない場合はエラーを返す', async () => {
+  it('MEMBER権限ではエラーを返す', async () => {
     (createClient as jest.Mock).mockResolvedValue(mockUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
-    (prisma.item.findUnique as jest.Mock).mockResolvedValue({
-      ...mockItem,
-      createdById: 'other-user',
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      ...mockDbUser,
+      role: 'MEMBER',
     });
 
     const result = await removeColumn('item-1', 'col-1');
 
     expect(result).toEqual({
-      error: 'カラムを削除する権限がありません',
+      error: 'この操作を行う権限がありません',
     });
     expect(prisma.item.update).not.toHaveBeenCalled();
   });

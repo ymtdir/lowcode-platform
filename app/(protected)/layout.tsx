@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/supabase/server';
-import { prisma } from '@/lib/prisma';
+import type { UserRole } from '@prisma/client';
+import { getCurrentUser } from '@/lib/auth';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
 import { AppSidebar } from '@/features/layout/components/app-sidebar';
@@ -13,22 +13,15 @@ export default async function ProtectedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
+  const currentUser = await getCurrentUser();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { name } = (await prisma.user.findUnique({
-    where: { email: user!.email },
-    select: { name: true },
-  })) ?? { name: null };
-
-  const userName = name || 'Unknown';
+  // 認証済みの場合のみユーザー情報を表示
+  const userName = currentUser?.name || 'Unknown';
+  const userRole: UserRole = currentUser?.role || 'MEMBER';
 
   return (
     <SidebarProvider>
-      <AppSidebar userName={userName} />
+      <AppSidebar userName={userName} userRole={userRole} />
       <main className="w-full">
         <div className="flex items-center gap-2 m-4">
           <SidebarTrigger />

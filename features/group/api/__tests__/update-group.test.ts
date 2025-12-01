@@ -1,8 +1,17 @@
 import { updateGroup } from '../update-group';
+import { createClient } from '@/lib/supabase/server';
+
+// Supabaseクライアントをモック化
+jest.mock('@/lib/supabase/server', () => ({
+  createClient: jest.fn(),
+}));
 
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
+    user: {
+      findUnique: jest.fn(),
+    },
     group: {
       update: jest.fn(),
       findUnique: jest.fn(),
@@ -12,9 +21,23 @@ jest.mock('@/lib/prisma', () => ({
 
 import { prisma } from '@/lib/prisma';
 
+// ADMINユーザーのモック
+const mockAdminUser = {
+  auth: {
+    getUser: jest.fn().mockResolvedValue({
+      data: { user: { email: 'admin@example.com' } },
+    }),
+  },
+};
+
 describe('updateGroup', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // デフォルトでADMINユーザーを設定
+    (createClient as jest.Mock).mockResolvedValue(mockAdminUser);
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      role: 'ADMIN',
+    });
   });
 
   it('グループを更新できる', async () => {
@@ -73,6 +96,36 @@ describe('updateGroup', () => {
     });
   });
 
+  it('認証されていない場合はエラーを返す', async () => {
+    (createClient as jest.Mock).mockResolvedValue({
+      auth: {
+        getUser: jest.fn().mockResolvedValue({
+          data: { user: null },
+        }),
+      },
+    });
+
+    const formData = new FormData();
+    formData.append('name', 'テストグループ');
+
+    const result = await updateGroup('group-1', {}, formData);
+
+    expect(result).toEqual({ error: '認証が必要です' });
+  });
+
+  it('ADMIN以外のロールはエラーを返す', async () => {
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      role: 'MEMBER',
+    });
+
+    const formData = new FormData();
+    formData.append('name', 'テストグループ');
+
+    const result = await updateGroup('group-1', {}, formData);
+
+    expect(result).toEqual({ error: 'この操作を行う権限がありません' });
+  });
+
   it('グループ名が空の場合はエラーを返す', async () => {
     const formData = new FormData();
     formData.append('name', '');
@@ -111,8 +164,11 @@ describe('updateGroup', () => {
     formData.append('parentId', childId);
 
     // 循環参照チェックのモック（childIdの親がgroupId）
-    (prisma.group.findUnique as jest.Mock).mockResolvedValue({
-      parentId: groupId,
+    (prisma.group.findUnique as jest.Mock).mockImplementation(({ where }) => {
+      if (where.email) {
+        return Promise.resolve({ role: 'ADMIN' });
+      }
+      return Promise.resolve({ parentId: groupId });
     });
 
     const result = await updateGroup(groupId, {}, formData);

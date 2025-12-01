@@ -1,7 +1,9 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
+import { canManageStructure } from '@/lib/permissions';
 
 /**
  * アイテムの並び替え入力型
@@ -14,11 +16,32 @@ export type ReorderItemsInput = {
 
 /**
  * アイテムの並び替えと親子関係の変更を行うServer Action
+ * ADMIN/DEVELOPERロールのみ実行可能
  */
 export async function reorderItems(input: ReorderItemsInput) {
   const { itemId, newParentId, reorderedSiblings } = input;
 
   try {
+    // 認証チェック
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { error: '認証が必要です' };
+    }
+
+    // 権限チェック
+    const currentUser = await prisma.user.findUnique({
+      where: { email: user.email! },
+      select: { role: true },
+    });
+
+    if (!currentUser || !canManageStructure(currentUser.role)) {
+      return { error: 'この操作を行う権限がありません' };
+    }
+
     // 移動対象のアイテムを取得
     const item = await prisma.item.findUnique({
       where: { id: itemId },

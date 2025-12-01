@@ -1,3 +1,4 @@
+import type { UserRole } from '@prisma/client';
 import {
   Sidebar,
   SidebarContent,
@@ -17,12 +18,13 @@ import { getItems } from '@/features/item/api';
  */
 type AppSidebarProps = {
   userName: string;
+  userRole: UserRole;
 };
 
 /**
  * アプリケーションサイドバーコンポーネント
  */
-export async function AppSidebar({ userName }: AppSidebarProps) {
+export async function AppSidebar({ userName, userRole }: AppSidebarProps) {
   const items = await getItems();
 
   return (
@@ -40,8 +42,8 @@ export async function AppSidebar({ userName }: AppSidebarProps) {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <MainMenu items={mainMenuItems} />
-        <WorkspaceMenu items={items} />
+        <MainMenu items={mainMenuItems} userRole={userRole} />
+        <WorkspaceMenu items={items} userRole={userRole} />
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>

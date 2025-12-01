@@ -1,8 +1,10 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { prisma } from '@/lib/prisma';
+import { canManageUsers } from '@/lib/permissions';
 
 type FormState = {
   error?: string;
@@ -11,11 +13,32 @@ type FormState = {
 
 /**
  * ユーザーを作成するServer Action
+ * ADMINロールのみ実行可能
  */
 export async function createUser(
   _prevState: FormState,
   formData: FormData
 ): Promise<FormState> {
+  // 認証チェック
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: '認証が必要です' };
+  }
+
+  // 権限チェック
+  const currentUser = await prisma.user.findUnique({
+    where: { email: user.email! },
+    select: { role: true },
+  });
+
+  if (!currentUser || !canManageUsers(currentUser.role)) {
+    return { error: 'この操作を行う権限がありません' };
+  }
+
   const name = formData.get('name') as string;
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
