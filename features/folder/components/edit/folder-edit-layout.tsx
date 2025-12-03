@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Item } from '@/features/item/types';
 import { SettingsContent } from './settings-content';
+import { AccessContent } from '@/features/table/components/edit/access-content';
 
 /**
  * FolderEditLayoutのProps型
@@ -42,6 +43,9 @@ export function FolderEditLayout({ folder }: FolderEditLayoutProps) {
         </div>
         <TabsContent value="settings" className="flex-1 mt-6">
           <SettingsContent folderId={folder.id} folderName={folder.name} />
+        </TabsContent>
+        <TabsContent value="access" className="flex-1 mt-6">
+          <AccessContent itemId={folder.id} />
         </TabsContent>
       </Tabs>
     </div>

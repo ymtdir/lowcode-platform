@@ -4,6 +4,8 @@ import { getRecords } from '@/features/record/api';
 import { TableLayout } from '@/features/table/components';
 import { FolderLayout } from '@/features/folder/components';
 import { notFound } from 'next/navigation';
+import { getCurrentUser } from '@/lib/auth';
+import { canAccessItem } from '@/lib/permissions';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,10 +22,38 @@ type ItemPageProps = {
 export default async function ItemPage({ params }: ItemPageProps) {
   const { itemId } = await params;
 
+  // 認証チェック
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    notFound();
+  }
+
   const item = await getItemById(itemId);
 
   if (!item) {
     notFound();
+  }
+
+  // 権限チェック
+  const { canAccess } = await canAccessItem(
+    itemId,
+    currentUser.id,
+    currentUser.role
+  );
+
+  if (!canAccess) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="rounded-lg border border-destructive bg-destructive/10 p-8 text-center">
+          <h1 className="text-2xl font-bold text-destructive mb-4">
+            アクセス権限がありません
+          </h1>
+          <p className="text-muted-foreground">
+            このアイテムにアクセスする権限がありません。
+          </p>
+        </div>
+      </div>
+    );
   }
 
   // TABLE型の場合
