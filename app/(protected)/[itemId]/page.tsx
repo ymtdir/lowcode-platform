@@ -35,7 +35,7 @@ export default async function ItemPage({ params }: ItemPageProps) {
   }
 
   // 権限チェック
-  const { canAccess } = await canAccessItem(
+  const { canAccess, level } = await canAccessItem(
     itemId,
     currentUser.id,
     currentUser.role
@@ -68,6 +68,7 @@ export default async function ItemPage({ params }: ItemPageProps) {
         itemName={item.name}
         columns={columns}
         records={records}
+        permissionLevel={level}
       />
     );
   }

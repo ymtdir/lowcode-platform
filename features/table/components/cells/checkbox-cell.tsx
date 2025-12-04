@@ -9,6 +9,7 @@ type CheckboxCellProps = {
   displayStyle?: 'checkbox' | 'switch';
   checkedLabel?: string;
   uncheckedLabel?: string;
+  readOnly?: boolean;
 };
 
 /**
@@ -20,6 +21,7 @@ export function CheckboxCell({
   displayStyle = 'checkbox',
   checkedLabel,
   uncheckedLabel,
+  readOnly = false,
 }: CheckboxCellProps) {
   // ラベルを取得
   const label = value ? checkedLabel : uncheckedLabel;
@@ -27,11 +29,16 @@ export function CheckboxCell({
   return (
     <div className="min-h-[32px] px-2 py-1 flex items-center gap-2 w-full">
       {displayStyle === 'switch' ? (
-        <Switch checked={value} onCheckedChange={onChange} />
+        <Switch
+          checked={value}
+          onCheckedChange={onChange}
+          disabled={readOnly}
+        />
       ) : (
         <Checkbox
           checked={value}
           onCheckedChange={(checked) => onChange(checked === true)}
+          disabled={readOnly}
         />
       )}
       {label && <span className="text-sm">{label}</span>}

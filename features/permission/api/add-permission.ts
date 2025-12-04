@@ -10,7 +10,7 @@ import type { Permission } from '@prisma/client';
  */
 export async function addPermission(
   itemId: string,
-  targetType: 'user' | 'group',
+  targetType: 'group' | 'user',
   targetId: string,
   level: Permission
 ): Promise<{ success: true } | { error: string }> {
@@ -65,6 +65,22 @@ export async function addPermission(
     return { success: true };
   } catch (error) {
     console.error('権限の追加に失敗しました:', error);
+
+    // ユニーク制約違反のエラーをチェック
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === 'P2002'
+    ) {
+      return {
+        error:
+          targetType === 'user'
+            ? 'このユーザーには既に権限が設定されています'
+            : 'このグループには既に権限が設定されています',
+      };
+    }
+
     return { error: '権限の追加に失敗しました' };
   }
 }

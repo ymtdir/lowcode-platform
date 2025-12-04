@@ -20,6 +20,7 @@ type DateCellProps = {
   min?: string;
   max?: string;
   placeholder?: string;
+  readOnly?: boolean;
 };
 
 /**
@@ -61,6 +62,7 @@ export function DateCell({
   min,
   max,
   placeholder = '-',
+  readOnly = false,
 }: DateCellProps) {
   const [open, setOpen] = useState(false);
 
@@ -88,6 +90,16 @@ export function DateCell({
       return dateStr;
     }
   };
+
+  if (readOnly) {
+    return (
+      <div className="h-8 w-full px-2 flex items-center">
+        <span className={!value ? 'text-muted-foreground' : ''}>
+          {formatDisplayDate(value)}
+        </span>
+      </div>
+    );
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

@@ -14,36 +14,26 @@ export type PermissionConfig = {
  */
 export const PERMISSION_CONFIGS: Record<Permission, PermissionConfig> = {
   NONE: {
-    label: 'なし',
+    label: 'none',
     description: 'アクセス不可',
     color: 'gray',
   },
   READ: {
-    label: '読取',
+    label: 'read',
     description: '閲覧のみ可能',
     color: 'blue',
   },
   WRITE: {
-    label: '編集',
-    description: '閲覧・作成・編集が可能',
+    label: 'write',
+    description: '閲覧・作成・編集・削除が可能',
     color: 'green',
-  },
-  ADMIN: {
-    label: '管理',
-    description: 'すべての操作が可能（削除・権限設定含む）',
-    color: 'purple',
   },
 } as const;
 
 /**
  * 権限レベルの配列（UI表示順）
  */
-export const PERMISSION_LIST: Permission[] = [
-  'READ',
-  'WRITE',
-  'ADMIN',
-  'NONE',
-] as const;
+export const PERMISSION_LIST: Permission[] = ['READ', 'WRITE', 'NONE'] as const;
 
 /**
  * 権限レベルの表示名を取得

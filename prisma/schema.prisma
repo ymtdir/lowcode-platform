@@ -121,5 +121,4 @@ enum Permission {
   NONE
   READ
   WRITE
-  ADMIN
 }

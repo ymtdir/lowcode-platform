@@ -7,6 +7,7 @@ type TextareaCellProps = {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  readOnly?: boolean;
 };
 
 /**
@@ -16,6 +17,7 @@ export function TextareaCell({
   value,
   onChange,
   placeholder,
+  readOnly = false,
 }: TextareaCellProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
@@ -23,6 +25,7 @@ export function TextareaCell({
 
   // 編集開始時にpropsの値をローカルステートにコピー
   const handleStartEdit = () => {
+    if (readOnly) return;
     setEditValue(value);
     setIsEditing(true);
   };
@@ -70,7 +73,9 @@ export function TextareaCell({
 
   return (
     <div
-      className="cursor-text min-h-[32px] px-2 py-1 hover:bg-muted/50 rounded flex items-center w-full"
+      className={`min-h-[32px] px-2 py-1 rounded flex items-center w-full ${
+        readOnly ? '' : 'cursor-text hover:bg-muted/50'
+      }`}
       onClick={handleStartEdit}
     >
       <span className={firstLine ? '' : 'text-muted-foreground'}>

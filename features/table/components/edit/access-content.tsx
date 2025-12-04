@@ -1,8 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState } from 'react';
 import {
   Select,
   SelectContent,
@@ -18,11 +16,20 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { getPermissions, removePermission } from '@/features/permission/api';
+import {
+  getPermissions,
+  addPermission,
+  updatePermission,
+  removePermission,
+} from '@/features/permission/api';
 import {
   PERMISSION_LIST,
   getPermissionLabel,
 } from '@/features/permission/constants';
+import { AddPermissionDialog } from '@/features/permission/components/add-permission-dialog';
+import { DeletePermissionButton } from '@/features/permission/components/delete-permission-button';
+import { getUsers } from '@/features/user/api';
+import { getGroups } from '@/features/group/api';
 import type { Permission } from '@prisma/client';
 
 /**
@@ -59,49 +66,109 @@ type PermissionInfo = {
 export function AccessContent({ itemId }: AccessContentProps) {
   const [permissions, setPermissions] = useState<PermissionInfo[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // 権限一覧を取得
-  const loadPermissions = useCallback(async () => {
-    setLoading(true);
-    const result = await getPermissions(itemId);
-    if ('success' in result && result.success) {
-      setPermissions(result.permissions as PermissionInfo[]);
-    }
-    setLoading(false);
-  }, [itemId]);
+  const [users, setUsers] = useState<
+    Array<{ id: string; name: string | null; email: string }>
+  >([]);
+  const [groups, setGroups] = useState<
+    Array<{ id: string; name: string; description: string | null }>
+  >([]);
 
   useEffect(() => {
     let isMounted = true;
 
-    const fetchPermissions = async () => {
+    const fetchData = async () => {
       setLoading(true);
-      const result = await getPermissions(itemId);
-      if (isMounted && 'success' in result && result.success) {
-        setPermissions(result.permissions as PermissionInfo[]);
-      }
+
+      // 並列で取得
+      const [permissionsResult, usersData, groupsData] = await Promise.all([
+        getPermissions(itemId),
+        getUsers(),
+        getGroups(),
+      ]);
+
       if (isMounted) {
+        // 権限一覧をセット
+        if ('success' in permissionsResult && permissionsResult.success) {
+          setPermissions(permissionsResult.permissions as PermissionInfo[]);
+        }
+
+        // ユーザー一覧をセット（簡略化された型に変換）
+        setUsers(
+          usersData.map((user) => ({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+          }))
+        );
+
+        // グループ一覧をセット（簡略化された型に変換）
+        setGroups(
+          groupsData.map((group) => ({
+            id: group.id,
+            name: group.name,
+            description: group.description,
+          }))
+        );
+
         setLoading(false);
       }
     };
 
-    fetchPermissions();
+    fetchData();
 
     return () => {
       isMounted = false;
     };
   }, [itemId]);
 
-  // 権限削除
-  const handleRemove = async (permissionId: string) => {
-    if (!confirm('この権限設定を削除しますか？')) {
-      return;
-    }
-
-    const result = await removePermission(permissionId);
+  // 権限追加
+  const handleAdd = async (
+    targetType: 'group' | 'user',
+    targetId: string,
+    level: Permission
+  ) => {
+    const result = await addPermission(itemId, targetType, targetId, level);
     if ('success' in result && result.success) {
-      await loadPermissions();
+      // 成功時は権限一覧を再取得してUIを更新
+      const permissionsResult = await getPermissions(itemId);
+      if ('success' in permissionsResult && permissionsResult.success) {
+        setPermissions(permissionsResult.permissions as PermissionInfo[]);
+      }
     } else if ('error' in result) {
+      alert(result.error || '権限の追加に失敗しました');
+      throw new Error(result.error);
+    }
+  };
+
+  // 権限更新
+  const handleUpdate = async (permissionId: string, level: Permission) => {
+    // 楽観的更新：先にUIを更新
+    const previousPermissions = permissions;
+    setPermissions((prev) =>
+      prev.map((p) => (p.id === permissionId ? { ...p, level } : p))
+    );
+
+    // サーバーに保存
+    const result = await updatePermission(permissionId, level);
+    if ('error' in result) {
+      // エラー時はロールバック
+      alert(result.error || '権限の更新に失敗しました');
+      setPermissions(previousPermissions);
+    }
+  };
+
+  // 権限削除
+  const handleDelete = async (permissionId: string) => {
+    // 楽観的更新：先にUIから削除
+    const previousPermissions = permissions;
+    setPermissions((prev) => prev.filter((p) => p.id !== permissionId));
+
+    // サーバーで削除
+    const result = await removePermission(permissionId);
+    if ('error' in result) {
+      // エラー時はロールバック
       alert(result.error || '削除に失敗しました');
+      setPermissions(previousPermissions);
     }
   };
 
@@ -116,12 +183,9 @@ export function AccessContent({ itemId }: AccessContentProps) {
         </p>
       </div>
 
-      {/* 権限追加ボタン */}
+      {/* 権限追加ダイアログ */}
       <div className="flex justify-end">
-        <Button size="sm">
-          <Plus className="size-4 mr-2" />
-          権限を追加
-        </Button>
+        <AddPermissionDialog users={users} groups={groups} onAdd={handleAdd} />
       </div>
 
       {/* 権限一覧 */}
@@ -159,7 +223,12 @@ export function AccessContent({ itemId }: AccessContentProps) {
                       : permission.group?.name}
                   </TableCell>
                   <TableCell>
-                    <Select value={permission.level} disabled>
+                    <Select
+                      value={permission.level}
+                      onValueChange={(value) =>
+                        handleUpdate(permission.id, value as Permission)
+                      }
+                    >
                       <SelectTrigger className="w-[120px]">
                         <SelectValue />
                       </SelectTrigger>
@@ -173,13 +242,15 @@ export function AccessContent({ itemId }: AccessContentProps) {
                     </Select>
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemove(permission.id)}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
+                    <DeletePermissionButton
+                      permissionId={permission.id}
+                      targetName={
+                        permission.user
+                          ? permission.user.name || permission.user.email
+                          : permission.group?.name || ''
+                      }
+                      onDelete={handleDelete}
+                    />
                   </TableCell>
                 </TableRow>
               ))}

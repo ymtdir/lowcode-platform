@@ -16,7 +16,6 @@ const ROLE_LEVELS: Record<UserRole, number> = {
  * 数値が大きいほど上位の権限
  */
 const PERMISSION_LEVELS: Record<Permission, number> = {
-  ADMIN: 4,
   WRITE: 3,
   READ: 2,
   NONE: 1,
@@ -92,9 +91,9 @@ export async function canAccessItem(
   userId: string,
   userRole: UserRole
 ): Promise<{ canAccess: boolean; level: Permission }> {
-  // 1. ADMIN roleは全アクセス可能
-  if (userRole === 'ADMIN') {
-    return { canAccess: true, level: 'ADMIN' };
+  // 1. ADMIN/DEVELOPER roleは全アクセス可能（WRITE権限）
+  if (userRole === 'ADMIN' || userRole === 'DEVELOPER') {
+    return { canAccess: true, level: 'WRITE' };
   }
 
   // 2. ユーザー個別の権限をチェック

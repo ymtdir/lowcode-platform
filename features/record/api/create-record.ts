@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth';
+import { canAccessItem, hasPermission } from '@/lib/permissions';
 import type { InputJsonValue } from '@prisma/client/runtime/library';
 import type { Record as RecordType } from '../types';
 
@@ -32,13 +34,9 @@ export async function createRecord(
     return { error: '認証が必要です' };
   }
 
-  // DBからユーザーIDを取得
-  const dbUser = await prisma.user.findUnique({
-    where: { email: user.email! },
-    select: { id: true },
-  });
-
-  if (!dbUser) {
+  // DBからユーザー情報を取得
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
     return { error: 'ユーザー情報が取得できませんでした' };
   }
 
@@ -58,6 +56,17 @@ export async function createRecord(
     return { error: 'テーブルが見つかりません' };
   }
 
+  // 権限チェック（WRITE権限が必要）
+  const { canAccess, level } = await canAccessItem(
+    tableId,
+    currentUser.id,
+    currentUser.role
+  );
+
+  if (!canAccess || !hasPermission(level, 'WRITE')) {
+    return { error: 'レコードを作成する権限がありません' };
+  }
+
   try {
     // dataをパース（PrismaのJson型に対応）
     const data: InputJsonValue = dataString ? JSON.parse(dataString) : {};
@@ -66,7 +75,7 @@ export async function createRecord(
       data: {
         tableId,
         data,
-        createdById: dbUser.id,
+        createdById: currentUser.id,
       },
     });
 

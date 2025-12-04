@@ -10,6 +10,7 @@ import {
   type VisibilityState,
 } from '@tanstack/react-table';
 import { ChevronDown, Plus } from 'lucide-react';
+import type { Permission } from '@prisma/client';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -31,6 +32,7 @@ import { Input } from '@/components/ui/input';
 import { updateRecord } from '@/features/record/api/update-record';
 import { createRecord } from '@/features/record/api/create-record';
 import { applyDefaultValues } from '@/features/column/utils';
+import { hasPermission } from '@/lib/permissions';
 import { createColumns } from './columns';
 import { BulkDeleteButton } from './bulk-delete-button';
 
@@ -41,6 +43,7 @@ type DataTableProps = {
   tableId: string;
   columns: Column[];
   initialRecords: Record[];
+  permissionLevel: Permission;
 };
 
 /**
@@ -50,12 +53,16 @@ export function DataTable({
   tableId,
   columns,
   initialRecords,
+  permissionLevel,
 }: DataTableProps) {
   const [records, setRecords] = useState<Record[]>(initialRecords);
   const [isPending, startTransition] = useTransition();
   const [searchValue, setSearchValue] = useState('');
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+
+  // WRITE権限があるかチェック
+  const canWrite = hasPermission(permissionLevel, 'WRITE');
 
   // セル値の更新ハンドラ
   const handleCellChange = useCallback(
@@ -145,8 +152,8 @@ export function DataTable({
 
   // TanStack Table用のカラム定義
   const tableColumns = useMemo(
-    () => createColumns(columns, handleCellChange),
-    [columns, handleCellChange]
+    () => createColumns(columns, handleCellChange, !canWrite),
+    [columns, handleCellChange, canWrite]
   );
 
   // eslint-disable-next-line react-hooks/incompatible-library
@@ -204,13 +211,15 @@ export function DataTable({
                 ))}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button
-            onClick={handleCreateRecord}
-            disabled={isPending || columns.length === 0}
-          >
-            <Plus />
-            レコード追加
-          </Button>
+          {canWrite && (
+            <Button
+              onClick={handleCreateRecord}
+              disabled={isPending || columns.length === 0}
+            >
+              <Plus />
+              レコード追加
+            </Button>
+          )}
         </div>
       </div>
 
@@ -274,7 +283,7 @@ export function DataTable({
 
       {/* ページネーション */}
       <div className="flex items-center justify-end space-x-2 py-4">
-        {selectedRows.length > 0 && (
+        {canWrite && selectedRows.length > 0 && (
           <div className="text-muted-foreground flex flex-1 items-center gap-2 text-sm">
             {selectedRows.length} / {table.getFilteredRowModel().rows.length}{' '}
             行を選択中
