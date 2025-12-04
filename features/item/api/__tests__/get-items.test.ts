@@ -1,20 +1,54 @@
 import { getItems } from '../get-items';
 
+// Supabaseクライアントをモック化
+jest.mock('@/lib/supabase/server', () => ({
+  createClient: jest.fn(),
+}));
+
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
+    user: {
+      findUnique: jest.fn(),
+    },
     item: {
       findMany: jest.fn(),
       findUnique: jest.fn(),
     },
+    itemPermission: {
+      findUnique: jest.fn(),
+    },
+    groupMember: {
+      findMany: jest.fn(),
+    },
   },
 }));
 
+import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 
 describe('getItems', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // デフォルトでADMINユーザーを設定
+    (createClient as jest.Mock).mockResolvedValue({
+      auth: {
+        getUser: jest.fn().mockResolvedValue({
+          data: { user: { email: 'admin@example.com' } },
+        }),
+      },
+    });
+
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+      email: 'admin@example.com',
+      role: 'ADMIN',
+    });
+
+    // 権限チェック用のデフォルトモック（ADMIN権限なので常にアクセス可能）
+    (prisma.itemPermission.findUnique as jest.Mock).mockResolvedValue(null);
+    (prisma.groupMember.findMany as jest.Mock).mockResolvedValue([]);
   });
 
   it('ルートアイテムを取得できる', async () => {
