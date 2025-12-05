@@ -1,14 +1,23 @@
-import type { Item as PrismaItem } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
+
+/**
+ * Itemのクエリペイロード型（get-items.tsのクエリ構造に対応）
+ */
+type ItemPayload = Prisma.ItemGetPayload<{
+  include: {
+    children: true;
+    _count: {
+      select: {
+        children: true;
+      };
+    };
+  };
+}>;
 
 /**
  * 基本型（共通プロパティ）
  */
-type BaseItem = Omit<PrismaItem, 'type' | 'meta'> & {
-  order: number;
-  _count?: {
-    children: number;
-  };
-};
+type BaseItem = Omit<ItemPayload, 'type' | 'meta' | 'children'>;
 
 /**
  * Folder専用型

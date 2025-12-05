@@ -52,6 +52,8 @@ async function getItemWithChildren(
     );
   }
 
+  // 再帰的な構造のため、型アサーションが必要
+  // Prisma型からItem型（Discriminated Union）への変換
   return item as Item;
 }
 
