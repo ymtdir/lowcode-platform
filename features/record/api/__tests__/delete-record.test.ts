@@ -146,4 +146,36 @@ describe('deleteRecord', () => {
 
     expect(result).toEqual({ error: 'レコードが見つかりません' });
   });
+
+  it('WRITE権限がない場合はエラーを返す', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: mockUser } });
+
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+      email: 'test@example.com',
+      role: 'MEMBER',
+    });
+
+    (prisma.record.findUnique as jest.Mock).mockResolvedValue({
+      id: 'record-1',
+      tableId: 'table-1',
+      data: {},
+    });
+
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({
+      id: 'table-1',
+      type: 'TABLE',
+    });
+
+    // READ権限のみ
+    (prisma.itemPermission.findUnique as jest.Mock).mockResolvedValue({
+      level: 'READ',
+    });
+    (prisma.groupMember.findMany as jest.Mock).mockResolvedValue([]);
+
+    const result = await deleteRecord('record-1');
+
+    expect(result).toEqual({ error: 'レコードを削除する権限がありません' });
+    expect(prisma.record.delete).not.toHaveBeenCalled();
+  });
 });

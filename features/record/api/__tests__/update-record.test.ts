@@ -154,6 +154,34 @@ describe('updateRecord', () => {
     expect(prisma.record.update).not.toHaveBeenCalled();
   });
 
+  it('WRITE権限がない場合はエラーを返す', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: mockUser } });
+
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+      email: 'test@example.com',
+      role: 'MEMBER',
+    });
+
+    (prisma.record.findUnique as jest.Mock).mockResolvedValue(mockRecord);
+
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({
+      id: 'table-1',
+      type: 'TABLE',
+    });
+
+    // READ権限のみ
+    (prisma.itemPermission.findUnique as jest.Mock).mockResolvedValue({
+      level: 'READ',
+    });
+    (prisma.groupMember.findMany as jest.Mock).mockResolvedValue([]);
+
+    const result = await updateRecord('record-1', { name: '更新後' });
+
+    expect(result).toEqual({ error: 'レコードを更新する権限がありません' });
+    expect(prisma.record.update).not.toHaveBeenCalled();
+  });
+
   it('データベースエラーが発生した場合はエラーを返す', async () => {
     mockGetUser.mockResolvedValue({ data: { user: mockUser } });
 
