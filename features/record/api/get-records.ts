@@ -12,5 +12,7 @@ export async function getRecords(tableId: string): Promise<Record[]> {
     orderBy: { createdAt: 'asc' },
   });
 
+  // Prismaの`data: Json`フィールドは、カスタム型の`data: RecordData`と互換
+  // 型キャストで意図を明示
   return records as Record[];
 }

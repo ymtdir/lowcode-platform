@@ -1,16 +1,30 @@
-import type { Group as PrismaGroup, GroupMember, User } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 
 /**
- * グループ型（PrismaGroupを拡張）
+ * グループ型（Prisma.GroupGetPayloadを使用）
  */
-export type Group = PrismaGroup & {
-  parent?: {
-    name: string;
-  } | null;
-  members?: (GroupMember & {
-    user: Pick<User, 'id' | 'email' | 'name'>;
-  })[];
-  _count?: {
-    members: number;
+export type Group = Prisma.GroupGetPayload<{
+  include: {
+    parent: {
+      select: {
+        name: true;
+      };
+    };
+    members: {
+      include: {
+        user: {
+          select: {
+            id: true;
+            email: true;
+            name: true;
+          };
+        };
+      };
+    };
+    _count: {
+      select: {
+        members: true;
+      };
+    };
   };
-};
+}>;
