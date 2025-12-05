@@ -16,7 +16,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  groupMembers GroupMember[]
+  groupMembers    GroupMember[]
+  itemPermissions ItemPermission[]
 }
 
 model Group {
@@ -27,9 +28,10 @@ model Group {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  parent   Group?        @relation("GroupHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
-  children Group[]       @relation("GroupHierarchy")
-  members  GroupMember[]
+  parent          Group?             @relation("GroupHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children        Group[]            @relation("GroupHierarchy")
+  members         GroupMember[]
+  itemPermissions ItemPermission[]
 
   @@index([parentId])
 }
@@ -59,9 +61,10 @@ model Item {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  parent   Item?    @relation("ItemHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
-  children Item[]   @relation("ItemHierarchy")
-  records  Record[]
+  parent      Item?              @relation("ItemHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Item[]             @relation("ItemHierarchy")
+  records     Record[]
+  permissions ItemPermission[]
 
   @@index([parentId])
   @@index([createdById])
@@ -83,6 +86,26 @@ model Record {
   @@index([createdById])
 }
 
+model ItemPermission {
+  id        String     @id @default(uuid())
+  itemId    String
+  userId    String?
+  groupId   String?
+  level     Permission @default(READ)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  item  Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  user  User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group? @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, userId])
+  @@unique([itemId, groupId])
+  @@index([itemId])
+  @@index([userId])
+  @@index([groupId])
+}
+
 enum UserRole {
   ADMIN
   DEVELOPER
@@ -92,4 +115,10 @@ enum UserRole {
 enum ItemType {
   FOLDER
   TABLE
+}
+
+enum Permission {
+  NONE
+  READ
+  WRITE
 }

@@ -8,6 +8,7 @@ type MultiSelectCellProps = {
   value: string[] | null;
   onChange: (value: string[] | null) => void;
   options: SelectOption[];
+  readOnly?: boolean;
 };
 
 /**
@@ -40,6 +41,7 @@ export function MultiSelectCell({
   value,
   onChange,
   options,
+  readOnly = false,
 }: MultiSelectCellProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -83,6 +85,26 @@ export function MultiSelectCell({
       setIsOpen(false);
     }
   };
+
+  if (readOnly) {
+    return (
+      <div className="min-h-[32px] px-2 py-1 flex items-center flex-wrap gap-1 w-full">
+        {selectedOptions.length > 0 ? (
+          selectedOptions.map((option) => (
+            <span
+              key={option.id}
+              className="inline-flex items-center px-2 py-0.5 rounded text-sm"
+              style={getColorStyles(option.color)}
+            >
+              {option.label}
+            </span>
+          ))
+        ) : (
+          <span className="text-muted-foreground">-</span>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div

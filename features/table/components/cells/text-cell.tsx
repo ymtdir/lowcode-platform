@@ -7,18 +7,25 @@ type TextCellProps = {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  readOnly?: boolean;
 };
 
 /**
  * テキストセルコンポーネント
  */
-export function TextCell({ value, onChange, placeholder }: TextCellProps) {
+export function TextCell({
+  value,
+  onChange,
+  placeholder,
+  readOnly = false,
+}: TextCellProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
   // 編集開始時にpropsの値をローカルステートにコピー
   const handleStartEdit = () => {
+    if (readOnly) return;
     setEditValue(value);
     setIsEditing(true);
   };
@@ -62,7 +69,9 @@ export function TextCell({ value, onChange, placeholder }: TextCellProps) {
 
   return (
     <div
-      className="cursor-text min-h-[32px] px-2 py-1 hover:bg-muted/50 rounded flex items-center w-full"
+      className={`min-h-[32px] px-2 py-1 rounded flex items-center w-full ${
+        readOnly ? '' : 'cursor-text hover:bg-muted/50'
+      }`}
       onClick={handleStartEdit}
     >
       <span className={value ? '' : 'text-muted-foreground'}>

@@ -20,8 +20,21 @@ jest.mock('@/lib/supabase/server', () => ({
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
+    user: {
+      findUnique: jest.fn(),
+    },
     record: {
+      findUnique: jest.fn(),
       delete: jest.fn(),
+    },
+    item: {
+      findUnique: jest.fn(),
+    },
+    itemPermission: {
+      findUnique: jest.fn(),
+    },
+    groupMember: {
+      findMany: jest.fn(),
     },
   },
 }));
@@ -40,6 +53,31 @@ describe('deleteRecord', () => {
 
   it('レコードを削除できる', async () => {
     mockGetUser.mockResolvedValue({ data: { user: mockUser } });
+
+    // getCurrentUser用のモック
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+      email: 'test@example.com',
+      role: 'ADMIN',
+    });
+
+    // レコード取得のモック
+    (prisma.record.findUnique as jest.Mock).mockResolvedValue({
+      id: 'record-1',
+      tableId: 'table-1',
+      data: {},
+    });
+
+    // アイテム取得のモック
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({
+      id: 'table-1',
+      type: 'TABLE',
+    });
+
+    // 権限チェック用のモック（ADMIN権限なので不要だが念のため）
+    (prisma.itemPermission.findUnique as jest.Mock).mockResolvedValue(null);
+    (prisma.groupMember.findMany as jest.Mock).mockResolvedValue([]);
+
     (prisma.record.delete as jest.Mock).mockResolvedValue({
       tableId: 'table-1',
     });
@@ -49,7 +87,6 @@ describe('deleteRecord', () => {
     expect(result).toEqual({ success: true });
     expect(prisma.record.delete).toHaveBeenCalledWith({
       where: { id: 'record-1' },
-      select: { tableId: true },
     });
   });
 
@@ -64,6 +101,27 @@ describe('deleteRecord', () => {
 
   it('データベースエラーが発生した場合はエラーを返す', async () => {
     mockGetUser.mockResolvedValue({ data: { user: mockUser } });
+
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+      email: 'test@example.com',
+      role: 'ADMIN',
+    });
+
+    (prisma.record.findUnique as jest.Mock).mockResolvedValue({
+      id: 'record-1',
+      tableId: 'table-1',
+      data: {},
+    });
+
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({
+      id: 'table-1',
+      type: 'TABLE',
+    });
+
+    (prisma.itemPermission.findUnique as jest.Mock).mockResolvedValue(null);
+    (prisma.groupMember.findMany as jest.Mock).mockResolvedValue([]);
+
     (prisma.record.delete as jest.Mock).mockRejectedValue(
       new Error('Database error')
     );
@@ -75,12 +133,49 @@ describe('deleteRecord', () => {
 
   it('存在しないレコードを削除しようとした場合はエラーを返す', async () => {
     mockGetUser.mockResolvedValue({ data: { user: mockUser } });
-    (prisma.record.delete as jest.Mock).mockRejectedValue(
-      new Error('Record not found')
-    );
+
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+      email: 'test@example.com',
+      role: 'ADMIN',
+    });
+
+    (prisma.record.findUnique as jest.Mock).mockResolvedValue(null);
 
     const result = await deleteRecord('non-existent');
 
-    expect(result).toEqual({ error: 'レコードの削除に失敗しました' });
+    expect(result).toEqual({ error: 'レコードが見つかりません' });
+  });
+
+  it('WRITE権限がない場合はエラーを返す', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: mockUser } });
+
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+      email: 'test@example.com',
+      role: 'MEMBER',
+    });
+
+    (prisma.record.findUnique as jest.Mock).mockResolvedValue({
+      id: 'record-1',
+      tableId: 'table-1',
+      data: {},
+    });
+
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({
+      id: 'table-1',
+      type: 'TABLE',
+    });
+
+    // READ権限のみ
+    (prisma.itemPermission.findUnique as jest.Mock).mockResolvedValue({
+      level: 'READ',
+    });
+    (prisma.groupMember.findMany as jest.Mock).mockResolvedValue([]);
+
+    const result = await deleteRecord('record-1');
+
+    expect(result).toEqual({ error: 'レコードを削除する権限がありません' });
+    expect(prisma.record.delete).not.toHaveBeenCalled();
   });
 });

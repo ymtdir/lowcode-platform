@@ -20,9 +20,21 @@ jest.mock('@/lib/supabase/server', () => ({
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
+    user: {
+      findUnique: jest.fn(),
+    },
     record: {
       findUnique: jest.fn(),
       update: jest.fn(),
+    },
+    item: {
+      findUnique: jest.fn(),
+    },
+    itemPermission: {
+      findUnique: jest.fn(),
+    },
+    groupMember: {
+      findMany: jest.fn(),
     },
   },
 }));
@@ -49,7 +61,23 @@ describe('updateRecord', () => {
 
   it('レコードを更新できる', async () => {
     mockGetUser.mockResolvedValue({ data: { user: mockUser } });
+
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+      email: 'test@example.com',
+      role: 'ADMIN',
+    });
+
     (prisma.record.findUnique as jest.Mock).mockResolvedValue(mockRecord);
+
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({
+      id: 'table-1',
+      type: 'TABLE',
+    });
+
+    (prisma.itemPermission.findUnique as jest.Mock).mockResolvedValue(null);
+    (prisma.groupMember.findMany as jest.Mock).mockResolvedValue([]);
+
     (prisma.record.update as jest.Mock).mockResolvedValue({
       ...mockRecord,
       data: { name: '更新後の名前', age: 20 },
@@ -66,7 +94,23 @@ describe('updateRecord', () => {
 
   it('既存のデータとマージされる', async () => {
     mockGetUser.mockResolvedValue({ data: { user: mockUser } });
+
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+      email: 'test@example.com',
+      role: 'ADMIN',
+    });
+
     (prisma.record.findUnique as jest.Mock).mockResolvedValue(mockRecord);
+
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({
+      id: 'table-1',
+      type: 'TABLE',
+    });
+
+    (prisma.itemPermission.findUnique as jest.Mock).mockResolvedValue(null);
+    (prisma.groupMember.findMany as jest.Mock).mockResolvedValue([]);
+
     (prisma.record.update as jest.Mock).mockResolvedValue({
       ...mockRecord,
       data: { name: '元の名前', age: 25, email: 'new@example.com' },
@@ -95,6 +139,13 @@ describe('updateRecord', () => {
 
   it('レコードが存在しない場合はエラーを返す', async () => {
     mockGetUser.mockResolvedValue({ data: { user: mockUser } });
+
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+      email: 'test@example.com',
+      role: 'ADMIN',
+    });
+
     (prisma.record.findUnique as jest.Mock).mockResolvedValue(null);
 
     const result = await updateRecord('non-existent', { name: '更新後' });
@@ -103,9 +154,53 @@ describe('updateRecord', () => {
     expect(prisma.record.update).not.toHaveBeenCalled();
   });
 
+  it('WRITE権限がない場合はエラーを返す', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: mockUser } });
+
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+      email: 'test@example.com',
+      role: 'MEMBER',
+    });
+
+    (prisma.record.findUnique as jest.Mock).mockResolvedValue(mockRecord);
+
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({
+      id: 'table-1',
+      type: 'TABLE',
+    });
+
+    // READ権限のみ
+    (prisma.itemPermission.findUnique as jest.Mock).mockResolvedValue({
+      level: 'READ',
+    });
+    (prisma.groupMember.findMany as jest.Mock).mockResolvedValue([]);
+
+    const result = await updateRecord('record-1', { name: '更新後' });
+
+    expect(result).toEqual({ error: 'レコードを更新する権限がありません' });
+    expect(prisma.record.update).not.toHaveBeenCalled();
+  });
+
   it('データベースエラーが発生した場合はエラーを返す', async () => {
     mockGetUser.mockResolvedValue({ data: { user: mockUser } });
+
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+      email: 'test@example.com',
+      role: 'ADMIN',
+    });
+
     (prisma.record.findUnique as jest.Mock).mockResolvedValue(mockRecord);
+
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({
+      id: 'table-1',
+      type: 'TABLE',
+    });
+
+    (prisma.itemPermission.findUnique as jest.Mock).mockResolvedValue(null);
+    (prisma.groupMember.findMany as jest.Mock).mockResolvedValue([]);
+
     (prisma.record.update as jest.Mock).mockRejectedValue(
       new Error('Database error')
     );
@@ -121,9 +216,25 @@ describe('updateRecord', () => {
       data: null,
     };
     mockGetUser.mockResolvedValue({ data: { user: mockUser } });
+
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+      email: 'test@example.com',
+      role: 'ADMIN',
+    });
+
     (prisma.record.findUnique as jest.Mock).mockResolvedValue(
       recordWithNullData
     );
+
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({
+      id: 'table-1',
+      type: 'TABLE',
+    });
+
+    (prisma.itemPermission.findUnique as jest.Mock).mockResolvedValue(null);
+    (prisma.groupMember.findMany as jest.Mock).mockResolvedValue([]);
+
     (prisma.record.update as jest.Mock).mockResolvedValue({
       ...recordWithNullData,
       data: { name: '新しい名前' },

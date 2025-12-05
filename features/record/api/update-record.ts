@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth';
+import { canAccessItem, hasPermission } from '@/lib/permissions';
 import type { InputJsonValue } from '@prisma/client/runtime/library';
 
 /**
@@ -30,6 +32,12 @@ export async function updateRecord(
     return { error: '認証が必要です' };
   }
 
+  // DBからユーザー情報を取得
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { error: 'ユーザー情報が取得できませんでした' };
+  }
+
   // レコードが存在するか確認
   const record = await prisma.record.findUnique({
     where: { id: recordId },
@@ -38,6 +46,17 @@ export async function updateRecord(
 
   if (!record) {
     return { error: 'レコードが見つかりません' };
+  }
+
+  // 権限チェック（WRITE権限が必要）
+  const { canAccess, level } = await canAccessItem(
+    record.tableId,
+    currentUser.id,
+    currentUser.role
+  );
+
+  if (!canAccess || !hasPermission(level, 'WRITE')) {
+    return { error: 'レコードを更新する権限がありません' };
   }
 
   try {

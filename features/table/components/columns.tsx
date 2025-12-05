@@ -30,11 +30,111 @@ type CellChangeHandler = (
  */
 export const createColumns = (
   columns: Column[],
-  onCellChange: CellChangeHandler
+  onCellChange: CellChangeHandler,
+  readOnly = false
 ): ColumnDef<Record>[] => {
   // orderでソートされたカラム
   const sortedColumns = [...columns].sort((a, b) => a.order - b.order);
 
+  const dataColumns: ColumnDef<Record>[] = sortedColumns.map((column) => ({
+    id: column.id,
+    accessorFn: (row) => (row.data as RecordData)[column.id],
+    header: column.name,
+    cell: ({ row, getValue }) => {
+      const value = getValue();
+      const recordId = row.original.id;
+
+      const handleChange = (newValue: unknown) => {
+        onCellChange(recordId, column.id, newValue);
+      };
+
+      switch (column.type) {
+        case 'TEXT':
+          return (
+            <TextCell
+              value={(value as string) ?? ''}
+              onChange={handleChange}
+              placeholder={column.config?.placeholder}
+              readOnly={readOnly}
+            />
+          );
+        case 'TEXTAREA':
+          return (
+            <TextareaCell
+              value={(value as string) ?? ''}
+              onChange={handleChange}
+              placeholder={column.config?.placeholder}
+              readOnly={readOnly}
+            />
+          );
+        case 'NUMBER':
+          return (
+            <NumberCell
+              value={(value as number) ?? null}
+              onChange={handleChange}
+              min={column.config?.min}
+              max={column.config?.max}
+              step={column.config?.step}
+              placeholder={column.config?.placeholder}
+              unit={column.config?.unit}
+              unitPosition={column.config?.unitPosition}
+              thousandSeparator={column.config?.thousandSeparator}
+              readOnly={readOnly}
+            />
+          );
+        case 'DATE':
+          return (
+            <DateCell
+              value={(value as string) ?? null}
+              onChange={handleChange}
+              precision={column.config?.precision}
+              min={column.config?.min}
+              max={column.config?.max}
+              placeholder={column.config?.placeholder}
+              readOnly={readOnly}
+            />
+          );
+        case 'SELECT':
+          return (
+            <SelectCell
+              value={(value as string) ?? null}
+              onChange={handleChange}
+              options={(column as SelectColumn).config?.options ?? []}
+              readOnly={readOnly}
+            />
+          );
+        case 'MULTI_SELECT':
+          return (
+            <MultiSelectCell
+              value={(value as string[]) ?? null}
+              onChange={handleChange}
+              options={(column as MultiSelectColumn).config?.options ?? []}
+              readOnly={readOnly}
+            />
+          );
+        case 'CHECKBOX':
+          return (
+            <CheckboxCell
+              value={(value as boolean) ?? false}
+              onChange={handleChange}
+              displayStyle={column.config?.displayStyle}
+              checkedLabel={column.config?.checkedLabel}
+              uncheckedLabel={column.config?.uncheckedLabel}
+              readOnly={readOnly}
+            />
+          );
+        default:
+          return <span>{String(value ?? '-')}</span>;
+      }
+    },
+  }));
+
+  // READ権限の場合はチェックボックス列を含めない
+  if (readOnly) {
+    return dataColumns;
+  }
+
+  // WRITE権限がある場合はチェックボックス列を含める
   const selectColumn: ColumnDef<Record> = {
     id: 'select',
     header: ({ table }) => (
@@ -58,92 +158,6 @@ export const createColumns = (
     enableHiding: false,
     meta: { width: 'w-12' },
   };
-
-  const dataColumns: ColumnDef<Record>[] = sortedColumns.map((column) => ({
-    id: column.id,
-    accessorFn: (row) => (row.data as RecordData)[column.id],
-    header: column.name,
-    cell: ({ row, getValue }) => {
-      const value = getValue();
-      const recordId = row.original.id;
-
-      const handleChange = (newValue: unknown) => {
-        onCellChange(recordId, column.id, newValue);
-      };
-
-      switch (column.type) {
-        case 'TEXT':
-          return (
-            <TextCell
-              value={(value as string) ?? ''}
-              onChange={handleChange}
-              placeholder={column.config?.placeholder}
-            />
-          );
-        case 'TEXTAREA':
-          return (
-            <TextareaCell
-              value={(value as string) ?? ''}
-              onChange={handleChange}
-              placeholder={column.config?.placeholder}
-            />
-          );
-        case 'NUMBER':
-          return (
-            <NumberCell
-              value={(value as number) ?? null}
-              onChange={handleChange}
-              min={column.config?.min}
-              max={column.config?.max}
-              step={column.config?.step}
-              placeholder={column.config?.placeholder}
-              unit={column.config?.unit}
-              unitPosition={column.config?.unitPosition}
-              thousandSeparator={column.config?.thousandSeparator}
-            />
-          );
-        case 'DATE':
-          return (
-            <DateCell
-              value={(value as string) ?? null}
-              onChange={handleChange}
-              precision={column.config?.precision}
-              min={column.config?.min}
-              max={column.config?.max}
-              placeholder={column.config?.placeholder}
-            />
-          );
-        case 'SELECT':
-          return (
-            <SelectCell
-              value={(value as string) ?? null}
-              onChange={handleChange}
-              options={(column as SelectColumn).config?.options ?? []}
-            />
-          );
-        case 'MULTI_SELECT':
-          return (
-            <MultiSelectCell
-              value={(value as string[]) ?? null}
-              onChange={handleChange}
-              options={(column as MultiSelectColumn).config?.options ?? []}
-            />
-          );
-        case 'CHECKBOX':
-          return (
-            <CheckboxCell
-              value={(value as boolean) ?? false}
-              onChange={handleChange}
-              displayStyle={column.config?.displayStyle}
-              checkedLabel={column.config?.checkedLabel}
-              uncheckedLabel={column.config?.uncheckedLabel}
-            />
-          );
-        default:
-          return <span>{String(value ?? '-')}</span>;
-      }
-    },
-  }));
 
   return [selectColumn, ...dataColumns];
 };

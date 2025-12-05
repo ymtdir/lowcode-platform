@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Column } from '@/features/column/types';
 import { ColumnsContent } from './columns-content';
 import { SettingsContent } from './settings-content';
+import { AccessContent } from './access-content';
 
 /**
  * TableEditLayoutのProps型
@@ -59,6 +60,9 @@ export function TableEditLayout({
         </TabsContent>
         <TabsContent value="columns" className="flex-1 mt-6">
           <ColumnsContent itemId={itemId} columns={columns} />
+        </TabsContent>
+        <TabsContent value="access" className="flex-1 mt-6">
+          <AccessContent itemId={itemId} />
         </TabsContent>
       </Tabs>
     </div>

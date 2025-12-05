@@ -1,3 +1,4 @@
+import type { Permission } from '@prisma/client';
 import type { Column } from '@/features/column/types';
 import type { Record } from '@/features/record/types';
 import { DataTable } from './data-table';
@@ -10,6 +11,7 @@ type TableLayoutProps = {
   itemName: string;
   columns: Column[];
   records: Record[];
+  permissionLevel: Permission;
 };
 
 /**
@@ -20,6 +22,7 @@ export function TableLayout({
   itemName,
   columns,
   records,
+  permissionLevel,
 }: TableLayoutProps) {
   return (
     <div className="w-full p-6">
@@ -27,7 +30,12 @@ export function TableLayout({
         <h1 className="text-2xl font-bold">{itemName}</h1>
       </div>
 
-      <DataTable tableId={itemId} columns={columns} initialRecords={records} />
+      <DataTable
+        tableId={itemId}
+        columns={columns}
+        initialRecords={records}
+        permissionLevel={permissionLevel}
+      />
     </div>
   );
 }
