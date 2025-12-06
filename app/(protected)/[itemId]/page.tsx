@@ -1,6 +1,6 @@
 import { getItemById } from '@/features/item/api';
 import { getColumnSchema } from '@/features/column/types/schema';
-import { getRecords } from '@/features/record/api';
+import { getRecords, getRelationRecords } from '@/features/record/api';
 import { TableLayout } from '@/features/table/components';
 import { FolderLayout } from '@/features/folder/components';
 import { notFound } from 'next/navigation';
@@ -60,7 +60,12 @@ export default async function ItemPage({ params }: ItemPageProps) {
   if (item.type === 'TABLE') {
     const columnSchema = getColumnSchema(item.meta);
     const columns = columnSchema?.columns || [];
-    const records = await getRecords(itemId);
+
+    // レコードとリレーション用データを並列取得
+    const [records, relationRecords] = await Promise.all([
+      getRecords(itemId),
+      getRelationRecords(columns),
+    ]);
 
     return (
       <TableLayout
@@ -68,6 +73,7 @@ export default async function ItemPage({ params }: ItemPageProps) {
         itemName={item.name}
         columns={columns}
         records={records}
+        relationRecords={relationRecords}
         permissionLevel={level}
       />
     );

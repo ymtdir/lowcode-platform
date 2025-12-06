@@ -17,7 +17,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { Column } from '@/features/column/types';
+import type { Column, RelationRecord } from '@/features/column/types';
 import type { Record, RecordData } from '@/features/record/types';
 import {
   Table,
@@ -43,6 +43,7 @@ type DataTableProps = {
   tableId: string;
   columns: Column[];
   initialRecords: Record[];
+  relationRecords: Map<string, RelationRecord[]>;
   permissionLevel: Permission;
 };
 
@@ -53,6 +54,7 @@ export function DataTable({
   tableId,
   columns,
   initialRecords,
+  relationRecords,
   permissionLevel,
 }: DataTableProps) {
   const [records, setRecords] = useState<Record[]>(initialRecords);
@@ -152,8 +154,8 @@ export function DataTable({
 
   // TanStack Table用のカラム定義
   const tableColumns = useMemo(
-    () => createColumns(columns, handleCellChange, !canWrite),
-    [columns, handleCellChange, canWrite]
+    () => createColumns(columns, handleCellChange, !canWrite, relationRecords),
+    [columns, handleCellChange, canWrite, relationRecords]
   );
 
   // eslint-disable-next-line react-hooks/incompatible-library

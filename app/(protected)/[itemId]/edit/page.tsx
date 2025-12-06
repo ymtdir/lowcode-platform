@@ -1,7 +1,7 @@
 import { redirect, notFound } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import { canManageStructure } from '@/lib/permissions';
-import { getItemById } from '@/features/item/api';
+import { getItemById, getTables } from '@/features/item/api';
 import { getColumnSchema } from '@/features/column/types/schema';
 import { TableEditLayout } from '@/features/table/components/edit';
 import { FolderEditLayout } from '@/features/folder/components/edit';
@@ -38,9 +38,15 @@ export default async function ItemEditPage({ params }: ItemEditPageProps) {
   if (item.type === 'TABLE') {
     const columnSchema = getColumnSchema(item.meta);
     const columns = columnSchema?.columns || [];
+    const tables = await getTables();
 
     return (
-      <TableEditLayout itemId={itemId} itemName={item.name} columns={columns} />
+      <TableEditLayout
+        itemId={itemId}
+        itemName={item.name}
+        columns={columns}
+        tables={tables}
+      />
     );
   }
 

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Column } from '@/features/column/types';
+import type { Item } from '@/features/item/types';
 import { ColumnsContent } from './columns-content';
 import { SettingsContent } from './settings-content';
 import { AccessContent } from './access-content';
@@ -15,6 +16,7 @@ type TableEditLayoutProps = {
   itemId: string;
   itemName: string;
   columns: Column[];
+  tables: Item[];
 };
 
 /**
@@ -24,6 +26,7 @@ export function TableEditLayout({
   itemId,
   itemName,
   columns,
+  tables,
 }: TableEditLayoutProps) {
   return (
     <div className="w-full p-6">
@@ -59,7 +62,7 @@ export function TableEditLayout({
           <SettingsContent itemId={itemId} itemName={itemName} />
         </TabsContent>
         <TabsContent value="columns" className="flex-1 mt-6">
-          <ColumnsContent itemId={itemId} columns={columns} />
+          <ColumnsContent itemId={itemId} columns={columns} tables={tables} />
         </TabsContent>
         <TabsContent value="access" className="flex-1 mt-6">
           <AccessContent itemId={itemId} />

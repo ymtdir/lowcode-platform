@@ -15,10 +15,7 @@ export async function enrichWithRelations(
 ): Promise<
   Array<
     PrismaRecord & {
-      _relationData?: Record<
-        string,
-        RelationRecord | RelationRecord[] | null
-      >;
+      _relationData?: Record<string, RelationRecord | RelationRecord[] | null>;
     }
   >
 > {

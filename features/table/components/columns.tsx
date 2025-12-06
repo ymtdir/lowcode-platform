@@ -129,9 +129,7 @@ export const createColumns = (
           );
         case 'RELATION':
           const relationCol = column as RelationColumn;
-          const referencedTableId = relationCol.config.referencedTableId;
-          const availableRecords =
-            relationRecordsMap?.get(referencedTableId) || [];
+          const availableRecords = relationRecordsMap?.get(column.id) || [];
           return (
             <RelationCell
               value={(value as string | string[]) ?? null}
