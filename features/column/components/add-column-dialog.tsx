@@ -29,8 +29,10 @@ import { DateConfigEditor } from './config/date-config-editor';
 import { TextConfigEditor } from './config/text-config-editor';
 import { TextareaConfigEditor } from './config/textarea-config-editor';
 import { CheckboxConfigEditor } from './config/checkbox-config-editor';
+import { RelationConfigEditor } from './config/relation-config-editor';
 import type { DatePrecision } from '../types/column';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import type { Item } from '@/features/item/types';
 
 /**
  * カラム追加ダイアログのProps型
@@ -41,6 +43,7 @@ type AddColumnDialogProps = {
   onOpenChange: (open: boolean) => void;
   nextOrder: number;
   onAdded?: (column: Column) => void;
+  tables?: Item[]; // リレーション用のテーブル一覧
 };
 
 /**
@@ -52,6 +55,7 @@ export function AddColumnDialog({
   onOpenChange,
   nextOrder,
   onAdded,
+  tables = [],
 }: AddColumnDialogProps) {
   const [columnType, setColumnType] = useState<ColumnType>('TEXT');
   const [columnName, setColumnName] = useState('');
@@ -104,6 +108,17 @@ export function AddColumnDialog({
     displayStyle?: 'checkbox' | 'switch';
   }>({});
 
+  // RELATION用の状態
+  const [relationConfig, setRelationConfig] = useState<{
+    referencedTableId: string;
+    displayField: string;
+    allowMultiple?: boolean;
+  }>({
+    referencedTableId: '',
+    displayField: '',
+    allowMultiple: false,
+  });
+
   // ダイアログが閉じられたときに状態をリセット
   useEffect(() => {
     if (!open) {
@@ -117,6 +132,11 @@ export function AddColumnDialog({
       setNumberConfig({});
       setDateConfig({});
       setCheckboxConfig({});
+      setRelationConfig({
+        referencedTableId: '',
+        displayField: '',
+        allowMultiple: false,
+      });
     }
   }, [open]);
 
@@ -139,6 +159,18 @@ export function AddColumnDialog({
     ) {
       toast.error('すべての選択肢にラベルを入力してください');
       return;
+    }
+
+    // RELATIONの場合、参照先テーブルと表示フィールドが必須
+    if (columnType === 'RELATION') {
+      if (!relationConfig.referencedTableId) {
+        toast.error('参照先テーブルを選択してください');
+        return;
+      }
+      if (!relationConfig.displayField) {
+        toast.error('表示フィールドを選択してください');
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -175,6 +207,8 @@ export function AddColumnDialog({
         Object.keys(checkboxConfig).length > 0
       ) {
         config = checkboxConfig;
+      } else if (columnType === 'RELATION') {
+        config = relationConfig;
       }
 
       const result = await addColumn(itemId, {
@@ -314,8 +348,19 @@ export function AddColumnDialog({
                 />
               )}
 
-              {/* CHECKBOXは常にtrue/falseなので必須項目は不要 */}
-              {columnType !== 'CHECKBOX' && (
+              {/* RELATION用の設定 */}
+              {columnType === 'RELATION' && (
+                <RelationConfigEditor
+                  key={open ? 'open' : 'closed'}
+                  config={relationConfig}
+                  tables={tables}
+                  currentTableId={itemId}
+                  onChange={setRelationConfig}
+                />
+              )}
+
+              {/* CHECKBOXとRELATIONは必須項目設定が不要 */}
+              {columnType !== 'CHECKBOX' && columnType !== 'RELATION' && (
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="required"

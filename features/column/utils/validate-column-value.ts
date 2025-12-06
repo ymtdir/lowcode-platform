@@ -7,6 +7,7 @@ import type {
   SelectColumn,
   TextColumn,
   TextareaColumn,
+  RelationColumn,
 } from '../types/column';
 import type { ValidationError } from '../types/validation';
 
@@ -47,6 +48,8 @@ export function validateColumnValue(
       return validateMultiSelectValue(value, column);
     case 'CHECKBOX':
       return validateCheckboxValue(value, column);
+    case 'RELATION':
+      return validateRelationValue(value, column);
     default:
       return null;
   }
@@ -296,4 +299,52 @@ function validateCheckboxValue(
     columnName: column.name,
     message: `${column.name}はブール値である必要があります`,
   };
+}
+
+/**
+ * RELATION型のバリデーション
+ */
+function validateRelationValue(
+  value: unknown,
+  column: RelationColumn
+): ValidationError | null {
+  const allowMultiple = column.config.allowMultiple || false;
+
+  // 単一参照の場合
+  if (!allowMultiple) {
+    if (typeof value !== 'string') {
+      return {
+        columnId: column.id,
+        columnName: column.name,
+        message: `${column.name}は文字列である必要があります`,
+      };
+    }
+    return null;
+  }
+
+  // 複数参照の場合
+  if (!Array.isArray(value)) {
+    return {
+      columnId: column.id,
+      columnName: column.name,
+      message: `${column.name}は配列である必要があります`,
+    };
+  }
+
+  // 空配列の場合はOK
+  if (value.length === 0) {
+    return null;
+  }
+
+  // すべての値が文字列かチェック
+  const invalidValues = value.filter((v) => typeof v !== 'string');
+  if (invalidValues.length > 0) {
+    return {
+      columnId: column.id,
+      columnName: column.name,
+      message: `${column.name}の値はすべて文字列である必要があります`,
+    };
+  }
+
+  return null;
 }

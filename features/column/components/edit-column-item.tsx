@@ -25,7 +25,9 @@ import { DateConfigEditor } from './config/date-config-editor';
 import { TextConfigEditor } from './config/text-config-editor';
 import { TextareaConfigEditor } from './config/textarea-config-editor';
 import { CheckboxConfigEditor } from './config/checkbox-config-editor';
+import { RelationConfigEditor } from './config/relation-config-editor';
 import type { DatePrecision } from '../types/column';
+import type { Item } from '@/features/item/types';
 
 /**
  * カラム編集アイテムのProps型
@@ -39,6 +41,7 @@ type EditColumnItemProps = {
     validation?: { required: boolean };
     config?: unknown;
   }) => void;
+  tables?: Item[]; // リレーション用のテーブル一覧
 };
 
 /**
@@ -49,6 +52,7 @@ export function EditColumnItem({
   column,
   onOpenChange: onDropdownOpenChange,
   onUpdated,
+  tables = [],
 }: EditColumnItemProps) {
   const [open, setOpen] = useState(false);
   const [columnName, setColumnName] = useState(column.name);
@@ -103,6 +107,17 @@ export function EditColumnItem({
     displayStyle?: 'checkbox' | 'switch';
   }>({});
 
+  // RELATION用の状態
+  const [relationConfig, setRelationConfig] = useState<{
+    referencedTableId: string;
+    displayField: string;
+    allowMultiple?: boolean;
+  }>({
+    referencedTableId: '',
+    displayField: '',
+    allowMultiple: false,
+  });
+
   // ダイアログが開かれたときに最新の値をセット
   useEffect(() => {
     if (open) {
@@ -147,6 +162,18 @@ export function EditColumnItem({
         const config = column.config;
         setCheckboxConfig(config || {});
       }
+
+      // RELATIONの場合、configから値を取得
+      if (column.type === 'RELATION') {
+        const config = column.config;
+        setRelationConfig(
+          config || {
+            referencedTableId: '',
+            displayField: '',
+            allowMultiple: false,
+          }
+        );
+      }
     }
   }, [open, column]);
 
@@ -169,6 +196,18 @@ export function EditColumnItem({
     ) {
       toast.error('すべての選択肢にラベルを入力してください');
       return;
+    }
+
+    // RELATIONの場合、参照先テーブルと表示フィールドが必須
+    if (column.type === 'RELATION') {
+      if (!relationConfig.referencedTableId) {
+        toast.error('参照先テーブルを選択してください');
+        return;
+      }
+      if (!relationConfig.displayField) {
+        toast.error('表示フィールドを選択してください');
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -205,6 +244,8 @@ export function EditColumnItem({
         Object.keys(checkboxConfig).length > 0
       ) {
         config = checkboxConfig;
+      } else if (column.type === 'RELATION') {
+        config = relationConfig;
       }
 
       const result = await updateColumn(itemId, column.id, {
@@ -327,8 +368,19 @@ export function EditColumnItem({
                 />
               )}
 
-              {/* CHECKBOXは常にtrue/falseなので必須項目は不要 */}
-              {column.type !== 'CHECKBOX' && (
+              {/* RELATION用の設定 */}
+              {column.type === 'RELATION' && (
+                <RelationConfigEditor
+                  key={open ? column.id : 'closed'}
+                  config={relationConfig}
+                  tables={tables}
+                  currentTableId={itemId}
+                  onChange={setRelationConfig}
+                />
+              )}
+
+              {/* CHECKBOXとRELATIONは必須項目設定が不要 */}
+              {column.type !== 'CHECKBOX' && column.type !== 'RELATION' && (
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="edit-required"
