@@ -61,9 +61,12 @@ export function EditColumnItem({
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // SELECT/MULTI_SELECT用の状態
+  // SELECT用の状態
   const [selectOptions, setSelectOptions] = useState<SelectOption[]>([]);
-  const [defaultValue, setDefaultValue] = useState<string | string[]>('');
+  const [selectDefaultValue, setSelectDefaultValue] = useState<
+    string | string[]
+  >('');
+  const [selectAllowMultiple, setSelectAllowMultiple] = useState(false);
 
   // TEXT用の状態
   const [textConfig, setTextConfig] = useState<{
@@ -136,13 +139,12 @@ export function EditColumnItem({
         setTextareaConfig(config || {});
       }
 
-      // SELECT/MULTI_SELECTの場合、configから値を取得
-      if (column.type === 'SELECT' || column.type === 'MULTI_SELECT') {
+      // SELECTの場合、configから値を取得
+      if (column.type === 'SELECT') {
         const config = column.config;
         setSelectOptions(config?.options || []);
-        setDefaultValue(
-          config?.defaultValue || (column.type === 'MULTI_SELECT' ? [] : '')
-        );
+        setSelectDefaultValue(config?.defaultValue || '');
+        setSelectAllowMultiple(config?.allowMultiple || false);
       }
 
       // NUMBERの場合、configから値を取得
@@ -180,18 +182,15 @@ export function EditColumnItem({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // SELECT/MULTI_SELECTの場合、選択肢が必須
-    if (
-      (column.type === 'SELECT' || column.type === 'MULTI_SELECT') &&
-      selectOptions.length === 0
-    ) {
+    // SELECTの場合、選択肢が必須
+    if (column.type === 'SELECT' && selectOptions.length === 0) {
       toast.error('選択肢を少なくとも1つ追加してください');
       return;
     }
 
     // 空ラベルのチェック
     if (
-      (column.type === 'SELECT' || column.type === 'MULTI_SELECT') &&
+      column.type === 'SELECT' &&
       selectOptions.some((opt) => !opt.label.trim())
     ) {
       toast.error('すべての選択肢にラベルを入力してください');
@@ -225,12 +224,8 @@ export function EditColumnItem({
       } else if (column.type === 'SELECT') {
         config = {
           options: selectOptions,
-          defaultValue: defaultValue as string,
-        };
-      } else if (column.type === 'MULTI_SELECT') {
-        config = {
-          options: selectOptions,
-          defaultValue: defaultValue as string[],
+          allowMultiple: selectAllowMultiple,
+          defaultValue: selectDefaultValue,
         };
       } else if (
         column.type === 'NUMBER' &&
@@ -326,17 +321,18 @@ export function EditColumnItem({
                 />
               )}
 
-              {/* SELECT/MULTI_SELECT用の選択肢設定 */}
-              {(column.type === 'SELECT' || column.type === 'MULTI_SELECT') && (
+              {/* SELECT用の選択肢設定 */}
+              {column.type === 'SELECT' && (
                 <SelectConfigEditor
                   options={selectOptions}
-                  defaultValue={defaultValue}
-                  isMultiSelect={column.type === 'MULTI_SELECT'}
-                  onChange={(options, defValue) => {
+                  defaultValue={selectDefaultValue}
+                  allowMultiple={selectAllowMultiple}
+                  onChange={(options, defValue, allowMultiple) => {
                     setSelectOptions(options);
-                    setDefaultValue(
-                      defValue || (column.type === 'MULTI_SELECT' ? [] : '')
-                    );
+                    setSelectDefaultValue(defValue || '');
+                    if (allowMultiple !== undefined) {
+                      setSelectAllowMultiple(allowMultiple);
+                    }
                   }}
                 />
               )}
@@ -379,8 +375,8 @@ export function EditColumnItem({
                 />
               )}
 
-              {/* CHECKBOXとRELATIONは必須項目設定が不要 */}
-              {column.type !== 'CHECKBOX' && column.type !== 'RELATION' && (
+              {/* CHECKBOXは必須項目設定が不要 */}
+              {column.type !== 'CHECKBOX' && (
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="edit-required"

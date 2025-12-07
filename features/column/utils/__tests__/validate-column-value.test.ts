@@ -1,7 +1,6 @@
 import { validateColumnValue } from '../validate-column-value';
 import type {
   SelectColumn,
-  MultiSelectColumn,
   TextColumn,
   NumberColumn,
 } from '../../types/column';
@@ -61,11 +60,11 @@ describe('validateColumnValue', () => {
     });
   });
 
-  describe('MULTI_SELECT型のバリデーション', () => {
-    const multiSelectColumn: MultiSelectColumn = {
+  describe('SELECT型（複数選択）のバリデーション', () => {
+    const multiSelectColumn: SelectColumn = {
       id: 'col-1',
       name: 'タグ',
-      type: 'MULTI_SELECT',
+      type: 'SELECT',
       order: 0,
       config: {
         options: [
@@ -73,6 +72,7 @@ describe('validateColumnValue', () => {
           { id: 'opt-2', label: 'タグ2' },
           { id: 'opt-3', label: 'タグ3' },
         ],
+        allowMultiple: true,
       },
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -101,7 +101,7 @@ describe('validateColumnValue', () => {
     });
 
     it('required=trueで空配列の場合はエラーを返す', () => {
-      const requiredColumn: MultiSelectColumn = {
+      const requiredColumn: SelectColumn = {
         ...multiSelectColumn,
         validation: { required: true },
       };

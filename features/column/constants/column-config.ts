@@ -4,7 +4,6 @@ import {
   Hash,
   Calendar,
   List,
-  Tags,
   CheckSquare,
   Link,
 } from 'lucide-react';
@@ -69,21 +68,11 @@ export const COLUMN_CONFIGS: Record<ColumnType, ColumnConfig> = {
   SELECT: {
     icon: List,
     label: 'セレクト',
-    description: 'ドロップダウンから選択できます',
+    description: 'ドロップダウンから選択できます（単一/複数選択対応）',
     hasConfig: true,
     defaultConfig: {
       options: [],
-      allowCustom: false,
-    },
-  },
-  MULTI_SELECT: {
-    icon: Tags,
-    label: 'マルチセレクト',
-    description: '複数の選択肢から複数選択できます',
-    hasConfig: true,
-    defaultConfig: {
-      options: [],
-      allowCustom: false,
+      allowMultiple: false,
     },
   },
   CHECKBOX: {
@@ -117,7 +106,6 @@ export const COLUMN_TYPE_LIST: ColumnType[] = [
   'NUMBER',
   'DATE',
   'SELECT',
-  'MULTI_SELECT',
   'CHECKBOX',
   'RELATION',
 ] as const;

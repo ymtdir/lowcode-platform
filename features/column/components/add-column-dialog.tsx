@@ -62,9 +62,12 @@ export function AddColumnDialog({
   const [isRequired, setIsRequired] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // SELECT/MULTI_SELECT用の状態
+  // SELECT用の状態
   const [selectOptions, setSelectOptions] = useState<SelectOption[]>([]);
-  const [defaultValue, setDefaultValue] = useState<string | string[]>('');
+  const [selectDefaultValue, setSelectDefaultValue] = useState<
+    string | string[]
+  >('');
+  const [selectAllowMultiple, setSelectAllowMultiple] = useState(false);
 
   // TEXT用の状態
   const [textConfig, setTextConfig] = useState<{
@@ -126,7 +129,8 @@ export function AddColumnDialog({
       setColumnName('');
       setIsRequired(false);
       setSelectOptions([]);
-      setDefaultValue('');
+      setSelectDefaultValue('');
+      setSelectAllowMultiple(false);
       setTextConfig({});
       setTextareaConfig({});
       setNumberConfig({});
@@ -143,18 +147,15 @@ export function AddColumnDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // SELECT/MULTI_SELECTの場合、選択肢が必須
-    if (
-      (columnType === 'SELECT' || columnType === 'MULTI_SELECT') &&
-      selectOptions.length === 0
-    ) {
+    // SELECTの場合、選択肢が必須
+    if (columnType === 'SELECT' && selectOptions.length === 0) {
       toast.error('選択肢を少なくとも1つ追加してください');
       return;
     }
 
     // 空ラベルのチェック
     if (
-      (columnType === 'SELECT' || columnType === 'MULTI_SELECT') &&
+      columnType === 'SELECT' &&
       selectOptions.some((opt) => !opt.label.trim())
     ) {
       toast.error('すべての選択肢にラベルを入力してください');
@@ -188,12 +189,8 @@ export function AddColumnDialog({
       } else if (columnType === 'SELECT') {
         config = {
           options: selectOptions,
-          defaultValue: defaultValue as string,
-        };
-      } else if (columnType === 'MULTI_SELECT') {
-        config = {
-          options: selectOptions,
-          defaultValue: defaultValue as string[],
+          allowMultiple: selectAllowMultiple,
+          defaultValue: selectDefaultValue,
         };
       } else if (
         columnType === 'NUMBER' &&
@@ -306,17 +303,18 @@ export function AddColumnDialog({
                 />
               )}
 
-              {/* SELECT/MULTI_SELECT用の選択肢設定 */}
-              {(columnType === 'SELECT' || columnType === 'MULTI_SELECT') && (
+              {/* SELECT用の選択肢設定 */}
+              {columnType === 'SELECT' && (
                 <SelectConfigEditor
                   options={selectOptions}
-                  defaultValue={defaultValue}
-                  isMultiSelect={columnType === 'MULTI_SELECT'}
-                  onChange={(options, defValue) => {
+                  defaultValue={selectDefaultValue}
+                  allowMultiple={selectAllowMultiple}
+                  onChange={(options, defValue, allowMultiple) => {
                     setSelectOptions(options);
-                    setDefaultValue(
-                      defValue || (columnType === 'MULTI_SELECT' ? [] : '')
-                    );
+                    setSelectDefaultValue(defValue || '');
+                    if (allowMultiple !== undefined) {
+                      setSelectAllowMultiple(allowMultiple);
+                    }
                   }}
                 />
               )}
@@ -359,8 +357,8 @@ export function AddColumnDialog({
                 />
               )}
 
-              {/* CHECKBOXとRELATIONは必須項目設定が不要 */}
-              {columnType !== 'CHECKBOX' && columnType !== 'RELATION' && (
+              {/* CHECKBOXは必須項目設定が不要 */}
+              {columnType !== 'CHECKBOX' && (
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="required"

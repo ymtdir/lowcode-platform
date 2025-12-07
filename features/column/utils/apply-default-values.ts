@@ -16,8 +16,6 @@ export function applyDefaultValues(columns: Column[]): RecordData {
       data[column.id] = column.config.defaultValue;
     } else if (column.type === 'SELECT' && column.config?.defaultValue) {
       data[column.id] = column.config.defaultValue;
-    } else if (column.type === 'MULTI_SELECT' && column.config?.defaultValue) {
-      data[column.id] = column.config.defaultValue;
     } else if (
       column.type === 'CHECKBOX' &&
       column.config?.defaultValue !== undefined

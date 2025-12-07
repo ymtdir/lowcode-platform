@@ -36,8 +36,12 @@ import type { SelectOption } from '../../types';
 type SelectConfigEditorProps = {
   options: SelectOption[];
   defaultValue?: string | string[];
-  isMultiSelect?: boolean;
-  onChange: (options: SelectOption[], defaultValue?: string | string[]) => void;
+  allowMultiple?: boolean;
+  onChange: (
+    options: SelectOption[],
+    defaultValue?: string | string[],
+    allowMultiple?: boolean
+  ) => void;
 };
 
 /**
@@ -166,18 +170,20 @@ function OptionItem({
 }
 
 /**
- * SELECT/MULTI_SELECT型カラムの設定エディタコンポーネント
+ * SELECT型カラムの設定エディタコンポーネント
  */
 export function SelectConfigEditor({
   options,
   defaultValue,
-  isMultiSelect = false,
+  allowMultiple = false,
   onChange,
 }: SelectConfigEditorProps) {
   const [localOptions, setLocalOptions] = useState<SelectOption[]>(options);
   const [localDefaultValue, setLocalDefaultValue] = useState<string | string[]>(
-    defaultValue || (isMultiSelect ? [] : '')
+    defaultValue || (allowMultiple ? [] : '')
   );
+  const [localAllowMultiple, setLocalAllowMultiple] =
+    useState<boolean>(allowMultiple);
 
   // 親から受け取ったpropsが変更されたらローカルステートを更新
   useEffect(() => {
@@ -185,8 +191,12 @@ export function SelectConfigEditor({
   }, [options]);
 
   useEffect(() => {
-    setLocalDefaultValue(defaultValue || (isMultiSelect ? [] : ''));
-  }, [defaultValue, isMultiSelect]);
+    setLocalDefaultValue(defaultValue || (allowMultiple ? [] : ''));
+  }, [defaultValue, allowMultiple]);
+
+  useEffect(() => {
+    setLocalAllowMultiple(allowMultiple);
+  }, [allowMultiple]);
 
   // DnDセンサーの設定
   const sensors = useSensors(
@@ -205,7 +215,7 @@ export function SelectConfigEditor({
     };
     const newOptions = [...localOptions, newOption];
     setLocalOptions(newOptions);
-    onChange(newOptions, localDefaultValue);
+    onChange(newOptions, localDefaultValue, localAllowMultiple);
   };
 
   // ラベル変更
@@ -214,7 +224,7 @@ export function SelectConfigEditor({
       opt.id === id ? { ...opt, label } : opt
     );
     setLocalOptions(newOptions);
-    onChange(newOptions, localDefaultValue);
+    onChange(newOptions, localDefaultValue, localAllowMultiple);
   };
 
   // カラー変更
@@ -223,7 +233,7 @@ export function SelectConfigEditor({
       opt.id === id ? { ...opt, color } : opt
     );
     setLocalOptions(newOptions);
-    onChange(newOptions, localDefaultValue);
+    onChange(newOptions, localDefaultValue, localAllowMultiple);
   };
 
   // 選択肢削除
@@ -233,19 +243,19 @@ export function SelectConfigEditor({
 
     // デフォルト値から削除
     let newDefaultValue = localDefaultValue;
-    if (isMultiSelect && Array.isArray(localDefaultValue)) {
+    if (localAllowMultiple && Array.isArray(localDefaultValue)) {
       newDefaultValue = localDefaultValue.filter((val) => val !== id);
     } else if (localDefaultValue === id) {
       newDefaultValue = '';
     }
     setLocalDefaultValue(newDefaultValue);
-    onChange(newOptions, newDefaultValue);
+    onChange(newOptions, newDefaultValue, localAllowMultiple);
   };
 
   // デフォルト値のトグル
   const handleToggleDefault = (id: string) => {
     let newDefaultValue: string | string[];
-    if (isMultiSelect) {
+    if (localAllowMultiple) {
       const current = (localDefaultValue as string[]) || [];
       if (current.includes(id)) {
         newDefaultValue = current.filter((val) => val !== id);
@@ -256,7 +266,21 @@ export function SelectConfigEditor({
       newDefaultValue = localDefaultValue === id ? '' : id;
     }
     setLocalDefaultValue(newDefaultValue);
-    onChange(localOptions, newDefaultValue);
+    onChange(localOptions, newDefaultValue, localAllowMultiple);
+  };
+
+  // 複数選択許可フラグ変更
+  const handleAllowMultipleChange = (checked: boolean) => {
+    setLocalAllowMultiple(checked);
+    // 単一→複数に切り替えた場合、デフォルト値を配列に変換
+    // 複数→単一に切り替えた場合、デフォルト値を空文字にリセット
+    const newDefaultValue = checked
+      ? typeof localDefaultValue === 'string' && localDefaultValue
+        ? [localDefaultValue]
+        : []
+      : '';
+    setLocalDefaultValue(newDefaultValue);
+    onChange(localOptions, newDefaultValue, checked);
   };
 
   // ドラッグ終了時のハンドラ
@@ -271,12 +295,13 @@ export function SelectConfigEditor({
       const [movedOption] = newOptions.splice(oldIndex, 1);
       newOptions.splice(newIndex, 0, movedOption);
       setLocalOptions(newOptions);
-      onChange(newOptions, localDefaultValue);
+      onChange(newOptions, localDefaultValue, localAllowMultiple);
     }
   };
 
   return (
-    <div>
+    <div className="space-y-4">
+      {/* 選択肢 */}
       <div>
         <Label className="mb-3">選択肢</Label>
         <DndContext
@@ -294,12 +319,12 @@ export function SelectConfigEditor({
                   key={option.id}
                   option={option}
                   isDefault={
-                    isMultiSelect
+                    localAllowMultiple
                       ? (localDefaultValue as string[])?.includes(option.id) ||
                         false
                       : localDefaultValue === option.id
                   }
-                  isMultiSelect={isMultiSelect}
+                  isMultiSelect={localAllowMultiple}
                   onLabelChange={handleLabelChange}
                   onColorChange={handleColorChange}
                   onDelete={handleDelete}
@@ -318,6 +343,21 @@ export function SelectConfigEditor({
             </div>
           </SortableContext>
         </DndContext>
+      </div>
+
+      {/* 複数選択許可 */}
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id="allow-multiple"
+          checked={localAllowMultiple}
+          onCheckedChange={handleAllowMultipleChange}
+        />
+        <Label
+          htmlFor="allow-multiple"
+          className="text-sm font-normal cursor-pointer"
+        >
+          複数選択を許可する
+        </Label>
       </div>
     </div>
   );

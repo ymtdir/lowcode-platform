@@ -1,7 +1,6 @@
 import { applyDefaultValues } from '../apply-default-values';
 import type {
   SelectColumn,
-  MultiSelectColumn,
   TextColumn,
   NumberColumn,
 } from '../../types/column';
@@ -33,18 +32,19 @@ describe('applyDefaultValues', () => {
     });
   });
 
-  it('MULTI_SELECT型のデフォルト値を適用する', () => {
-    const columns: MultiSelectColumn[] = [
+  it('SELECT型（複数選択）のデフォルト値を適用する', () => {
+    const columns: SelectColumn[] = [
       {
         id: 'col-1',
         name: 'タグ',
-        type: 'MULTI_SELECT',
+        type: 'SELECT',
         order: 0,
         config: {
           options: [
             { id: 'opt-1', label: 'タグ1' },
             { id: 'opt-2', label: 'タグ2' },
           ],
+          allowMultiple: true,
           defaultValue: ['opt-1', 'opt-2'],
         },
         createdAt: new Date(),
@@ -127,13 +127,14 @@ describe('applyDefaultValues', () => {
       {
         id: 'col-3',
         name: 'タグ',
-        type: 'MULTI_SELECT' as const,
+        type: 'SELECT' as const,
         order: 2,
         config: {
           options: [
             { id: 'tag-1', label: 'タグ1' },
             { id: 'tag-2', label: 'タグ2' },
           ],
+          allowMultiple: true,
           defaultValue: ['tag-1'],
         },
         createdAt: new Date(),

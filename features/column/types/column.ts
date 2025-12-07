@@ -7,7 +7,6 @@ export const COLUMN_TYPES = {
   NUMBER: 'NUMBER',
   DATE: 'DATE',
   SELECT: 'SELECT',
-  MULTI_SELECT: 'MULTI_SELECT',
   CHECKBOX: 'CHECKBOX',
   RELATION: 'RELATION',
 } as const;
@@ -79,11 +78,8 @@ export type ColumnTypeConfig = {
   };
   SELECT: {
     options: SelectOption[];
-    defaultValue?: string; // デフォルト値（選択肢のID）
-  };
-  MULTI_SELECT: {
-    options: SelectOption[];
-    defaultValue?: string[]; // デフォルト値（選択肢のIDの配列）
+    allowMultiple?: boolean; // 複数選択を許可（デフォルト: false）
+    defaultValue?: string | string[]; // デフォルト値（選択肢のIDまたはIDの配列）
   };
   CHECKBOX: {
     checkedLabel?: string; // チェック時のラベル（例: 「完了」）
@@ -147,11 +143,6 @@ export type SelectColumn = BaseColumn & {
   config: ColumnTypeConfig['SELECT']; // SELECT型はoptionsが必須
 };
 
-export type MultiSelectColumn = BaseColumn & {
-  type: 'MULTI_SELECT';
-  config: ColumnTypeConfig['MULTI_SELECT']; // MULTI_SELECT型はoptionsが必須
-};
-
 export type CheckboxColumn = BaseColumn & {
   type: 'CHECKBOX';
   config?: ColumnTypeConfig['CHECKBOX'];
@@ -171,7 +162,6 @@ export type Column =
   | NumberColumn
   | DateColumn
   | SelectColumn
-  | MultiSelectColumn
   | CheckboxColumn
   | RelationColumn;
 
