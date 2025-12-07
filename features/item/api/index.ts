@@ -2,6 +2,7 @@ export * from './create-item';
 export * from './create-table';
 export * from './get-items';
 export * from './get-item-by-id';
+export * from './get-tables';
 export * from './get-breadcrumb';
 export * from './delete-item';
 export * from './rename-item';

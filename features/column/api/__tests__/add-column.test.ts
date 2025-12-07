@@ -316,4 +316,124 @@ describe('addColumn', () => {
       error: 'カラムの追加に失敗しました',
     });
   });
+
+  it('RELATION型カラムを追加できる', async () => {
+    (createClient as jest.Mock).mockResolvedValue(mockUser);
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue(mockItem);
+    (prisma.item.update as jest.Mock).mockResolvedValue({
+      ...mockItem,
+      meta: {
+        schema: {
+          columns: [
+            {
+              id: 'col-1',
+              name: '顧客',
+              type: 'RELATION',
+              order: 0,
+              config: {
+                referencedTableId: 'customer-table',
+                displayField: 'name',
+                allowMultiple: false,
+              },
+            },
+          ],
+        },
+        version: 1,
+      },
+    });
+
+    const result = await addColumn('item-1', {
+      name: '顧客',
+      type: 'RELATION',
+      order: 0,
+      config: {
+        referencedTableId: 'customer-table',
+        displayField: 'name',
+        allowMultiple: false,
+      },
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.column).toEqual(
+      expect.objectContaining({
+        name: '顧客',
+        type: 'RELATION',
+        order: 0,
+        config: expect.objectContaining({
+          referencedTableId: 'customer-table',
+          displayField: 'name',
+          allowMultiple: false,
+        }),
+      })
+    );
+    expect(prisma.item.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'item-1' },
+        data: {
+          meta: expect.objectContaining({
+            schema: expect.objectContaining({
+              columns: expect.arrayContaining([
+                expect.objectContaining({
+                  name: '顧客',
+                  type: 'RELATION',
+                  config: expect.objectContaining({
+                    referencedTableId: 'customer-table',
+                    displayField: 'name',
+                  }),
+                }),
+              ]),
+            }),
+          }),
+        },
+      })
+    );
+  });
+
+  it('RELATION型カラムで複数選択を許可できる', async () => {
+    (createClient as jest.Mock).mockResolvedValue(mockUser);
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue(mockItem);
+    (prisma.item.update as jest.Mock).mockResolvedValue({
+      ...mockItem,
+      meta: {
+        schema: {
+          columns: [
+            {
+              id: 'col-1',
+              name: 'タグ',
+              type: 'RELATION',
+              order: 0,
+              config: {
+                referencedTableId: 'tag-table',
+                displayField: 'tagName',
+                allowMultiple: true,
+              },
+            },
+          ],
+        },
+        version: 1,
+      },
+    });
+
+    const result = await addColumn('item-1', {
+      name: 'タグ',
+      type: 'RELATION',
+      order: 0,
+      config: {
+        referencedTableId: 'tag-table',
+        displayField: 'tagName',
+        allowMultiple: true,
+      },
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.column).toEqual(
+      expect.objectContaining({
+        config: expect.objectContaining({
+          allowMultiple: true,
+        }),
+      })
+    );
+  });
 });

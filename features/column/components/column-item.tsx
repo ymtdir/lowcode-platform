@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import type { Column } from '../types/column';
+import type { Item } from '@/features/item/types';
 import { COLUMN_CONFIGS } from '../constants';
 import { EditColumnItem } from './edit-column-item';
 import { DeleteColumnItem } from './delete-column-item';
@@ -22,6 +23,7 @@ type ColumnItemProps = {
   itemId: string;
   column: Column;
   disabled?: boolean;
+  tables?: Item[];
   onDeleted?: () => void;
   onUpdated?: (updated: {
     name: string;
@@ -37,6 +39,7 @@ export function ColumnItem({
   itemId,
   column,
   disabled,
+  tables = [],
   onDeleted,
   onUpdated,
 }: ColumnItemProps) {
@@ -105,6 +108,7 @@ export function ColumnItem({
           <EditColumnItem
             itemId={itemId}
             column={column}
+            tables={tables}
             onOpenChange={setOpen}
             onUpdated={onUpdated}
           />

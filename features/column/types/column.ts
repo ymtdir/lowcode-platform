@@ -9,6 +9,7 @@ export const COLUMN_TYPES = {
   SELECT: 'SELECT',
   MULTI_SELECT: 'MULTI_SELECT',
   CHECKBOX: 'CHECKBOX',
+  RELATION: 'RELATION',
 } as const;
 
 export type ColumnType = (typeof COLUMN_TYPES)[keyof typeof COLUMN_TYPES];
@@ -20,6 +21,15 @@ export type SelectOption = {
   id: string;
   label: string;
   color?: string;
+};
+
+/**
+ * リレーション参照レコードの型（RELATION型で使用）
+ */
+export type RelationRecord = {
+  id: string;
+  displayValue: string;
+  exists: boolean;
 };
 
 /**
@@ -80,6 +90,11 @@ export type ColumnTypeConfig = {
     uncheckedLabel?: string; // 未チェック時のラベル（例: 「未完了」）
     defaultValue?: boolean; // デフォルト値
     displayStyle?: 'checkbox' | 'switch'; // 表示スタイル（デフォルト: 'checkbox'）
+  };
+  RELATION: {
+    referencedTableId: string; // 参照先テーブルID
+    displayField: string; // 表示用フィールドID（参照先テーブルのカラムID）
+    allowMultiple?: boolean; // 複数レコード参照を許可（デフォルト: false）
   };
 };
 
@@ -142,6 +157,11 @@ export type CheckboxColumn = BaseColumn & {
   config?: ColumnTypeConfig['CHECKBOX'];
 };
 
+export type RelationColumn = BaseColumn & {
+  type: 'RELATION';
+  config: ColumnTypeConfig['RELATION']; // RELATION型はconfigが必須
+};
+
 /**
  * カラム型の統合型（Discriminated Union）
  */
@@ -152,7 +172,8 @@ export type Column =
   | DateColumn
   | SelectColumn
   | MultiSelectColumn
-  | CheckboxColumn;
+  | CheckboxColumn
+  | RelationColumn;
 
 /**
  * カラム作成用の入力型

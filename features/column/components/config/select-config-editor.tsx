@@ -54,7 +54,7 @@ type OptionItemProps = {
 };
 
 /**
- * 選択肢アイテムコンポーネント
+ * SELECT/MULTI_SELECT型カラムの設定エディタコンポーネント
  */
 function OptionItem({
   option,

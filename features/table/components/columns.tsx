@@ -6,6 +6,8 @@ import type {
   Column,
   SelectColumn,
   MultiSelectColumn,
+  RelationColumn,
+  RelationRecord,
 } from '@/features/column/types';
 import type { Record, RecordData } from '@/features/record/types';
 import { TextCell } from './cells/text-cell';
@@ -15,6 +17,7 @@ import { MultiSelectCell } from './cells/multi-select-cell';
 import { CheckboxCell } from './cells/checkbox-cell';
 import { DateCell } from './cells/date-cell';
 import { TextareaCell } from './cells/textarea-cell';
+import { RelationCell } from './cells/relation-cell';
 
 /**
  * セル変更ハンドラの型
@@ -31,7 +34,8 @@ type CellChangeHandler = (
 export const createColumns = (
   columns: Column[],
   onCellChange: CellChangeHandler,
-  readOnly = false
+  readOnly = false,
+  relationRecordsMap?: Map<string, RelationRecord[]>
 ): ColumnDef<Record>[] => {
   // orderでソートされたカラム
   const sortedColumns = [...columns].sort((a, b) => a.order - b.order);
@@ -120,6 +124,18 @@ export const createColumns = (
               displayStyle={column.config?.displayStyle}
               checkedLabel={column.config?.checkedLabel}
               uncheckedLabel={column.config?.uncheckedLabel}
+              readOnly={readOnly}
+            />
+          );
+        case 'RELATION':
+          const relationCol = column as RelationColumn;
+          const availableRecords = relationRecordsMap?.get(column.id) || [];
+          return (
+            <RelationCell
+              value={(value as string | string[]) ?? null}
+              onChange={handleChange}
+              records={availableRecords}
+              allowMultiple={relationCol.config.allowMultiple}
               readOnly={readOnly}
             />
           );

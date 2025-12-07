@@ -17,6 +17,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import type { Column } from '@/features/column/types';
+import type { Item } from '@/features/item/types';
 import { ColumnItem } from '@/features/column/components/column-item';
 import { AddColumnDialog } from '@/features/column/components/add-column-dialog';
 import { reorderColumns } from '@/features/column/api';
@@ -27,12 +28,17 @@ import { reorderColumns } from '@/features/column/api';
 type ColumnsContentProps = {
   itemId: string;
   columns: Column[];
+  tables: Item[];
 };
 
 /**
  * 項目管理コンテンツコンポーネント
  */
-export function ColumnsContent({ itemId, columns }: ColumnsContentProps) {
+export function ColumnsContent({
+  itemId,
+  columns,
+  tables,
+}: ColumnsContentProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [localColumns, setLocalColumns] = useState(columns);
   const [isPending, startTransition] = useTransition();
@@ -129,6 +135,7 @@ export function ColumnsContent({ itemId, columns }: ColumnsContentProps) {
                 itemId={itemId}
                 column={column}
                 disabled={isPending}
+                tables={tables}
                 onDeleted={() => handleColumnDeleted(column.id)}
                 onUpdated={(updated) => handleColumnUpdated(column.id, updated)}
               />
@@ -150,6 +157,7 @@ export function ColumnsContent({ itemId, columns }: ColumnsContentProps) {
         open={isAddDialogOpen}
         onOpenChange={setIsAddDialogOpen}
         nextOrder={localColumns.length}
+        tables={tables}
         onAdded={handleColumnAdded}
       />
     </>

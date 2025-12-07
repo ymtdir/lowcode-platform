@@ -390,4 +390,117 @@ describe('updateColumn', () => {
       );
     });
   });
+
+  it('RELATION型カラムの設定を更新できる', async () => {
+    (createClient as jest.Mock).mockResolvedValue(mockUser);
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({
+      ...mockItem,
+      meta: {
+        schema: {
+          columns: [
+            {
+              id: 'col-1',
+              name: '顧客',
+              type: 'RELATION',
+              order: 0,
+              config: {
+                referencedTableId: 'customer-table',
+                displayField: 'name',
+                allowMultiple: false,
+              },
+            },
+          ],
+        },
+        version: 1,
+      },
+    });
+    (prisma.item.update as jest.Mock).mockResolvedValue(mockItem);
+
+    const result = await updateColumn('item-1', 'col-1', {
+      config: {
+        referencedTableId: 'customer-table',
+        displayField: 'companyName',
+        allowMultiple: false,
+      },
+    });
+
+    expect(result).toEqual({ success: true });
+    expect(prisma.item.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'item-1' },
+        data: {
+          meta: expect.objectContaining({
+            schema: expect.objectContaining({
+              columns: expect.arrayContaining([
+                expect.objectContaining({
+                  id: 'col-1',
+                  config: expect.objectContaining({
+                    referencedTableId: 'customer-table',
+                    displayField: 'companyName',
+                  }),
+                }),
+              ]),
+            }),
+          }),
+        },
+      })
+    );
+  });
+
+  it('RELATION型カラムの複数選択設定を変更できる', async () => {
+    (createClient as jest.Mock).mockResolvedValue(mockUser);
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({
+      ...mockItem,
+      meta: {
+        schema: {
+          columns: [
+            {
+              id: 'col-1',
+              name: 'タグ',
+              type: 'RELATION',
+              order: 0,
+              config: {
+                referencedTableId: 'tag-table',
+                displayField: 'tagName',
+                allowMultiple: false,
+              },
+            },
+          ],
+        },
+        version: 1,
+      },
+    });
+    (prisma.item.update as jest.Mock).mockResolvedValue(mockItem);
+
+    const result = await updateColumn('item-1', 'col-1', {
+      config: {
+        referencedTableId: 'tag-table',
+        displayField: 'tagName',
+        allowMultiple: true,
+      },
+    });
+
+    expect(result).toEqual({ success: true });
+    expect(prisma.item.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'item-1' },
+        data: {
+          meta: expect.objectContaining({
+            schema: expect.objectContaining({
+              columns: expect.arrayContaining([
+                expect.objectContaining({
+                  id: 'col-1',
+                  config: expect.objectContaining({
+                    allowMultiple: true,
+                  }),
+                }),
+              ]),
+            }),
+          }),
+        },
+      })
+    );
+  });
 });

@@ -91,11 +91,11 @@ NEXTAUTH_URL=http://localhost:3000
 
 関数、型定義、定数にはJSDoc形式のコメントを使用する。
 
+**重要**: TypeScriptでは型情報が関数シグネチャに明記されているため、`@param`や`@returns`は**省略する**。型情報と重複し冗長になるため、簡潔な説明のみを記述する。
+
 ```typescript
 /**
  * ユーザー情報を取得する
- * @param userId - ユーザーID
- * @returns ユーザー情報、存在しない場合はnull
  */
 export async function getUserById(userId: string): Promise<User | null> {
   return await prisma.user.findUnique({ where: { id: userId } });
@@ -116,6 +116,28 @@ export const COLUMN_TYPE_LIST: ColumnType[] = [
   'SELECT',
   'CHECKBOX',
 ];
+```
+
+**悪い例**（冗長な`@param`/`@returns`）:
+
+```typescript
+// ❌ Bad: 型情報と重複して冗長
+/**
+ * テーブル一覧を取得する
+ * @param filters - フィルタ条件
+ * @returns テーブルの配列
+ */
+export async function getTables(filters: TableFilters): Promise<Table[]> {
+  // ...
+}
+
+// ✅ Good: 簡潔な説明のみ
+/**
+ * フィルタ条件に基づいてテーブル一覧を取得する
+ */
+export async function getTables(filters: TableFilters): Promise<Table[]> {
+  // ...
+}
 ```
 
 #### 2. インライン・コメント（`//`）

@@ -6,6 +6,7 @@ import {
   List,
   Tags,
   CheckSquare,
+  Link,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { ColumnType } from '../types/column';
@@ -94,6 +95,17 @@ export const COLUMN_CONFIGS: Record<ColumnType, ColumnConfig> = {
       defaultValue: false,
     },
   },
+  RELATION: {
+    icon: Link,
+    label: 'リレーション',
+    description: '他のテーブルのレコードを参照できます',
+    hasConfig: true,
+    defaultConfig: {
+      referencedTableId: '',
+      displayField: '',
+      allowMultiple: false,
+    },
+  },
 } as const;
 
 /**
@@ -107,6 +119,7 @@ export const COLUMN_TYPE_LIST: ColumnType[] = [
   'SELECT',
   'MULTI_SELECT',
   'CHECKBOX',
+  'RELATION',
 ] as const;
 
 /**
