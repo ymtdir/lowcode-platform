@@ -22,6 +22,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Popover,
   PopoverContent,
@@ -54,7 +55,7 @@ type OptionItemProps = {
   onLabelChange: (id: string, label: string) => void;
   onColorChange: (id: string, color: string) => void;
   onDelete: (id: string) => void;
-  onToggleDefault: (id: string) => void;
+  onToggleDefault?: (id: string) => void;
 };
 
 /**
@@ -141,20 +142,15 @@ function OptionItem({
       {isMultiSelect ? (
         <Checkbox
           checked={isDefault}
-          onCheckedChange={() => onToggleDefault(option.id)}
+          onCheckedChange={() => onToggleDefault?.(option.id)}
           title="デフォルト値に設定"
         />
       ) : (
-        <button
-          type="button"
-          onClick={() => onToggleDefault(option.id)}
-          className={`size-5 rounded-full border-2 ${
-            isDefault ? 'border-primary bg-primary' : 'border-muted-foreground'
-          }`}
+        <RadioGroupItem
+          value={option.id}
+          id={`default-${option.id}`}
           title="デフォルト値に設定"
-        >
-          {isDefault && <Check className="size-3 text-white m-auto" />}
-        </button>
+        />
       )}
 
       {/* 削除ボタン */}
@@ -313,34 +309,65 @@ export function SelectConfigEditor({
             items={localOptions.map((opt) => opt.id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="space-y-2">
-              {localOptions.map((option) => (
-                <OptionItem
-                  key={option.id}
-                  option={option}
-                  isDefault={
-                    localAllowMultiple
-                      ? (localDefaultValue as string[])?.includes(option.id) ||
-                        false
-                      : localDefaultValue === option.id
-                  }
-                  isMultiSelect={localAllowMultiple}
-                  onLabelChange={handleLabelChange}
-                  onColorChange={handleColorChange}
-                  onDelete={handleDelete}
-                  onToggleDefault={handleToggleDefault}
-                />
-              ))}
-              {/* 選択肢を追加ボタン */}
-              <button
-                type="button"
-                onClick={handleAddOption}
-                className="flex items-center gap-2 w-full p-3 border border-dashed rounded-lg text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
+            {localAllowMultiple ? (
+              <div className="space-y-2">
+                {localOptions.map((option) => (
+                  <OptionItem
+                    key={option.id}
+                    option={option}
+                    isDefault={
+                      (localDefaultValue as string[])?.includes(option.id) ||
+                      false
+                    }
+                    isMultiSelect={localAllowMultiple}
+                    onLabelChange={handleLabelChange}
+                    onColorChange={handleColorChange}
+                    onDelete={handleDelete}
+                    onToggleDefault={handleToggleDefault}
+                  />
+                ))}
+                {/* 選択肢を追加ボタン */}
+                <button
+                  type="button"
+                  onClick={handleAddOption}
+                  className="flex items-center gap-2 w-full p-3 border border-dashed rounded-lg text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
+                >
+                  <Plus className="size-4" />
+                  <span className="text-sm">選択肢を追加</span>
+                </button>
+              </div>
+            ) : (
+              <RadioGroup
+                value={localDefaultValue as string}
+                onValueChange={(value) => {
+                  setLocalDefaultValue(value);
+                  onChange(localOptions, value, localAllowMultiple);
+                }}
               >
-                <Plus className="size-4" />
-                <span className="text-sm">選択肢を追加</span>
-              </button>
-            </div>
+                <div className="space-y-2">
+                  {localOptions.map((option) => (
+                    <OptionItem
+                      key={option.id}
+                      option={option}
+                      isDefault={localDefaultValue === option.id}
+                      isMultiSelect={localAllowMultiple}
+                      onLabelChange={handleLabelChange}
+                      onColorChange={handleColorChange}
+                      onDelete={handleDelete}
+                    />
+                  ))}
+                  {/* 選択肢を追加ボタン */}
+                  <button
+                    type="button"
+                    onClick={handleAddOption}
+                    className="flex items-center gap-2 w-full p-3 border border-dashed rounded-lg text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
+                  >
+                    <Plus className="size-4" />
+                    <span className="text-sm">選択肢を追加</span>
+                  </button>
+                </div>
+              </RadioGroup>
+            )}
           </SortableContext>
         </DndContext>
       </div>
