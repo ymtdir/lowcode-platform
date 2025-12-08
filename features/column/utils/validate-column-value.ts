@@ -2,7 +2,6 @@ import type {
   Column,
   CheckboxColumn,
   DateColumn,
-  MultiSelectColumn,
   NumberColumn,
   SelectColumn,
   TextColumn,
@@ -44,8 +43,6 @@ export function validateColumnValue(
       return validateDateValue(value, column);
     case 'SELECT':
       return validateSelectValue(value, column);
-    case 'MULTI_SELECT':
-      return validateMultiSelectValue(value, column);
     case 'CHECKBOX':
       return validateCheckboxValue(value, column);
     case 'RELATION':
@@ -222,35 +219,33 @@ function validateSelectValue(
   value: unknown,
   column: SelectColumn
 ): ValidationError | null {
-  if (typeof value !== 'string') {
-    return {
-      columnId: column.id,
-      columnName: column.name,
-      message: `${column.name}は文字列である必要があります`,
-    };
+  const allowMultiple = column.config.allowMultiple || false;
+
+  // 単一選択の場合
+  if (!allowMultiple) {
+    if (typeof value !== 'string') {
+      return {
+        columnId: column.id,
+        columnName: column.name,
+        message: `${column.name}は文字列である必要があります`,
+      };
+    }
+
+    const validOptionIds = column.config.options.map((opt) => opt.id);
+
+    // 選択肢のIDにマッチしない場合はエラー
+    if (!validOptionIds.includes(value)) {
+      return {
+        columnId: column.id,
+        columnName: column.name,
+        message: `${column.name}は有効な選択肢から選んでください`,
+      };
+    }
+
+    return null;
   }
 
-  const validOptionIds = column.config.options.map((opt) => opt.id);
-
-  // 選択肢のIDにマッチしない場合はエラー
-  if (!validOptionIds.includes(value)) {
-    return {
-      columnId: column.id,
-      columnName: column.name,
-      message: `${column.name}は有効な選択肢から選んでください`,
-    };
-  }
-
-  return null;
-}
-
-/**
- * MULTI_SELECT型のバリデーション
- */
-function validateMultiSelectValue(
-  value: unknown,
-  column: MultiSelectColumn
-): ValidationError | null {
+  // 複数選択の場合
   if (!Array.isArray(value)) {
     return {
       columnId: column.id,

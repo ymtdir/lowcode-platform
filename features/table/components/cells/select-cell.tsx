@@ -1,12 +1,15 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { X } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import type { SelectOption } from '@/features/column/types';
 
 type SelectCellProps = {
-  value: string | null;
-  onChange: (value: string | null) => void;
+  value: string | string[] | null;
+  onChange: (value: string | string[] | null) => void;
   options: SelectOption[];
+  allowMultiple?: boolean;
   readOnly?: boolean;
 };
 
@@ -40,6 +43,7 @@ export function SelectCell({
   value,
   onChange,
   options,
+  allowMultiple = false,
   readOnly = false,
 }: SelectCellProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -61,11 +65,38 @@ export function SelectCell({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
-  const selectedOption = options.find((opt) => opt.id === value);
+  // 選択中のオプションを取得
+  const selectedOptions = (() => {
+    if (!value) return [];
+    const ids = Array.isArray(value) ? value : [value];
+    return ids
+      .map((id) => options.find((opt) => opt.id === id))
+      .filter((opt) => opt !== undefined);
+  })();
 
-  const handleSelect = (optionId: string | null) => {
+  // 単一選択時の処理
+  const handleSelectSingle = (optionId: string | null) => {
     onChange(optionId);
     setIsOpen(false);
+  };
+
+  // 複数選択時の処理
+  const handleToggleMultiple = (optionId: string) => {
+    const currentIds = Array.isArray(value) ? value : value ? [value] : [];
+    if (currentIds.includes(optionId)) {
+      const newIds = currentIds.filter((id) => id !== optionId);
+      onChange(newIds.length > 0 ? newIds : null);
+    } else {
+      onChange([...currentIds, optionId]);
+    }
+  };
+
+  // 個別削除（複数選択時）
+  const handleRemove = (optionId: string) => {
+    if (allowMultiple && Array.isArray(value)) {
+      const newIds = value.filter((id) => id !== optionId);
+      onChange(newIds.length > 0 ? newIds : null);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -76,14 +107,17 @@ export function SelectCell({
 
   if (readOnly) {
     return (
-      <div className="min-h-[32px] px-2 py-1 flex items-center w-full">
-        {selectedOption ? (
-          <span
-            className="inline-flex items-center px-2 py-0.5 rounded text-sm"
-            style={getColorStyles(selectedOption.color)}
-          >
-            {selectedOption.label}
-          </span>
+      <div className="min-h-[32px] px-2 py-1 flex items-center gap-1.5 flex-wrap w-full">
+        {selectedOptions.length > 0 ? (
+          selectedOptions.map((option) => (
+            <span
+              key={option.id}
+              className="inline-flex items-center px-2 py-0.5 rounded text-sm"
+              style={getColorStyles(option.color)}
+            >
+              {option.label}
+            </span>
+          ))
         ) : (
           <span className="text-muted-foreground">-</span>
         )}
@@ -98,16 +132,31 @@ export function SelectCell({
       onKeyDown={handleKeyDown}
     >
       <div
-        className="cursor-pointer min-h-[32px] px-2 py-1 hover:bg-muted/50 rounded flex items-center w-full"
+        className="cursor-pointer min-h-[32px] px-2 py-1 hover:bg-muted/50 rounded flex items-center gap-1.5 flex-wrap w-full"
         onClick={() => setIsOpen(!isOpen)}
       >
-        {selectedOption ? (
-          <span
-            className="inline-flex items-center px-2 py-0.5 rounded text-sm"
-            style={getColorStyles(selectedOption.color)}
-          >
-            {selectedOption.label}
-          </span>
+        {selectedOptions.length > 0 ? (
+          selectedOptions.map((option) => (
+            <span
+              key={option.id}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-sm group/option"
+              style={getColorStyles(option.color)}
+            >
+              {option.label}
+              {allowMultiple && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemove(option.id);
+                  }}
+                  className="opacity-70 hover:opacity-100"
+                >
+                  <X className="size-3" />
+                </button>
+              )}
+            </span>
+          ))
         ) : (
           <span className="text-muted-foreground">-</span>
         )}
@@ -116,26 +165,51 @@ export function SelectCell({
       {isOpen && (
         <div className="absolute top-full left-0 mt-1 min-w-[150px] bg-popover border rounded-md shadow-lg z-50">
           <div className="py-1">
-            <div
-              className="px-3 py-1.5 hover:bg-muted cursor-pointer text-sm text-muted-foreground"
-              onClick={() => handleSelect(null)}
-            >
-              選択なし
-            </div>
-            {options.map((option) => (
+            {!allowMultiple && (
               <div
-                key={option.id}
-                className="px-3 py-1.5 hover:bg-muted cursor-pointer"
-                onClick={() => handleSelect(option.id)}
+                className="px-3 py-1.5 hover:bg-muted cursor-pointer text-sm text-muted-foreground"
+                onClick={() => handleSelectSingle(null)}
               >
-                <span
-                  className="inline-flex items-center px-2 py-0.5 rounded text-sm"
-                  style={getColorStyles(option.color)}
-                >
-                  {option.label}
-                </span>
+                選択なし
               </div>
-            ))}
+            )}
+            {options.map((option) => {
+              const isSelected =
+                Array.isArray(value) && value.includes(option.id);
+
+              if (allowMultiple) {
+                return (
+                  <div
+                    key={option.id}
+                    className="px-3 py-1.5 hover:bg-muted cursor-pointer flex items-center gap-2"
+                    onClick={() => handleToggleMultiple(option.id)}
+                  >
+                    <Checkbox checked={isSelected} />
+                    <span
+                      className="inline-flex items-center px-2 py-0.5 rounded text-sm"
+                      style={getColorStyles(option.color)}
+                    >
+                      {option.label}
+                    </span>
+                  </div>
+                );
+              }
+
+              return (
+                <div
+                  key={option.id}
+                  className="px-3 py-1.5 hover:bg-muted cursor-pointer"
+                  onClick={() => handleSelectSingle(option.id)}
+                >
+                  <span
+                    className="inline-flex items-center px-2 py-0.5 rounded text-sm"
+                    style={getColorStyles(option.color)}
+                  >
+                    {option.label}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

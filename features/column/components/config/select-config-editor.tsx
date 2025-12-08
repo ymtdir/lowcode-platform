@@ -22,6 +22,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Popover,
   PopoverContent,
@@ -36,8 +37,12 @@ import type { SelectOption } from '../../types';
 type SelectConfigEditorProps = {
   options: SelectOption[];
   defaultValue?: string | string[];
-  isMultiSelect?: boolean;
-  onChange: (options: SelectOption[], defaultValue?: string | string[]) => void;
+  allowMultiple?: boolean;
+  onChange: (
+    options: SelectOption[],
+    defaultValue?: string | string[],
+    allowMultiple?: boolean
+  ) => void;
 };
 
 /**
@@ -50,7 +55,7 @@ type OptionItemProps = {
   onLabelChange: (id: string, label: string) => void;
   onColorChange: (id: string, color: string) => void;
   onDelete: (id: string) => void;
-  onToggleDefault: (id: string) => void;
+  onToggleDefault?: (id: string) => void;
 };
 
 /**
@@ -137,20 +142,15 @@ function OptionItem({
       {isMultiSelect ? (
         <Checkbox
           checked={isDefault}
-          onCheckedChange={() => onToggleDefault(option.id)}
+          onCheckedChange={() => onToggleDefault?.(option.id)}
           title="デフォルト値に設定"
         />
       ) : (
-        <button
-          type="button"
-          onClick={() => onToggleDefault(option.id)}
-          className={`size-5 rounded-full border-2 ${
-            isDefault ? 'border-primary bg-primary' : 'border-muted-foreground'
-          }`}
+        <RadioGroupItem
+          value={option.id}
+          id={`default-${option.id}`}
           title="デフォルト値に設定"
-        >
-          {isDefault && <Check className="size-3 text-white m-auto" />}
-        </button>
+        />
       )}
 
       {/* 削除ボタン */}
@@ -166,18 +166,20 @@ function OptionItem({
 }
 
 /**
- * SELECT/MULTI_SELECT型カラムの設定エディタコンポーネント
+ * SELECT型カラムの設定エディタコンポーネント
  */
 export function SelectConfigEditor({
   options,
   defaultValue,
-  isMultiSelect = false,
+  allowMultiple = false,
   onChange,
 }: SelectConfigEditorProps) {
   const [localOptions, setLocalOptions] = useState<SelectOption[]>(options);
   const [localDefaultValue, setLocalDefaultValue] = useState<string | string[]>(
-    defaultValue || (isMultiSelect ? [] : '')
+    defaultValue || (allowMultiple ? [] : '')
   );
+  const [localAllowMultiple, setLocalAllowMultiple] =
+    useState<boolean>(allowMultiple);
 
   // 親から受け取ったpropsが変更されたらローカルステートを更新
   useEffect(() => {
@@ -185,8 +187,12 @@ export function SelectConfigEditor({
   }, [options]);
 
   useEffect(() => {
-    setLocalDefaultValue(defaultValue || (isMultiSelect ? [] : ''));
-  }, [defaultValue, isMultiSelect]);
+    setLocalDefaultValue(defaultValue || (allowMultiple ? [] : ''));
+  }, [defaultValue, allowMultiple]);
+
+  useEffect(() => {
+    setLocalAllowMultiple(allowMultiple);
+  }, [allowMultiple]);
 
   // DnDセンサーの設定
   const sensors = useSensors(
@@ -205,7 +211,7 @@ export function SelectConfigEditor({
     };
     const newOptions = [...localOptions, newOption];
     setLocalOptions(newOptions);
-    onChange(newOptions, localDefaultValue);
+    onChange(newOptions, localDefaultValue, localAllowMultiple);
   };
 
   // ラベル変更
@@ -214,7 +220,7 @@ export function SelectConfigEditor({
       opt.id === id ? { ...opt, label } : opt
     );
     setLocalOptions(newOptions);
-    onChange(newOptions, localDefaultValue);
+    onChange(newOptions, localDefaultValue, localAllowMultiple);
   };
 
   // カラー変更
@@ -223,7 +229,7 @@ export function SelectConfigEditor({
       opt.id === id ? { ...opt, color } : opt
     );
     setLocalOptions(newOptions);
-    onChange(newOptions, localDefaultValue);
+    onChange(newOptions, localDefaultValue, localAllowMultiple);
   };
 
   // 選択肢削除
@@ -233,19 +239,19 @@ export function SelectConfigEditor({
 
     // デフォルト値から削除
     let newDefaultValue = localDefaultValue;
-    if (isMultiSelect && Array.isArray(localDefaultValue)) {
+    if (localAllowMultiple && Array.isArray(localDefaultValue)) {
       newDefaultValue = localDefaultValue.filter((val) => val !== id);
     } else if (localDefaultValue === id) {
       newDefaultValue = '';
     }
     setLocalDefaultValue(newDefaultValue);
-    onChange(newOptions, newDefaultValue);
+    onChange(newOptions, newDefaultValue, localAllowMultiple);
   };
 
   // デフォルト値のトグル
   const handleToggleDefault = (id: string) => {
     let newDefaultValue: string | string[];
-    if (isMultiSelect) {
+    if (localAllowMultiple) {
       const current = (localDefaultValue as string[]) || [];
       if (current.includes(id)) {
         newDefaultValue = current.filter((val) => val !== id);
@@ -256,7 +262,21 @@ export function SelectConfigEditor({
       newDefaultValue = localDefaultValue === id ? '' : id;
     }
     setLocalDefaultValue(newDefaultValue);
-    onChange(localOptions, newDefaultValue);
+    onChange(localOptions, newDefaultValue, localAllowMultiple);
+  };
+
+  // 複数選択許可フラグ変更
+  const handleAllowMultipleChange = (checked: boolean) => {
+    setLocalAllowMultiple(checked);
+    // 単一→複数に切り替えた場合、デフォルト値を配列に変換
+    // 複数→単一に切り替えた場合、デフォルト値を空文字にリセット
+    const newDefaultValue = checked
+      ? typeof localDefaultValue === 'string' && localDefaultValue
+        ? [localDefaultValue]
+        : []
+      : '';
+    setLocalDefaultValue(newDefaultValue);
+    onChange(localOptions, newDefaultValue, checked);
   };
 
   // ドラッグ終了時のハンドラ
@@ -271,12 +291,13 @@ export function SelectConfigEditor({
       const [movedOption] = newOptions.splice(oldIndex, 1);
       newOptions.splice(newIndex, 0, movedOption);
       setLocalOptions(newOptions);
-      onChange(newOptions, localDefaultValue);
+      onChange(newOptions, localDefaultValue, localAllowMultiple);
     }
   };
 
   return (
-    <div>
+    <div className="space-y-4">
+      {/* 選択肢 */}
       <div>
         <Label className="mb-3">選択肢</Label>
         <DndContext
@@ -288,36 +309,82 @@ export function SelectConfigEditor({
             items={localOptions.map((opt) => opt.id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="space-y-2">
-              {localOptions.map((option) => (
-                <OptionItem
-                  key={option.id}
-                  option={option}
-                  isDefault={
-                    isMultiSelect
-                      ? (localDefaultValue as string[])?.includes(option.id) ||
-                        false
-                      : localDefaultValue === option.id
-                  }
-                  isMultiSelect={isMultiSelect}
-                  onLabelChange={handleLabelChange}
-                  onColorChange={handleColorChange}
-                  onDelete={handleDelete}
-                  onToggleDefault={handleToggleDefault}
-                />
-              ))}
-              {/* 選択肢を追加ボタン */}
-              <button
-                type="button"
-                onClick={handleAddOption}
-                className="flex items-center gap-2 w-full p-3 border border-dashed rounded-lg text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
+            {localAllowMultiple ? (
+              <div className="space-y-2">
+                {localOptions.map((option) => (
+                  <OptionItem
+                    key={option.id}
+                    option={option}
+                    isDefault={
+                      (localDefaultValue as string[])?.includes(option.id) ||
+                      false
+                    }
+                    isMultiSelect={localAllowMultiple}
+                    onLabelChange={handleLabelChange}
+                    onColorChange={handleColorChange}
+                    onDelete={handleDelete}
+                    onToggleDefault={handleToggleDefault}
+                  />
+                ))}
+                {/* 選択肢を追加ボタン */}
+                <button
+                  type="button"
+                  onClick={handleAddOption}
+                  className="flex items-center gap-2 w-full p-3 border border-dashed rounded-lg text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
+                >
+                  <Plus className="size-4" />
+                  <span className="text-sm">選択肢を追加</span>
+                </button>
+              </div>
+            ) : (
+              <RadioGroup
+                value={localDefaultValue as string}
+                onValueChange={(value) => {
+                  setLocalDefaultValue(value);
+                  onChange(localOptions, value, localAllowMultiple);
+                }}
               >
-                <Plus className="size-4" />
-                <span className="text-sm">選択肢を追加</span>
-              </button>
-            </div>
+                <div className="space-y-2">
+                  {localOptions.map((option) => (
+                    <OptionItem
+                      key={option.id}
+                      option={option}
+                      isDefault={localDefaultValue === option.id}
+                      isMultiSelect={localAllowMultiple}
+                      onLabelChange={handleLabelChange}
+                      onColorChange={handleColorChange}
+                      onDelete={handleDelete}
+                    />
+                  ))}
+                  {/* 選択肢を追加ボタン */}
+                  <button
+                    type="button"
+                    onClick={handleAddOption}
+                    className="flex items-center gap-2 w-full p-3 border border-dashed rounded-lg text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
+                  >
+                    <Plus className="size-4" />
+                    <span className="text-sm">選択肢を追加</span>
+                  </button>
+                </div>
+              </RadioGroup>
+            )}
           </SortableContext>
         </DndContext>
+      </div>
+
+      {/* 複数選択許可 */}
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id="allow-multiple"
+          checked={localAllowMultiple}
+          onCheckedChange={handleAllowMultipleChange}
+        />
+        <Label
+          htmlFor="allow-multiple"
+          className="text-sm font-normal cursor-pointer"
+        >
+          複数選択を許可する
+        </Label>
       </div>
     </div>
   );
