@@ -22,7 +22,7 @@ export default async function ProtectedLayout({
   return (
     <SidebarProvider>
       <AppSidebar userName={userName} userRole={userRole} />
-      <main className="w-full">
+      <main className="w-full overflow-hidden">
         <div className="flex items-center gap-2 m-4">
           <SidebarTrigger />
           <Separator orientation="vertical" className="h-4" />
