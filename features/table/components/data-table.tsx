@@ -228,7 +228,7 @@ export function DataTable({
 
       {/* テーブル */}
       <ScrollArea className="border-y **:data-[slot=table-container]:overflow-visible">
-        <Table className="table-auto">
+        <Table className="table-auto w-max">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -258,7 +258,11 @@ export function DataTable({
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
-                      className={cell.column.id === 'select' ? '' : 'p-0'}
+                      className={
+                        cell.column.id === 'select'
+                          ? ''
+                          : `p-0 ${cell.column.columnDef.meta?.width}`
+                      }
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
