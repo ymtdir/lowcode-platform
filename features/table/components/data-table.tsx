@@ -1,6 +1,13 @@
 'use client';
 
-import { useCallback, useMemo, useState, useTransition } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -64,6 +71,12 @@ export function DataTable({
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
+  // initialRecordsをrefで保持して、handleCellChangeの依存配列から除外する
+  const initialRecordsRef = useRef(initialRecords);
+  useEffect(() => {
+    initialRecordsRef.current = initialRecords;
+  }, [initialRecords]);
+
   // WRITE権限があるかチェック
   const canWrite = hasPermission(permissionLevel, 'WRITE');
 
@@ -91,11 +104,11 @@ export function DataTable({
         if (result.error) {
           console.error('更新エラー:', result.error);
           // エラー時はリバート（簡易実装）
-          setRecords(initialRecords);
+          setRecords(initialRecordsRef.current);
         }
       });
     },
-    [initialRecords]
+    []
   );
 
   // 新規レコード作成
