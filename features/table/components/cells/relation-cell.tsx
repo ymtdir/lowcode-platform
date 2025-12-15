@@ -1,8 +1,19 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { AlertCircle, X } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
+import { useState } from 'react';
+import { AlertCircle } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from '@/components/ui/select';
+import {
+  MultiSelect,
+  MultiSelectContent,
+  MultiSelectItem,
+  MultiSelectTrigger,
+} from '@/components/ui/multi-select';
 import type { RelationRecord } from '@/features/column/types';
 
 type RelationCellProps = {
@@ -23,24 +34,11 @@ export function RelationCell({
   allowMultiple = false,
   readOnly = false,
 }: RelationCellProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen]);
+  const [open, setOpen] = useState(false);
+  // 複数選択用のローカルステート（常に呼び出す）
+  const [localValue, setLocalValue] = useState<string[]>(
+    Array.isArray(value) ? value : []
+  );
 
   // 選択中のレコードを取得
   const selectedRecords = (() => {
@@ -56,42 +54,9 @@ export function RelationCell({
       .filter((r) => r !== null);
   })();
 
-  // 単一選択時の処理
-  const handleSelectSingle = (recordId: string | null) => {
-    onChange(recordId);
-    setIsOpen(false);
-  };
-
-  // 複数選択時の処理
-  const handleToggleMultiple = (recordId: string) => {
-    const currentIds = Array.isArray(value) ? value : value ? [value] : [];
-    if (currentIds.includes(recordId)) {
-      const newIds = currentIds.filter((id) => id !== recordId);
-      onChange(newIds.length > 0 ? newIds : null);
-    } else {
-      onChange([...currentIds, recordId]);
-    }
-  };
-
-  // 個別削除（複数選択時）
-  const handleRemove = (recordId: string) => {
-    if (allowMultiple && Array.isArray(value)) {
-      const newIds = value.filter((id) => id !== recordId);
-      onChange(newIds.length > 0 ? newIds : null);
-    } else {
-      onChange(null);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      setIsOpen(false);
-    }
-  };
-
   if (readOnly) {
     return (
-      <div className="min-h-[32px] px-2 py-1 flex items-center w-full">
+      <div className="h-8 w-full px-2 flex items-center">
         {selectedRecords.length > 0 ? (
           <div className="flex flex-wrap gap-1">
             {selectedRecords.map((record) => (
@@ -121,101 +86,150 @@ export function RelationCell({
     );
   }
 
-  return (
-    <div
-      ref={containerRef}
-      className="relative w-full"
-      onKeyDown={handleKeyDown}
-    >
-      <div
-        className="min-h-[32px] px-2 py-1 cursor-pointer hover:bg-accent/50 transition-colors flex items-center gap-1 flex-wrap"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        {selectedRecords.length > 0 ? (
-          selectedRecords.map((record) => (
-            <span
-              key={record.id}
-              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-sm ${
-                record.exists
-                  ? 'bg-primary/20 text-primary'
-                  : 'bg-destructive/20 text-destructive'
-              }`}
-            >
-              {record.exists ? (
-                record.displayValue
-              ) : (
-                <>
-                  <AlertCircle className="size-3" />
-                  削除されたレコード ({record.id.slice(0, 8)})
-                </>
-              )}
-              {allowMultiple && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemove(record.id);
-                  }}
-                  className="hover:bg-background/50 rounded p-0.5"
-                >
-                  <X className="size-3" />
-                </button>
-              )}
-            </span>
-          ))
-        ) : (
-          <span className="text-muted-foreground">レコードを選択</span>
-        )}
-      </div>
+  // 複数選択
+  if (allowMultiple) {
+    // メニューが開いたときに値を同期
+    const handleOpenChange = (newOpen: boolean) => {
+      if (newOpen) {
+        setLocalValue(Array.isArray(value) ? value : []);
+      } else {
+        // 閉じたときに変更があれば保存
+        const currentIds = Array.isArray(value) ? value : [];
+        const hasChanges =
+          localValue.length !== currentIds.length ||
+          localValue.some((id) => !currentIds.includes(id));
 
-      {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-full max-w-xs bg-popover border rounded-md shadow-lg z-10 max-h-60 overflow-y-auto">
+        if (hasChanges) {
+          onChange(localValue.length > 0 ? localValue : null);
+        }
+      }
+      setOpen(newOpen);
+    };
+
+    const handleToggle = (recordId: string) => {
+      setLocalValue((prev) => {
+        if (prev.includes(recordId)) {
+          return prev.filter((id) => id !== recordId);
+        } else {
+          return [...prev, recordId];
+        }
+      });
+    };
+
+    // 表示用のレコード（localValueに基づく）
+    const displayRecords = localValue
+      .map((id) => {
+        const record = records.find((r) => r.id === id);
+        if (record) return record;
+        return { id, displayValue: id, exists: false };
+      })
+      .filter((r) => r !== null);
+
+    return (
+      <MultiSelect open={open} onOpenChange={handleOpenChange}>
+        <MultiSelectTrigger className="h-8 w-full px-2 flex items-center justify-start gap-1 flex-wrap hover:bg-muted/50 bg-transparent border-0 rounded-none shadow-none focus-visible:ring-0 [&>svg]:hidden">
+          {displayRecords.length > 0 ? (
+            displayRecords.map((record) => (
+              <span
+                key={record.id}
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-sm ${
+                  record.exists
+                    ? 'bg-primary/20 text-primary'
+                    : 'bg-destructive/20 text-destructive'
+                }`}
+              >
+                {record.exists ? (
+                  record.displayValue
+                ) : (
+                  <>
+                    <AlertCircle className="size-3" />
+                    削除されたレコード ({record.id.slice(0, 8)})
+                  </>
+                )}
+              </span>
+            ))
+          ) : (
+            <span className="text-muted-foreground">レコードを選択</span>
+          )}
+        </MultiSelectTrigger>
+        <MultiSelectContent>
           {records.length === 0 ? (
-            <div className="p-2 text-sm text-muted-foreground text-center">
+            <div className="px-3 py-2 text-sm text-muted-foreground text-center">
               参照可能なレコードがありません
             </div>
           ) : (
-            <div className="py-1">
-              {!allowMultiple && (
-                <button
-                  type="button"
-                  className="w-full text-left px-3 py-2 hover:bg-accent text-sm"
-                  onClick={() => handleSelectSingle(null)}
-                >
-                  <span className="text-muted-foreground">選択解除</span>
-                </button>
-              )}
-              {records.map((record) => {
-                const isSelected = allowMultiple
-                  ? (Array.isArray(value) ? value : []).includes(record.id)
-                  : value === record.id;
-
-                return (
-                  <div
-                    key={record.id}
-                    className={`px-3 py-2 hover:bg-accent cursor-pointer text-sm flex items-center gap-2 ${
-                      isSelected ? 'bg-accent/50' : ''
-                    }`}
-                    onClick={() =>
-                      allowMultiple
-                        ? handleToggleMultiple(record.id)
-                        : handleSelectSingle(record.id)
-                    }
-                  >
-                    {allowMultiple && (
-                      <Checkbox
-                        checked={isSelected}
-                        className="pointer-events-none"
-                      />
-                    )}
-                    <span>{record.displayValue}</span>
-                  </div>
-                );
-              })}
-            </div>
+            records.map((record) => (
+              <MultiSelectItem
+                key={record.id}
+                selected={localValue.includes(record.id)}
+                onClick={() => handleToggle(record.id)}
+              >
+                {record.displayValue}
+              </MultiSelectItem>
+            ))
           )}
-        </div>
-      )}
-    </div>
+        </MultiSelectContent>
+      </MultiSelect>
+    );
+  }
+
+  // 単一選択
+  const handleSelect = (recordId: string) => {
+    if (recordId === '__clear__') {
+      onChange(null);
+    } else {
+      onChange(recordId);
+    }
+    setOpen(false);
+  };
+
+  return (
+    <Select
+      value={(value as string) || undefined}
+      onValueChange={handleSelect}
+      open={open}
+      onOpenChange={setOpen}
+    >
+      <SelectTrigger className="h-8 w-full px-2 flex items-center hover:bg-muted/50 bg-transparent border-0 rounded-none shadow-none focus-visible:ring-0 [&>svg]:hidden">
+        {selectedRecords.length > 0 ? (
+          <span
+            className={`inline-flex items-center px-2 py-0.5 rounded text-sm ${
+              selectedRecords[0].exists
+                ? 'bg-primary/20 text-primary'
+                : 'bg-destructive/20 text-destructive'
+            }`}
+          >
+            {selectedRecords[0].exists ? (
+              selectedRecords[0].displayValue
+            ) : (
+              <>
+                <AlertCircle className="size-3 mr-1" />
+                削除されたレコード ({selectedRecords[0].id.slice(0, 8)})
+              </>
+            )}
+          </span>
+        ) : (
+          <span className="text-muted-foreground">レコードを選択</span>
+        )}
+      </SelectTrigger>
+      <SelectContent>
+        {records.length === 0 ? (
+          <div className="px-3 py-2 text-sm text-muted-foreground text-center">
+            参照可能なレコードがありません
+          </div>
+        ) : (
+          <>
+            <SelectItem value="__clear__">
+              <span className="text-muted-foreground">選択解除</span>
+            </SelectItem>
+            {records.map((record) => (
+              <SelectItem key={record.id} value={record.id}>
+                {record.displayValue}
+              </SelectItem>
+            ))}
+          </>
+        )}
+      </SelectContent>
+    </Select>
   );
 }

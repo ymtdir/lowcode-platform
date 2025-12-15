@@ -1,8 +1,18 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { X } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
+import { useState } from 'react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from '@/components/ui/select';
+import {
+  MultiSelect,
+  MultiSelectContent,
+  MultiSelectItem,
+  MultiSelectTrigger,
+} from '@/components/ui/multi-select';
 import type { SelectOption } from '@/features/column/types';
 
 type SelectCellProps = {
@@ -46,24 +56,11 @@ export function SelectCell({
   allowMultiple = false,
   readOnly = false,
 }: SelectCellProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen]);
+  const [open, setOpen] = useState(false);
+  // 複数選択用のローカルステート（常に呼び出す）
+  const [localValue, setLocalValue] = useState<string[]>(
+    Array.isArray(value) ? value : []
+  );
 
   // 選択中のオプションを取得
   const selectedOptions = (() => {
@@ -74,40 +71,9 @@ export function SelectCell({
       .filter((opt) => opt !== undefined);
   })();
 
-  // 単一選択時の処理
-  const handleSelectSingle = (optionId: string | null) => {
-    onChange(optionId);
-    setIsOpen(false);
-  };
-
-  // 複数選択時の処理
-  const handleToggleMultiple = (optionId: string) => {
-    const currentIds = Array.isArray(value) ? value : value ? [value] : [];
-    if (currentIds.includes(optionId)) {
-      const newIds = currentIds.filter((id) => id !== optionId);
-      onChange(newIds.length > 0 ? newIds : null);
-    } else {
-      onChange([...currentIds, optionId]);
-    }
-  };
-
-  // 個別削除（複数選択時）
-  const handleRemove = (optionId: string) => {
-    if (allowMultiple && Array.isArray(value)) {
-      const newIds = value.filter((id) => id !== optionId);
-      onChange(newIds.length > 0 ? newIds : null);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      setIsOpen(false);
-    }
-  };
-
   if (readOnly) {
     return (
-      <div className="min-h-[32px] px-2 py-1 flex items-center gap-1.5 flex-wrap w-full">
+      <div className="h-8 w-full px-2 flex items-center gap-1.5 flex-wrap">
         {selectedOptions.length > 0 ? (
           selectedOptions.map((option) => (
             <span
@@ -125,94 +91,136 @@ export function SelectCell({
     );
   }
 
-  return (
-    <div
-      ref={containerRef}
-      className="relative w-full"
-      onKeyDown={handleKeyDown}
-    >
-      <div
-        className="cursor-pointer min-h-[32px] px-2 py-1 hover:bg-muted/50 rounded flex items-center gap-1.5 flex-wrap w-full"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        {selectedOptions.length > 0 ? (
-          selectedOptions.map((option) => (
-            <span
-              key={option.id}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-sm group/option"
-              style={getColorStyles(option.color)}
-            >
-              {option.label}
-              {allowMultiple && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemove(option.id);
-                  }}
-                  className="opacity-70 hover:opacity-100"
+  // 複数選択
+  if (allowMultiple) {
+    // メニューが開いたときに値を同期
+    const handleOpenChange = (newOpen: boolean) => {
+      if (newOpen) {
+        setLocalValue(Array.isArray(value) ? value : []);
+      } else {
+        // 閉じたときに変更があれば保存
+        const currentIds = Array.isArray(value) ? value : [];
+        const hasChanges =
+          localValue.length !== currentIds.length ||
+          localValue.some((id) => !currentIds.includes(id));
+
+        if (hasChanges) {
+          onChange(localValue.length > 0 ? localValue : null);
+        }
+      }
+      setOpen(newOpen);
+    };
+
+    const handleToggle = (optionId: string) => {
+      setLocalValue((prev) => {
+        if (prev.includes(optionId)) {
+          return prev.filter((id) => id !== optionId);
+        } else {
+          return [...prev, optionId];
+        }
+      });
+    };
+
+    // 表示用のオプション（localValueに基づく）
+    const displayOptions = localValue
+      .map((id) => options.find((opt) => opt.id === id))
+      .filter((opt) => opt !== undefined);
+
+    return (
+      <MultiSelect open={open} onOpenChange={handleOpenChange}>
+        <MultiSelectTrigger className="h-8 w-full px-2 flex items-center justify-start gap-1.5 flex-wrap hover:bg-muted/50 bg-transparent dark:bg-transparent dark:hover:bg-muted/50 border-0 rounded-none shadow-none focus-visible:ring-0 [&>svg]:hidden">
+          {displayOptions.length > 0 ? (
+            displayOptions.map((option) => (
+              <span
+                key={option.id}
+                className="inline-flex items-center px-2 py-0.5 rounded text-sm"
+                style={getColorStyles(option.color)}
+              >
+                {option.label}
+              </span>
+            ))
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          )}
+        </MultiSelectTrigger>
+        <MultiSelectContent>
+          {options.length === 0 ? (
+            <div className="px-3 py-2 text-sm text-muted-foreground">
+              選択肢がありません
+            </div>
+          ) : (
+            options.map((option) => (
+              <MultiSelectItem
+                key={option.id}
+                selected={localValue.includes(option.id)}
+                onClick={() => handleToggle(option.id)}
+              >
+                <span
+                  className="inline-flex items-center px-2 py-0.5 rounded text-sm"
+                  style={getColorStyles(option.color)}
                 >
-                  <X className="size-3" />
-                </button>
-              )}
-            </span>
-          ))
+                  {option.label}
+                </span>
+              </MultiSelectItem>
+            ))
+          )}
+        </MultiSelectContent>
+      </MultiSelect>
+    );
+  }
+
+  // 単一選択
+  const handleSelect = (optionId: string) => {
+    if (optionId === '__clear__') {
+      onChange(null);
+    } else {
+      onChange(optionId);
+    }
+    setOpen(false);
+  };
+
+  return (
+    <Select
+      value={(value as string) || undefined}
+      onValueChange={handleSelect}
+      open={open}
+      onOpenChange={setOpen}
+    >
+      <SelectTrigger className="h-8 w-full px-2 flex items-center hover:bg-muted/50 bg-transparent dark:bg-transparent dark:hover:bg-muted/50 border-0 rounded-none shadow-none focus-visible:ring-0 [&>svg]:hidden">
+        {selectedOptions.length > 0 ? (
+          <span
+            className="inline-flex items-center px-2 py-0.5 rounded text-sm"
+            style={getColorStyles(selectedOptions[0].color)}
+          >
+            {selectedOptions[0].label}
+          </span>
         ) : (
           <span className="text-muted-foreground">-</span>
         )}
-      </div>
-
-      {isOpen && (
-        <div className="absolute top-full left-0 mt-1 min-w-[150px] bg-popover border rounded-md shadow-lg z-50">
-          <div className="py-1">
-            {!allowMultiple && (
-              <div
-                className="px-3 py-1.5 hover:bg-muted cursor-pointer text-sm text-muted-foreground"
-                onClick={() => handleSelectSingle(null)}
-              >
-                選択なし
-              </div>
-            )}
-            {options.map((option) => {
-              const isSelected =
-                Array.isArray(value) && value.includes(option.id);
-
-              if (allowMultiple) {
-                return (
-                  <div
-                    key={option.id}
-                    className="px-3 py-1.5 hover:bg-muted cursor-pointer flex items-center gap-2"
-                    onClick={() => handleToggleMultiple(option.id)}
-                  >
-                    <Checkbox checked={isSelected} />
-                    <span
-                      className="inline-flex items-center px-2 py-0.5 rounded text-sm"
-                      style={getColorStyles(option.color)}
-                    >
-                      {option.label}
-                    </span>
-                  </div>
-                );
-              }
-
-              return (
-                <div
-                  key={option.id}
-                  className="px-3 py-1.5 hover:bg-muted cursor-pointer"
-                  onClick={() => handleSelectSingle(option.id)}
-                >
-                  <span
-                    className="inline-flex items-center px-2 py-0.5 rounded text-sm"
-                    style={getColorStyles(option.color)}
-                  >
-                    {option.label}
-                  </span>
-                </div>
-              );
-            })}
+      </SelectTrigger>
+      <SelectContent>
+        {options.length === 0 ? (
+          <div className="px-3 py-2 text-sm text-muted-foreground">
+            選択肢がありません
           </div>
-        </div>
-      )}
-    </div>
+        ) : (
+          <>
+            <SelectItem value="__clear__">
+              <span className="text-muted-foreground">選択なし</span>
+            </SelectItem>
+            {options.map((option) => (
+              <SelectItem key={option.id} value={option.id}>
+                <span
+                  className="inline-flex items-center px-2 py-0.5 rounded text-sm"
+                  style={getColorStyles(option.color)}
+                >
+                  {option.label}
+                </span>
+              </SelectItem>
+            ))}
+          </>
+        )}
+      </SelectContent>
+    </Select>
   );
 }

@@ -42,6 +42,7 @@ export const createColumns = (
     id: column.id,
     accessorFn: (row) => (row.data as RecordData)[column.id],
     header: column.name,
+    meta: { width: 'min-w-[100px]' },
     cell: ({ row, getValue }) => {
       const value = getValue();
       const recordId = row.original.id;

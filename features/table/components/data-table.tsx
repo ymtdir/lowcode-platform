@@ -1,6 +1,13 @@
 'use client';
 
-import { useCallback, useMemo, useState, useTransition } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -29,6 +36,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { updateRecord } from '@/features/record/api/update-record';
 import { createRecord } from '@/features/record/api/create-record';
 import { applyDefaultValues } from '@/features/column/utils';
@@ -63,6 +71,12 @@ export function DataTable({
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
+  // initialRecordsをrefで保持して、handleCellChangeの依存配列から除外する
+  const initialRecordsRef = useRef(initialRecords);
+  useEffect(() => {
+    initialRecordsRef.current = initialRecords;
+  }, [initialRecords]);
+
   // WRITE権限があるかチェック
   const canWrite = hasPermission(permissionLevel, 'WRITE');
 
@@ -90,11 +104,11 @@ export function DataTable({
         if (result.error) {
           console.error('更新エラー:', result.error);
           // エラー時はリバート（簡易実装）
-          setRecords(initialRecords);
+          setRecords(initialRecordsRef.current);
         }
       });
     },
-    [initialRecords]
+    []
   );
 
   // 新規レコード作成
@@ -177,7 +191,7 @@ export function DataTable({
   const selectedRecordIds = selectedRows.map((row) => row.original.id);
 
   return (
-    <div className="w-full">
+    <div className="w-full h-full flex flex-col">
       {/* ツールバー */}
       <div className="flex items-center justify-between py-4">
         <Input
@@ -226,8 +240,8 @@ export function DataTable({
       </div>
 
       {/* テーブル */}
-      <div className="overflow-hidden border-y">
-        <Table className="table-fixed">
+      <ScrollArea className="border-y **:data-[slot=table-container]:overflow-visible">
+        <Table className="table-auto w-max">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -257,7 +271,11 @@ export function DataTable({
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
-                      className={cell.column.id === 'select' ? '' : 'p-0'}
+                      className={
+                        cell.column.id === 'select'
+                          ? ''
+                          : `p-0 ${cell.column.columnDef.meta?.width}`
+                      }
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
@@ -281,7 +299,8 @@ export function DataTable({
             )}
           </TableBody>
         </Table>
-      </div>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
 
       {/* ページネーション */}
       <div className="flex items-center justify-end space-x-2 py-4">
