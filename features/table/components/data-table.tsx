@@ -12,9 +12,13 @@ import {
   useReactTable,
   getCoreRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
+  getFilteredRowModel,
   flexRender,
   type RowSelectionState,
   type VisibilityState,
+  type SortingState,
+  type ColumnFiltersState,
 } from '@tanstack/react-table';
 import { ChevronDown, Plus } from 'lucide-react';
 import type { Permission } from '@prisma/client';
@@ -70,6 +74,8 @@ export function DataTable({
   const [searchValue, setSearchValue] = useState('');
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   // initialRecordsをrefで保持して、handleCellChangeの依存配列から除外する
   const initialRecordsRef = useRef(initialRecords);
@@ -178,11 +184,17 @@ export function DataTable({
     columns: tableColumns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     onRowSelectionChange: setRowSelection,
     onColumnVisibilityChange: setColumnVisibility,
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
     state: {
       rowSelection,
       columnVisibility,
+      sorting,
+      columnFilters,
     },
   });
 
@@ -222,7 +234,8 @@ export function DataTable({
                       e.preventDefault();
                     }}
                   >
-                    {column.columnDef.header as string}
+                    {(column.columnDef.meta as { title?: string })?.title ||
+                      column.id}
                   </DropdownMenuCheckboxItem>
                 ))}
             </DropdownMenuContent>

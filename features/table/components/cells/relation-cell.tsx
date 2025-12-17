@@ -127,7 +127,7 @@ export function RelationCell({
 
     return (
       <MultiSelect open={open} onOpenChange={handleOpenChange}>
-        <MultiSelectTrigger className="h-8 w-full px-2 flex items-center justify-start gap-1 flex-wrap hover:bg-muted/50 bg-transparent border-0 rounded-none shadow-none focus-visible:ring-0 [&>svg]:hidden">
+        <MultiSelectTrigger className="h-8 w-full px-2 flex items-center justify-start gap-1 flex-wrap hover:bg-muted/50 bg-transparent dark:bg-transparent dark:hover:bg-muted/50 border-0 rounded-none shadow-none focus-visible:ring-0 [&>svg]:hidden">
           {displayRecords.length > 0 ? (
             displayRecords.map((record) => (
               <span
@@ -190,7 +190,7 @@ export function RelationCell({
       open={open}
       onOpenChange={setOpen}
     >
-      <SelectTrigger className="h-8 w-full px-2 flex items-center hover:bg-muted/50 bg-transparent border-0 rounded-none shadow-none focus-visible:ring-0 [&>svg]:hidden">
+      <SelectTrigger className="h-8 w-full px-2 flex items-center hover:bg-muted/50 bg-transparent dark:bg-transparent dark:hover:bg-muted/50 border-0 rounded-none shadow-none focus-visible:ring-0 [&>svg]:hidden">
         {selectedRecords.length > 0 ? (
           <span
             className={`inline-flex items-center px-2 py-0.5 rounded text-sm ${
