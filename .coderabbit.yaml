@@ -1,0 +1,18 @@
+language: 'ja-JP'
+early_access: true
+reviews:
+  profile: 'chill'
+  high_level_summary: true
+  poem: true
+  auto_review:
+    base_branches: ['develop', 'main']
+    enabled: true
+    drafts: false
+  path_instructions:
+    - path: 'features/**/**/__tests__/*.ts'
+      instructions: |
+        これはテストコードのレビューです。以下の点に重点を置いてください：
+        - 正常系だけでなく、境界値や異常系（null, 空文字, エラー発生時など）のテストケースが網羅されているか
+        - 期待値の検証（Assertion）が適切で、意図した挙動を厳密にチェックできているか
+        - テストデータの作成に any型や @ts-ignore を多用せず、可能な限り型安全性が保たれているか
+        - テスト名が「何をテストし、どうなることが正解か」を明確に示しているか
