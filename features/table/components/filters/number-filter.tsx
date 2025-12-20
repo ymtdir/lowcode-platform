@@ -55,18 +55,20 @@ export function NumberFilter({ value, onChange }: NumberFilterProps) {
   };
 
   const handleValue1Change = (newValue: string) => {
+    const parsed = parseFloat(newValue);
     onChange({
       operator: value.operator,
-      value1: newValue ? parseFloat(newValue) : null,
+      value1: Number.isFinite(parsed) ? parsed : null,
       value2: value.value2,
     });
   };
 
   const handleValue2Change = (newValue: string) => {
+    const parsed = parseFloat(newValue);
     onChange({
       operator: value.operator,
       value1: value.value1,
-      value2: newValue ? parseFloat(newValue) : null,
+      value2: Number.isFinite(parsed) ? parsed : null,
     });
   };
 

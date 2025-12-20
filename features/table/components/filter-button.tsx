@@ -247,7 +247,6 @@ export function FilterButton({
  * 型ガード関数: NumberFilterValue
  */
 function isNumberFilterValue(value: unknown): value is NumberFilterValue {
-  if (value === null) return true;
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
   return (
@@ -262,7 +261,6 @@ function isNumberFilterValue(value: unknown): value is NumberFilterValue {
  * 型ガード関数: DateFilterValue
  */
 function isDateFilterValue(value: unknown): value is DateFilterValue {
-  if (value === null) return true;
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
   return (
@@ -335,19 +333,16 @@ function renderFilterInput(
       );
 
     case 'SELECT':
-      return (
-        <SelectFilter
-          value={isStringArray(value) ? value : []}
-          onChange={onChange}
-          options={
-            (
-              column as {
-                config?: { options?: { id: string; label: string }[] };
-              }
-            )?.config?.options || []
-          }
-        />
-      );
+      if (column?.type === 'SELECT') {
+        return (
+          <SelectFilter
+            value={isStringArray(value) ? value : []}
+            onChange={onChange}
+            options={column.config?.options || []}
+          />
+        );
+      }
+      return null;
 
     case 'RELATION':
       return (
