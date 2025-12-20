@@ -244,6 +244,52 @@ export function FilterButton({
 }
 
 /**
+ * 型ガード関数: NumberFilterValue
+ */
+function isNumberFilterValue(value: unknown): value is NumberFilterValue {
+  if (value === null) return true;
+  if (typeof value !== 'object' || value === null) return false;
+  const v = value as Record<string, unknown>;
+  return (
+    'operator' in v &&
+    typeof v.operator === 'string' &&
+    'value1' in v &&
+    'value2' in v
+  );
+}
+
+/**
+ * 型ガード関数: DateFilterValue
+ */
+function isDateFilterValue(value: unknown): value is DateFilterValue {
+  if (value === null) return true;
+  if (typeof value !== 'object' || value === null) return false;
+  const v = value as Record<string, unknown>;
+  return (
+    'preset' in v &&
+    typeof v.preset === 'string' &&
+    'startDate' in v &&
+    'endDate' in v
+  );
+}
+
+/**
+ * 型ガード関数: string配列
+ */
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((v) => typeof v === 'string');
+}
+
+/**
+ * 型ガード関数: CheckboxFilterValue
+ */
+function isCheckboxFilterValue(
+  value: unknown
+): value is 'all' | 'checked' | 'unchecked' {
+  return value === 'all' || value === 'checked' || value === 'unchecked';
+}
+
+/**
  * カラム種別に応じたフィルター入力コンポーネントをレンダリング
  */
 function renderFilterInput(
@@ -257,12 +303,21 @@ function renderFilterInput(
   switch (columnType) {
     case 'TEXT':
     case 'TEXTAREA':
-      return <TextFilter value={(value as string) || ''} onChange={onChange} />;
+      return (
+        <TextFilter
+          value={typeof value === 'string' ? value : ''}
+          onChange={onChange}
+        />
+      );
 
     case 'NUMBER':
       return (
         <NumberFilter
-          value={(value as NumberFilterValue) || null}
+          value={
+            isNumberFilterValue(value)
+              ? value
+              : { operator: 'eq', value1: null, value2: null }
+          }
           onChange={onChange}
         />
       );
@@ -270,7 +325,11 @@ function renderFilterInput(
     case 'DATE':
       return (
         <DateFilter
-          value={(value as DateFilterValue) || null}
+          value={
+            isDateFilterValue(value)
+              ? value
+              : { preset: 'custom', startDate: null, endDate: null }
+          }
           onChange={onChange}
         />
       );
@@ -278,7 +337,7 @@ function renderFilterInput(
     case 'SELECT':
       return (
         <SelectFilter
-          value={(value as string[]) || []}
+          value={isStringArray(value) ? value : []}
           onChange={onChange}
           options={
             (
@@ -293,7 +352,7 @@ function renderFilterInput(
     case 'RELATION':
       return (
         <RelationFilter
-          value={(value as string[]) || []}
+          value={isStringArray(value) ? value : []}
           onChange={onChange}
           records={relationRecords?.get(columnId) || []}
         />
@@ -302,7 +361,7 @@ function renderFilterInput(
     case 'CHECKBOX':
       return (
         <CheckboxFilter
-          value={(value as 'all' | 'checked' | 'unchecked') || 'all'}
+          value={isCheckboxFilterValue(value) ? value : 'all'}
           onChange={onChange}
         />
       );
