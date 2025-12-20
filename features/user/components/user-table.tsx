@@ -44,10 +44,8 @@ export function UserTable({ users }: UserTableProps) {
   const [rowSelection, setRowSelection] = React.useState({});
 
   // localStorageに保存するテーブル状態
-  const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>(
-    'user-table-column-visibility',
-    {}
-  );
+  const [columnVisibility, setColumnVisibility] =
+    useLocalStorage<VisibilityState>('user-table-column-visibility', {});
   const [sorting, setSorting] = useLocalStorage<SortingState>(
     'user-table-sorting',
     []

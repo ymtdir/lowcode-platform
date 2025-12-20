@@ -70,16 +70,14 @@ export function DataTable({
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   // localStorageに保存するテーブル状態
-  const [columnVisibility, setColumnVisibility] =
+  const [columnVisibilityRaw, setColumnVisibility] =
     useLocalStorage<VisibilityState>(`table-${tableId}-column-visibility`, {});
-  const [sorting, setSorting] = useLocalStorage<SortingState>(
+  const [sortingRaw, setSorting] = useLocalStorage<SortingState>(
     `table-${tableId}-sorting`,
     []
   );
-  const [columnFilters, setColumnFilters] = useLocalStorage<ColumnFiltersState>(
-    `table-${tableId}-filters`,
-    []
-  );
+  const [columnFiltersRaw, setColumnFilters] =
+    useLocalStorage<ColumnFiltersState>(`table-${tableId}-filters`, []);
 
   // initialRecordsをrefで保持して、handleCellChangeの依存配列から除外する
   const initialRecordsRef = useRef(initialRecords);
@@ -87,14 +85,50 @@ export function DataTable({
     initialRecordsRef.current = initialRecords;
   }, [initialRecords]);
 
-  // カラム構成変更時に古いフィルターをクリーンアップ
-  useEffect(() => {
-    const validColumnIds = new Set(columns.map((c) => c.id));
-    const validFilters = columnFilters.filter((f) => validColumnIds.has(f.id));
-    if (validFilters.length !== columnFilters.length) {
-      setColumnFilters(validFilters);
+  // カラム構成変更時に古い状態をクリーンアップ（同期処理）
+  const validColumnIds = useMemo(
+    () => new Set(columns.map((c) => c.id)),
+    [columns]
+  );
+
+  const columnVisibility = useMemo(() => {
+    const validVisibility: VisibilityState = {};
+    for (const [columnId, visible] of Object.entries(columnVisibilityRaw)) {
+      if (validColumnIds.has(columnId)) {
+        validVisibility[columnId] = visible;
+      }
     }
-  }, [columns, columnFilters, setColumnFilters]);
+    return validVisibility;
+  }, [columnVisibilityRaw, validColumnIds]);
+
+  const sorting = useMemo(() => {
+    return sortingRaw.filter((s) => validColumnIds.has(s.id));
+  }, [sortingRaw, validColumnIds]);
+
+  const columnFilters = useMemo(() => {
+    return columnFiltersRaw.filter((f) => validColumnIds.has(f.id));
+  }, [columnFiltersRaw, validColumnIds]);
+
+  // クリーンアップされた状態をlocalStorageに保存
+  useEffect(() => {
+    if (
+      JSON.stringify(columnVisibility) !== JSON.stringify(columnVisibilityRaw)
+    ) {
+      setColumnVisibility(columnVisibility);
+    }
+  }, [columnVisibility, columnVisibilityRaw, setColumnVisibility]);
+
+  useEffect(() => {
+    if (JSON.stringify(sorting) !== JSON.stringify(sortingRaw)) {
+      setSorting(sorting);
+    }
+  }, [sorting, sortingRaw, setSorting]);
+
+  useEffect(() => {
+    if (JSON.stringify(columnFilters) !== JSON.stringify(columnFiltersRaw)) {
+      setColumnFilters(columnFilters);
+    }
+  }, [columnFilters, columnFiltersRaw, setColumnFilters]);
 
   // WRITE権限があるかチェック
   const canWrite = hasPermission(permissionLevel, 'WRITE');

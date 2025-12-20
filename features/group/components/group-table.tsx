@@ -54,10 +54,8 @@ export function GroupTable({ groups, users }: GroupTableProps) {
   const [rowSelection, setRowSelection] = React.useState({});
 
   // localStorageに保存するテーブル状態
-  const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>(
-    'group-table-column-visibility',
-    {}
-  );
+  const [columnVisibility, setColumnVisibility] =
+    useLocalStorage<VisibilityState>('group-table-column-visibility', {});
   const [sorting, setSorting] = useLocalStorage<SortingState>(
     'group-table-sorting',
     []
