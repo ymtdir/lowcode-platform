@@ -38,6 +38,7 @@ import { updateRecord } from '@/features/record/api/update-record';
 import { createRecord } from '@/features/record/api/create-record';
 import { applyDefaultValues } from '@/features/column/utils';
 import { hasPermission } from '@/lib/permissions';
+import { useLocalStorage } from '@/hooks/use-local-storage';
 import { createColumns } from './columns';
 import { BulkDeleteButton } from './bulk-delete-button';
 import { FilterButton } from './filter-button';
@@ -67,9 +68,18 @@ export function DataTable({
   const [records, setRecords] = useState<Record[]>(initialRecords);
   const [isPending, startTransition] = useTransition();
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+
+  // localStorageに保存するテーブル状態
+  const [columnVisibility, setColumnVisibility] =
+    useLocalStorage<VisibilityState>(`table-${tableId}-column-visibility`, {});
+  const [sorting, setSorting] = useLocalStorage<SortingState>(
+    `table-${tableId}-sorting`,
+    []
+  );
+  const [columnFilters, setColumnFilters] = useLocalStorage<ColumnFiltersState>(
+    `table-${tableId}-filters`,
+    []
+  );
 
   // initialRecordsをrefで保持して、handleCellChangeの依存配列から除外する
   const initialRecordsRef = useRef(initialRecords);
