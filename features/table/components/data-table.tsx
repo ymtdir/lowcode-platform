@@ -87,6 +87,15 @@ export function DataTable({
     initialRecordsRef.current = initialRecords;
   }, [initialRecords]);
 
+  // カラム構成変更時に古いフィルターをクリーンアップ
+  useEffect(() => {
+    const validColumnIds = new Set(columns.map((c) => c.id));
+    const validFilters = columnFilters.filter((f) => validColumnIds.has(f.id));
+    if (validFilters.length !== columnFilters.length) {
+      setColumnFilters(validFilters);
+    }
+  }, [columns, columnFilters, setColumnFilters]);
+
   // WRITE権限があるかチェック
   const canWrite = hasPermission(permissionLevel, 'WRITE');
 

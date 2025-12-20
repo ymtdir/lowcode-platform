@@ -13,6 +13,7 @@ import {
   VisibilityState,
 } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
+import { useLocalStorage } from '@/hooks/use-local-storage';
 import { CreateUserButton } from './create-user-button';
 import { BulkDeleteButton } from './bulk-delete-button';
 import { createColumns } from './columns';
@@ -40,13 +41,21 @@ type UserTableProps = {
  */
 export function UserTable({ users }: UserTableProps) {
   const columns = createColumns();
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+  const [rowSelection, setRowSelection] = React.useState({});
+
+  // localStorageに保存するテーブル状態
+  const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>(
+    'user-table-column-visibility',
+    {}
+  );
+  const [sorting, setSorting] = useLocalStorage<SortingState>(
+    'user-table-sorting',
     []
   );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+  const [columnFilters, setColumnFilters] = useLocalStorage<ColumnFiltersState>(
+    'user-table-filters',
+    []
+  );
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({

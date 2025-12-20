@@ -13,6 +13,7 @@ import {
   VisibilityState,
 } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
+import { useLocalStorage } from '@/hooks/use-local-storage';
 import { CreateGroupButton } from './create-group-button';
 import { BulkDeleteButton } from './bulk-delete-button';
 import { createColumns } from './columns';
@@ -50,13 +51,21 @@ type GroupTableProps = {
  */
 export function GroupTable({ groups, users }: GroupTableProps) {
   const columns = createColumns(groups, users);
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+  const [rowSelection, setRowSelection] = React.useState({});
+
+  // localStorageに保存するテーブル状態
+  const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>(
+    'group-table-column-visibility',
+    {}
+  );
+  const [sorting, setSorting] = useLocalStorage<SortingState>(
+    'group-table-sorting',
     []
   );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+  const [columnFilters, setColumnFilters] = useLocalStorage<ColumnFiltersState>(
+    'group-table-filters',
+    []
+  );
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
