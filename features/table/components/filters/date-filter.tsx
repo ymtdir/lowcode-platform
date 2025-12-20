@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import {
@@ -90,19 +89,12 @@ function getPresetDates(preset: DatePreset): [Date | null, Date | null] {
  * 日付カラム用のフィルタコンポーネント
  */
 export function DateFilter({ value, onChange }: DateFilterProps) {
-  const [preset, setPreset] = useState<DatePreset>(value.preset || 'custom');
-  const [startDate, setStartDate] = useState<Date | undefined>(
-    value.startDate || undefined
-  );
-  const [endDate, setEndDate] = useState<Date | undefined>(
-    value.endDate || undefined
-  );
+  const preset = value.preset || 'custom';
+  const startDate = value.startDate || undefined;
+  const endDate = value.endDate || undefined;
 
   const handlePresetChange = (newPreset: DatePreset) => {
-    setPreset(newPreset);
     const [start, end] = getPresetDates(newPreset);
-    setStartDate(start || undefined);
-    setEndDate(end || undefined);
     onChange({
       preset: newPreset,
       startDate: start,
@@ -111,19 +103,17 @@ export function DateFilter({ value, onChange }: DateFilterProps) {
   };
 
   const handleStartDateChange = (date: Date | undefined) => {
-    setStartDate(date);
     onChange({
       preset: 'custom',
       startDate: date || null,
-      endDate: endDate || null,
+      endDate: value.endDate,
     });
   };
 
   const handleEndDateChange = (date: Date | undefined) => {
-    setEndDate(date);
     onChange({
       preset: 'custom',
-      startDate: startDate || null,
+      startDate: value.startDate,
       endDate: date || null,
     });
   };

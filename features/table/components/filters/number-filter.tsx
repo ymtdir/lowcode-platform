@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -43,39 +42,30 @@ const OPERATORS = [
  * 数値カラム用のフィルタコンポーネント
  */
 export function NumberFilter({ value, onChange }: NumberFilterProps) {
-  const [operator, setOperator] = useState<NumberOperator>(
-    value.operator || 'eq'
-  );
-  const [value1, setValue1] = useState<string>(
-    value.value1 !== null ? String(value.value1) : ''
-  );
-  const [value2, setValue2] = useState<string>(
-    value.value2 !== null ? String(value.value2) : ''
-  );
+  const operator = value.operator || 'eq';
+  const value1 = value.value1 !== null ? String(value.value1) : '';
+  const value2 = value.value2 !== null ? String(value.value2) : '';
 
   const handleOperatorChange = (newOperator: NumberOperator) => {
-    setOperator(newOperator);
     onChange({
       operator: newOperator,
-      value1: value1 ? parseFloat(value1) : null,
-      value2: value2 ? parseFloat(value2) : null,
+      value1: value.value1,
+      value2: value.value2,
     });
   };
 
   const handleValue1Change = (newValue: string) => {
-    setValue1(newValue);
     onChange({
-      operator,
+      operator: value.operator,
       value1: newValue ? parseFloat(newValue) : null,
-      value2: value2 ? parseFloat(value2) : null,
+      value2: value.value2,
     });
   };
 
   const handleValue2Change = (newValue: string) => {
-    setValue2(newValue);
     onChange({
-      operator,
-      value1: value1 ? parseFloat(value1) : null,
+      operator: value.operator,
+      value1: value.value1,
       value2: newValue ? parseFloat(newValue) : null,
     });
   };
