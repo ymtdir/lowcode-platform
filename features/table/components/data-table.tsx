@@ -20,14 +20,8 @@ import {
   type SortingState,
   type ColumnFiltersState,
 } from '@tanstack/react-table';
-import { ChevronDown, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import type { Permission } from '@prisma/client';
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import type { Column, RelationRecord } from '@/features/column/types';
 import type { Record, RecordData } from '@/features/record/types';
 import {
@@ -39,7 +33,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { updateRecord } from '@/features/record/api/update-record';
 import { createRecord } from '@/features/record/api/create-record';
@@ -47,6 +40,8 @@ import { applyDefaultValues } from '@/features/column/utils';
 import { hasPermission } from '@/lib/permissions';
 import { createColumns } from './columns';
 import { BulkDeleteButton } from './bulk-delete-button';
+import { FilterButton } from './filter-button';
+import { ColumnVisibilityButton } from './column-visibility-button';
 
 /**
  * データテーブルのProps型
@@ -71,7 +66,6 @@ export function DataTable({
 }: DataTableProps) {
   const [records, setRecords] = useState<Record[]>(initialRecords);
   const [isPending, startTransition] = useTransition();
-  const [searchValue, setSearchValue] = useState('');
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -159,19 +153,6 @@ export function DataTable({
     [records]
   );
 
-  // 検索フィルタリング
-  const filteredRecords = useMemo(() => {
-    if (!searchValue) return sortedRecords;
-    return sortedRecords.filter((record) => {
-      const data = record.data as RecordData;
-      return Object.values(data).some((value) =>
-        String(value ?? '')
-          .toLowerCase()
-          .includes(searchValue.toLowerCase())
-      );
-    });
-  }, [sortedRecords, searchValue]);
-
   // TanStack Table用のカラム定義
   const tableColumns = useMemo(
     () => createColumns(columns, handleCellChange, !canWrite, relationRecords),
@@ -180,7 +161,7 @@ export function DataTable({
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
-    data: filteredRecords,
+    data: sortedRecords,
     columns: tableColumns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -206,40 +187,16 @@ export function DataTable({
     <div className="w-full h-full flex flex-col">
       {/* ツールバー */}
       <div className="flex items-center justify-between py-4">
-        <Input
-          placeholder="検索..."
-          value={searchValue}
-          onChange={(e) => setSearchValue(e.target.value)}
-          className="max-w-sm"
-        />
         <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">
-                項目 <ChevronDown />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                    onSelect={(e) => {
-                      e.preventDefault();
-                    }}
-                  >
-                    {(column.columnDef.meta as { title?: string })?.title ||
-                      column.id}
-                  </DropdownMenuCheckboxItem>
-                ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <FilterButton
+            columns={columns}
+            columnFilters={columnFilters}
+            onColumnFiltersChange={setColumnFilters}
+            relationRecords={relationRecords}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <ColumnVisibilityButton table={table} />
           {canWrite && (
             <Button
               onClick={handleCreateRecord}

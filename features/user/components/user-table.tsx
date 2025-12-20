@@ -12,19 +12,12 @@ import {
   useReactTable,
   VisibilityState,
 } from '@tanstack/react-table';
-import { ChevronDown } from 'lucide-react';
-
 import { Button } from '@/components/ui/button';
 import { CreateUserButton } from './create-user-button';
 import { BulkDeleteButton } from './bulk-delete-button';
 import { createColumns } from './columns';
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { ColumnVisibilityButton } from '@/features/table/components/column-visibility-button';
 import {
   Table,
   TableBody,
@@ -94,32 +87,7 @@ export function UserTable({ users }: UserTableProps) {
           className="max-w-sm"
         />
         <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">
-                項目 <ChevronDown />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                    onSelect={(e) => {
-                      e.preventDefault();
-                    }}
-                  >
-                    {column.columnDef.header as string}
-                  </DropdownMenuCheckboxItem>
-                ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <ColumnVisibilityButton table={table} />
           <CreateUserButton />
         </div>
       </div>
