@@ -44,9 +44,9 @@ Lowcode Platformの詳細ドキュメント集です。
 
 要件定義とロードマップ。
 
-| ファイル                                      | 内容                             | 参照タイミング         |
-| --------------------------------------------- | -------------------------------- | ---------------------- |
-| [requirements.md](./planning/requirements.md) | 機能要件（Phase 1-5）            | 機能追加・優先度確認時 |
-| [roadmap.md](./planning/roadmap.md)           | 実装ロードマップ                 | スケジュール確認時     |
-| [todo.md](./planning/todo.md)                 | 実装TODO（チェックリスト形式）   | タスク確認・進捗管理時 |
-| [references.md](./planning/references.md)     | 参考資料、類似サービス           | 設計・実装の参考に     |
+| ファイル                                      | 内容                           | 参照タイミング         |
+| --------------------------------------------- | ------------------------------ | ---------------------- |
+| [requirements.md](./planning/requirements.md) | 機能要件（Phase 1-5）          | 機能追加・優先度確認時 |
+| [roadmap.md](./planning/roadmap.md)           | 実装ロードマップ               | スケジュール確認時     |
+| [todo.md](./planning/todo.md)                 | 実装TODO（チェックリスト形式） | タスク確認・進捗管理時 |
+| [references.md](./planning/references.md)     | 参考資料、類似サービス         | 設計・実装の参考に     |

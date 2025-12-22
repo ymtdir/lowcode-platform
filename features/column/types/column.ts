@@ -111,6 +111,7 @@ type BaseColumn = {
   description?: string;
   order: number;
   validation?: ValidationRule;
+  enableFilter?: boolean;
   createdAt: Date;
   updatedAt: Date;
 };

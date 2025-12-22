@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useLocalStorage } from '@/hooks/use-local-storage';
 import type { Color } from '../types';
 
 /**
@@ -22,27 +23,28 @@ const DEFAULT_COLOR: Color = 'neutral';
  * カラープロバイダーコンポーネント
  */
 export function ColorProvider({ children }: { children: React.ReactNode }) {
-  const [color, setColorState] = React.useState<Color>(DEFAULT_COLOR);
+  const [color, setColor] = useLocalStorage<Color>(
+    COLOR_STORAGE_KEY,
+    DEFAULT_COLOR
+  );
   const [isMounted, setIsMounted] = React.useState(false);
 
   React.useEffect(() => {
-    const savedColor = localStorage.getItem(COLOR_STORAGE_KEY) as Color | null;
-    if (savedColor) setColorState(savedColor);
     setIsMounted(true);
   }, []);
 
   React.useEffect(() => {
     if (!isMounted) return;
     document.documentElement.setAttribute('data-color', color);
-    localStorage.setItem(COLOR_STORAGE_KEY, color);
   }, [color, isMounted]);
+
+  // Context value をメモ化（不要な再レンダリング防止）
+  const value = React.useMemo(() => ({ color, setColor }), [color, setColor]);
 
   if (!isMounted) return null;
 
   return (
-    <ColorContext.Provider value={{ color, setColor: setColorState }}>
-      {children}
-    </ColorContext.Provider>
+    <ColorContext.Provider value={value}>{children}</ColorContext.Provider>
   );
 }
 
@@ -52,7 +54,7 @@ export function ColorProvider({ children }: { children: React.ReactNode }) {
 export function useColor() {
   const context = React.useContext(ColorContext);
   if (!context) {
-    throw new Error('useColor must be used within ColorProvider');
+    throw new Error('useColorはColorProvider内で使用する必要があります');
   }
   return context;
 }

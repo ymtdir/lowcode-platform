@@ -12,19 +12,13 @@ import {
   useReactTable,
   VisibilityState,
 } from '@tanstack/react-table';
-import { ChevronDown } from 'lucide-react';
-
 import { Button } from '@/components/ui/button';
+import { useLocalStorage } from '@/hooks/use-local-storage';
 import { CreateUserButton } from './create-user-button';
 import { BulkDeleteButton } from './bulk-delete-button';
 import { createColumns } from './columns';
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { ColumnVisibilityButton } from '@/features/table/components/column-visibility-button';
 import {
   Table,
   TableBody,
@@ -47,13 +41,19 @@ type UserTableProps = {
  */
 export function UserTable({ users }: UserTableProps) {
   const columns = createColumns();
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+  const [rowSelection, setRowSelection] = React.useState({});
+
+  // localStorageに保存するテーブル状態
+  const [columnVisibility, setColumnVisibility] =
+    useLocalStorage<VisibilityState>('user-table-column-visibility', {});
+  const [sorting, setSorting] = useLocalStorage<SortingState>(
+    'user-table-sorting',
     []
   );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+  const [columnFilters, setColumnFilters] = useLocalStorage<ColumnFiltersState>(
+    'user-table-filters',
+    []
+  );
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
@@ -94,32 +94,7 @@ export function UserTable({ users }: UserTableProps) {
           className="max-w-sm"
         />
         <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">
-                項目 <ChevronDown />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                    onSelect={(e) => {
-                      e.preventDefault();
-                    }}
-                  >
-                    {column.columnDef.header as string}
-                  </DropdownMenuCheckboxItem>
-                ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <ColumnVisibilityButton table={table} />
           <CreateUserButton />
         </div>
       </div>
