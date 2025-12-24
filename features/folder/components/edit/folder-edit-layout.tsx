@@ -4,6 +4,9 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Item } from '@/features/item/types';
+import type { User } from '@/features/user/types';
+import type { Group } from '@/features/group/types';
+import type { PermissionWithRelations } from '@/features/permission/types';
 import { SettingsContent } from './settings-content';
 import { AccessContent } from '@/features/table/components/edit/access-content';
 
@@ -12,12 +15,20 @@ import { AccessContent } from '@/features/table/components/edit/access-content';
  */
 type FolderEditLayoutProps = {
   folder: Item & { type: 'FOLDER' };
+  initialPermissions: PermissionWithRelations[];
+  users: User[];
+  groups: Group[];
 };
 
 /**
  * フォルダ編集画面のレイアウトコンポーネント
  */
-export function FolderEditLayout({ folder }: FolderEditLayoutProps) {
+export function FolderEditLayout({
+  folder,
+  initialPermissions,
+  users,
+  groups,
+}: FolderEditLayoutProps) {
   return (
     <div className="w-full p-6">
       {/* ヘッダー */}
@@ -45,7 +56,12 @@ export function FolderEditLayout({ folder }: FolderEditLayoutProps) {
           <SettingsContent folderId={folder.id} folderName={folder.name} />
         </TabsContent>
         <TabsContent value="access" className="flex-1 mt-6">
-          <AccessContent itemId={folder.id} />
+          <AccessContent
+            itemId={folder.id}
+            initialPermissions={initialPermissions}
+            users={users}
+            groups={groups}
+          />
         </TabsContent>
       </Tabs>
     </div>

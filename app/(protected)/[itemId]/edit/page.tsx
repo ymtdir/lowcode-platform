@@ -3,6 +3,9 @@ import { getCurrentUser } from '@/lib/auth';
 import { canManageStructure } from '@/lib/permissions';
 import { getItemById, getTables } from '@/features/item/api';
 import { getColumnSchema } from '@/features/column/types/schema';
+import { getPermissions } from '@/features/permission/api';
+import { getUsers } from '@/features/user/api';
+import { getGroups } from '@/features/group/api';
 import { TableEditLayout } from '@/features/table/components/edit';
 import { FolderEditLayout } from '@/features/folder/components/edit';
 
@@ -38,7 +41,20 @@ export default async function ItemEditPage({ params }: ItemEditPageProps) {
   if (item.type === 'TABLE') {
     const columnSchema = getColumnSchema(item.meta);
     const columns = columnSchema?.columns || [];
-    const tables = await getTables();
+
+    // データを並列取得
+    const [tables, permissionsResult, users, groups] = await Promise.all([
+      getTables(),
+      getPermissions(itemId),
+      getUsers(),
+      getGroups(),
+    ]);
+
+    // 権限データの展開
+    const permissions =
+      'success' in permissionsResult && permissionsResult.success
+        ? permissionsResult.permissions
+        : [];
 
     return (
       <TableEditLayout
@@ -46,13 +62,36 @@ export default async function ItemEditPage({ params }: ItemEditPageProps) {
         itemName={item.name}
         columns={columns}
         tables={tables}
+        initialPermissions={permissions}
+        users={users}
+        groups={groups}
       />
     );
   }
 
   // FOLDER型の場合
   if (item.type === 'FOLDER') {
-    return <FolderEditLayout folder={item} />;
+    // データを並列取得
+    const [permissionsResult, users, groups] = await Promise.all([
+      getPermissions(itemId),
+      getUsers(),
+      getGroups(),
+    ]);
+
+    // 権限データの展開
+    const permissions =
+      'success' in permissionsResult && permissionsResult.success
+        ? permissionsResult.permissions
+        : [];
+
+    return (
+      <FolderEditLayout
+        folder={item}
+        initialPermissions={permissions}
+        users={users}
+        groups={groups}
+      />
+    );
   }
 
   // 未対応の型

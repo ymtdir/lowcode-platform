@@ -5,6 +5,9 @@ import { ArrowLeft } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Column } from '@/features/column/types';
 import type { Item } from '@/features/item/types';
+import type { User } from '@/features/user/types';
+import type { Group } from '@/features/group/types';
+import type { PermissionWithRelations } from '@/features/permission/types';
 import { ColumnsContent } from './columns-content';
 import { SettingsContent } from './settings-content';
 import { AccessContent } from './access-content';
@@ -17,6 +20,9 @@ type TableEditLayoutProps = {
   itemName: string;
   columns: Column[];
   tables: Item[];
+  initialPermissions: PermissionWithRelations[];
+  users: User[];
+  groups: Group[];
 };
 
 /**
@@ -27,6 +33,9 @@ export function TableEditLayout({
   itemName,
   columns,
   tables,
+  initialPermissions,
+  users,
+  groups,
 }: TableEditLayoutProps) {
   return (
     <div className="w-full p-6">
@@ -65,7 +74,12 @@ export function TableEditLayout({
           <ColumnsContent itemId={itemId} columns={columns} tables={tables} />
         </TabsContent>
         <TabsContent value="access" className="flex-1 mt-6">
-          <AccessContent itemId={itemId} />
+          <AccessContent
+            itemId={itemId}
+            initialPermissions={initialPermissions}
+            users={users}
+            groups={groups}
+          />
         </TabsContent>
       </Tabs>
     </div>
