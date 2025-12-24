@@ -156,6 +156,8 @@ export function AccessContent({
           if ('success' in permissionsResult && permissionsResult.success) {
             setPermissions(permissionsResult.permissions as PermissionInfo[]);
           }
+          // 保留中の変更もクリアして整合性を保つ
+          setPendingChanges({ updates: new Map(), deletes: new Set() });
           return;
         }
       }
@@ -170,6 +172,8 @@ export function AccessContent({
           if ('success' in permissionsResult && permissionsResult.success) {
             setPermissions(permissionsResult.permissions as PermissionInfo[]);
           }
+          // 保留中の変更もクリアして整合性を保つ
+          setPendingChanges({ updates: new Map(), deletes: new Set() });
           return;
         }
       }
