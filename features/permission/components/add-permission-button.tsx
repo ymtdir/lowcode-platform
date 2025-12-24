@@ -28,9 +28,9 @@ import {
 import type { Permission } from '@prisma/client';
 
 /**
- * 権限追加ダイアログのProps型
+ * 権限追加ボタンのProps型
  */
-type AddPermissionDialogProps = {
+type AddPermissionButtonProps = {
   users: Array<{ id: string; name: string | null; email: string }>;
   groups: Array<{ id: string; name: string; description: string | null }>;
   onAdd: (
@@ -41,13 +41,13 @@ type AddPermissionDialogProps = {
 };
 
 /**
- * 権限追加ダイアログコンポーネント
+ * 権限追加ボタンコンポーネント
  */
-export function AddPermissionDialog({
+export function AddPermissionButton({
   users,
   groups,
   onAdd,
-}: AddPermissionDialogProps) {
+}: AddPermissionButtonProps) {
   const [open, setOpen] = useState(false);
   const [targetType, setTargetType] = useState<'group' | 'user'>('group');
   const [targetId, setTargetId] = useState('');
@@ -83,9 +83,9 @@ export function AddPermissionDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline">
-          <Plus className="size-4 mr-2" />
-          権限を追加
+        <Button size="sm" variant="default">
+          <Plus />
+          権限追加
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
