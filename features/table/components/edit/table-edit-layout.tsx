@@ -7,32 +7,10 @@ import type { Column } from '@/features/column/types';
 import type { Item } from '@/features/item/types';
 import type { User } from '@/features/user/types';
 import type { Group } from '@/features/group/types';
-import type { Prisma } from '@prisma/client';
+import type { PermissionWithRelations } from '@/features/permission/types';
 import { ColumnsContent } from './columns-content';
 import { SettingsContent } from './settings-content';
 import { AccessContent } from './access-content';
-
-/**
- * 権限情報の型（userとgroupをincludeした状態）
- */
-type PermissionWithRelations = Prisma.ItemPermissionGetPayload<{
-  include: {
-    user: {
-      select: {
-        id: true;
-        name: true;
-        email: true;
-      };
-    };
-    group: {
-      select: {
-        id: true;
-        name: true;
-        description: true;
-      };
-    };
-  };
-}>;
 
 /**
  * TableEditLayoutのProps型

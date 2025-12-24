@@ -29,38 +29,17 @@ import {
 } from '@/features/permission/constants';
 import { AddPermissionButton } from '@/features/permission/components/add-permission-button';
 import { DeletePermissionButton } from '@/features/permission/components/delete-permission-button';
-import type { Permission, Prisma } from '@prisma/client';
+import type { Permission } from '@prisma/client';
 import type { User } from '@/features/user/types';
 import type { Group } from '@/features/group/types';
-
-/**
- * 権限情報の型（userとgroupをincludeした状態）
- */
-type PermissionInfo = Prisma.ItemPermissionGetPayload<{
-  include: {
-    user: {
-      select: {
-        id: true;
-        name: true;
-        email: true;
-      };
-    };
-    group: {
-      select: {
-        id: true;
-        name: true;
-        description: true;
-      };
-    };
-  };
-}>;
+import type { PermissionWithRelations } from '@/features/permission/types';
 
 /**
  * AccessContentのProps型
  */
 type AccessContentProps = {
   itemId: string;
-  initialPermissions: PermissionInfo[];
+  initialPermissions: PermissionWithRelations[];
   users: User[];
   groups: Group[];
 };
@@ -75,7 +54,7 @@ export function AccessContent({
   groups,
 }: AccessContentProps) {
   const [permissions, setPermissions] =
-    useState<PermissionInfo[]>(initialPermissions);
+    useState<PermissionWithRelations[]>(initialPermissions);
   const [pendingChanges, setPendingChanges] = useState<{
     updates: Map<string, Permission>;
     deletes: Set<string>;
@@ -101,7 +80,7 @@ export function AccessContent({
       // 成功時は権限一覧を再取得してUIを更新
       const permissionsResult = await getPermissions(itemId);
       if ('success' in permissionsResult && permissionsResult.success) {
-        setPermissions(permissionsResult.permissions as PermissionInfo[]);
+        setPermissions(permissionsResult.permissions);
         // 保留中の変更をクリア
         setPendingChanges({ updates: new Map(), deletes: new Set() });
       }
@@ -154,7 +133,7 @@ export function AccessContent({
           // エラー時は権限一覧を再取得して正しい状態に戻す
           const permissionsResult = await getPermissions(itemId);
           if ('success' in permissionsResult && permissionsResult.success) {
-            setPermissions(permissionsResult.permissions as PermissionInfo[]);
+            setPermissions(permissionsResult.permissions);
           }
           // 保留中の変更もクリアして整合性を保つ
           setPendingChanges({ updates: new Map(), deletes: new Set() });
@@ -170,7 +149,7 @@ export function AccessContent({
           // エラー時は権限一覧を再取得して正しい状態に戻す
           const permissionsResult = await getPermissions(itemId);
           if ('success' in permissionsResult && permissionsResult.success) {
-            setPermissions(permissionsResult.permissions as PermissionInfo[]);
+            setPermissions(permissionsResult.permissions);
           }
           // 保留中の変更もクリアして整合性を保つ
           setPendingChanges({ updates: new Map(), deletes: new Set() });

@@ -1,4 +1,4 @@
-import type { Permission } from '@prisma/client';
+import type { Permission, Prisma } from '@prisma/client';
 
 /**
  * アイテム権限の型
@@ -12,6 +12,28 @@ export type ItemPermission = {
   createdAt: Date;
   updatedAt: Date;
 };
+
+/**
+ * 権限情報の型（userとgroupをincludeした状態）
+ */
+export type PermissionWithRelations = Prisma.ItemPermissionGetPayload<{
+  include: {
+    user: {
+      select: {
+        id: true;
+        name: true;
+        email: true;
+      };
+    };
+    group: {
+      select: {
+        id: true;
+        name: true;
+        description: true;
+      };
+    };
+  };
+}>;
 
 /**
  * 権限追加の入力型

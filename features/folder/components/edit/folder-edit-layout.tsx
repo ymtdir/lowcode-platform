@@ -6,31 +6,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Item } from '@/features/item/types';
 import type { User } from '@/features/user/types';
 import type { Group } from '@/features/group/types';
-import type { Prisma } from '@prisma/client';
+import type { PermissionWithRelations } from '@/features/permission/types';
 import { SettingsContent } from './settings-content';
 import { AccessContent } from '@/features/table/components/edit/access-content';
-
-/**
- * 権限情報の型（userとgroupをincludeした状態）
- */
-type PermissionWithRelations = Prisma.ItemPermissionGetPayload<{
-  include: {
-    user: {
-      select: {
-        id: true;
-        name: true;
-        email: true;
-      };
-    };
-    group: {
-      select: {
-        id: true;
-        name: true;
-        description: true;
-      };
-    };
-  };
-}>;
 
 /**
  * FolderEditLayoutのProps型

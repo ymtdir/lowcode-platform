@@ -3,29 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { canManageStructure } from '@/lib/permissions';
-import type { Prisma } from '@prisma/client';
-
-/**
- * 権限情報の型（userとgroupをincludeした状態）
- */
-type PermissionWithRelations = Prisma.ItemPermissionGetPayload<{
-  include: {
-    user: {
-      select: {
-        id: true;
-        name: true;
-        email: true;
-      };
-    };
-    group: {
-      select: {
-        id: true;
-        name: true;
-        description: true;
-      };
-    };
-  };
-}>;
+import type { PermissionWithRelations } from '@/features/permission/types';
 
 /**
  * アイテムの権限一覧を取得
