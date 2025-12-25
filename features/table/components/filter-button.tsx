@@ -150,7 +150,7 @@ export function FilterButton({
           <Tooltip>
             <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost">
+                <Button variant="ghost" size="icon">
                   <Settings2 />
                 </Button>
               </DropdownMenuTrigger>

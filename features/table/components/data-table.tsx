@@ -264,7 +264,7 @@ export function DataTable({
 
       {/* テーブル */}
       <ScrollArea className="border-y **:data-[slot=table-container]:overflow-visible">
-        <Table className="table-auto w-max">
+        <Table className="table-auto w-full">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
