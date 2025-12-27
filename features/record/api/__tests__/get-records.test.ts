@@ -61,7 +61,7 @@ describe('getRecords', () => {
     expect(result).toEqual(mockRecords);
     expect(prisma.record.findMany).toHaveBeenCalledWith({
       where: { tableId },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: 'desc' },
     });
     expect(convertFiltersToPrismaWhere).toHaveBeenCalledWith([]);
     expect(convertSortingToPrismaOrderBy).toHaveBeenCalled();
@@ -77,11 +77,11 @@ describe('getRecords', () => {
     expect(result).toEqual([]);
     expect(prisma.record.findMany).toHaveBeenCalledWith({
       where: { tableId },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: 'desc' },
     });
   });
 
-  it('作成日時の昇順でソートされる', async () => {
+  it('作成日時の降順でソートされる', async () => {
     const tableId = 'table-1';
 
     (prisma.record.findMany as jest.Mock).mockResolvedValue([]);
@@ -90,7 +90,7 @@ describe('getRecords', () => {
 
     expect(prisma.record.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        orderBy: { createdAt: 'asc' },
+        orderBy: { createdAt: 'desc' },
       })
     );
   });
@@ -119,7 +119,7 @@ describe('getRecords', () => {
     expect(convertFiltersToPrismaWhere).toHaveBeenCalledWith(filters);
     expect(prisma.record.findMany).toHaveBeenCalledWith({
       where: { tableId, ...mockWhere },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: 'desc' },
     });
   });
 

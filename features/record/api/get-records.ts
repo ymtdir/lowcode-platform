@@ -37,7 +37,7 @@ export async function getRecords(
       tableId,
       ...where,
     },
-    orderBy: orderBy.length > 0 ? orderBy : { createdAt: 'asc' },
+    orderBy: orderBy.length > 0 ? orderBy : { createdAt: 'desc' },
   });
 
   // Prismaの`data: Json`フィールドは、カスタム型の`data: RecordData`と互換
