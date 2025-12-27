@@ -1,6 +1,9 @@
+'use client';
+
 import type { Permission } from '@prisma/client';
 import type { Column, RelationRecord } from '@/features/column/types';
 import type { Record } from '@/features/record/types';
+import { useExport } from '@/features/layout/providers/export-provider';
 import { DataTable } from './data-table';
 
 /**
@@ -26,6 +29,8 @@ export function TableLayout({
   relationRecords,
   permissionLevel,
 }: TableLayoutProps) {
+  const { setExportFn } = useExport();
+
   return (
     <div className="w-full p-6">
       <div className="mb-6 flex items-center justify-between">
@@ -34,10 +39,12 @@ export function TableLayout({
 
       <DataTable
         tableId={itemId}
+        tableName={itemName}
         columns={columns}
         initialRecords={records}
         relationRecords={relationRecords}
         permissionLevel={permissionLevel}
+        onExportCSV={setExportFn}
       />
     </div>
   );

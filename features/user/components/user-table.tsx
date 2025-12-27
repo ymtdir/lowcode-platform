@@ -14,6 +14,7 @@ import {
 } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
 import { useLocalStorage } from '@/hooks/use-local-storage';
+import { exportTableToCSV } from '@/lib/table-export';
 import { CreateUserButton } from './create-user-button';
 import { BulkDeleteButton } from './bulk-delete-button';
 import { createColumns } from './columns';
@@ -34,12 +35,13 @@ import type { User } from '../types';
  */
 type UserTableProps = {
   users: User[];
+  onExportCSV?: (exportFn: () => void) => void;
 };
 
 /**
  * ユーザーテーブルコンポーネント
  */
-export function UserTable({ users }: UserTableProps) {
+export function UserTable({ users, onExportCSV }: UserTableProps) {
   const columns = createColumns();
   const [rowSelection, setRowSelection] = React.useState({});
 
@@ -81,6 +83,16 @@ export function UserTable({ users }: UserTableProps) {
   const handleDeleteComplete = () => {
     table.resetRowSelection();
   };
+
+  // CSV エクスポート関数
+  const handleExportCSV = React.useCallback(() => {
+    exportTableToCSV(table, 'ユーザー管理');
+  }, [table]);
+
+  // エクスポート関数を親コンポーネントに登録
+  React.useEffect(() => {
+    onExportCSV?.(() => handleExportCSV);
+  }, [onExportCSV, handleExportCSV]);
 
   return (
     <div className="w-full">

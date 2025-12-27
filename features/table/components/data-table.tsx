@@ -39,6 +39,7 @@ import { createRecord } from '@/features/record/api/create-record';
 import { applyDefaultValues } from '@/features/column/utils';
 import { hasPermission } from '@/lib/permissions';
 import { useLocalStorage } from '@/hooks/use-local-storage';
+import { exportTableToCSV } from '@/lib/table-export';
 import { createColumns } from './columns';
 import { BulkDeleteButton } from './bulk-delete-button';
 import { FilterButton } from './filter-button';
@@ -49,10 +50,12 @@ import { ColumnVisibilityButton } from './column-visibility-button';
  */
 type DataTableProps = {
   tableId: string;
+  tableName: string;
   columns: Column[];
   initialRecords: Record[];
   relationRecords: Map<string, RelationRecord[]>;
   permissionLevel: Permission;
+  onExportCSV?: (exportFn: () => void) => void;
 };
 
 /**
@@ -60,10 +63,12 @@ type DataTableProps = {
  */
 export function DataTable({
   tableId,
+  tableName,
   columns,
   initialRecords,
   relationRecords,
   permissionLevel,
+  onExportCSV,
 }: DataTableProps) {
   const [records, setRecords] = useState<Record[]>(initialRecords);
   const [isPending, startTransition] = useTransition();
@@ -235,6 +240,16 @@ export function DataTable({
   // 選択されたレコードのID一覧
   const selectedRows = table.getFilteredSelectedRowModel().rows;
   const selectedRecordIds = selectedRows.map((row) => row.original.id);
+
+  // CSVエクスポート関数
+  const handleExportCSV = useCallback(() => {
+    exportTableToCSV(table, tableName);
+  }, [table, tableName]);
+
+  // エクスポート関数を親コンポーネントに渡す
+  useEffect(() => {
+    onExportCSV?.(() => handleExportCSV);
+  }, [onExportCSV, handleExportCSV]);
 
   return (
     <div className="w-full h-full flex flex-col">

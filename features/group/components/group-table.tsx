@@ -14,6 +14,7 @@ import {
 } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
 import { useLocalStorage } from '@/hooks/use-local-storage';
+import { exportTableToCSV } from '@/lib/table-export';
 import { CreateGroupButton } from './create-group-button';
 import { BulkDeleteButton } from './bulk-delete-button';
 import { createColumns } from './columns';
@@ -44,12 +45,13 @@ type User = {
 type GroupTableProps = {
   groups: Group[];
   users: User[];
+  onExportCSV?: (exportFn: () => void) => void;
 };
 
 /**
  * グループテーブルコンポーネント
  */
-export function GroupTable({ groups, users }: GroupTableProps) {
+export function GroupTable({ groups, users, onExportCSV }: GroupTableProps) {
   const columns = createColumns(groups, users);
   const [rowSelection, setRowSelection] = React.useState({});
 
@@ -91,6 +93,16 @@ export function GroupTable({ groups, users }: GroupTableProps) {
   const handleDeleteComplete = () => {
     table.resetRowSelection();
   };
+
+  // CSV エクスポート関数
+  const handleExportCSV = React.useCallback(() => {
+    exportTableToCSV(table, 'グループ管理');
+  }, [table]);
+
+  // エクスポート関数を親コンポーネントに登録
+  React.useEffect(() => {
+    onExportCSV?.(() => handleExportCSV);
+  }, [onExportCSV, handleExportCSV]);
 
   return (
     <div className="w-full">
