@@ -30,9 +30,9 @@ export function exportTableToCSV<TData>(
   const rows = filteredRows.map((row) => {
     return visibleColumns.map((col) => {
       const value = row.getValue(col.id);
-      // Date型の場合は日本語ロケールでフォーマット
+      // Date型の場合はISO 8601形式でフォーマット
       if (value instanceof Date) {
-        return value.toLocaleString('ja-JP');
+        return value.toISOString().split('T')[0]; // YYYY-MM-DD
       }
       return value as string | number | boolean | null | undefined;
     });
