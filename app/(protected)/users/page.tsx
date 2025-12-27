@@ -3,6 +3,10 @@ import { getCurrentUser } from '@/lib/auth';
 import { canManageUsers } from '@/lib/permissions';
 import { getUsers } from '@/features/user/api';
 import { UsersLayout } from '@/features/user/components';
+import type {
+  ExportColumnFilter,
+  ExportSorting,
+} from '@/features/table/types/export';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,20 +34,25 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
   const filtersParam = resolvedSearchParams.filters;
   const sortingParam = resolvedSearchParams.sorting;
 
-  const filters = filtersParam
-    ? JSON.parse(
-        typeof filtersParam === 'string'
-          ? filtersParam
-          : filtersParam[0] || '[]'
-      )
-    : [];
-  const sorting = sortingParam
-    ? JSON.parse(
-        typeof sortingParam === 'string'
-          ? sortingParam
-          : sortingParam[0] || '[]'
-      )
-    : [];
+  let filters: ExportColumnFilter[] = [];
+  let sorting: ExportSorting[] = [];
+
+  try {
+    if (filtersParam) {
+      const parsed = JSON.parse(
+        typeof filtersParam === 'string' ? filtersParam : filtersParam[0] || '[]'
+      );
+      if (Array.isArray(parsed)) filters = parsed;
+    }
+    if (sortingParam) {
+      const parsed = JSON.parse(
+        typeof sortingParam === 'string' ? sortingParam : sortingParam[0] || '[]'
+      );
+      if (Array.isArray(parsed)) sorting = parsed;
+    }
+  } catch {
+    // 不正なパラメータは無視してデフォルト値を使用
+  }
 
   const users = await getUsers();
 

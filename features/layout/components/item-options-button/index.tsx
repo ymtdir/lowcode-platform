@@ -3,6 +3,10 @@
 import { useSearchParams } from 'next/navigation';
 import { Ellipsis, FileOutput, FileInput } from 'lucide-react';
 import type { PageType } from './container';
+import type {
+  ExportColumnFilter,
+  ExportSorting,
+} from '@/features/table/types/export';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,8 +49,22 @@ export function ItemOptionsButton({
     const filtersParam = searchParams.get('filters');
     const sortingParam = searchParams.get('sorting');
 
-    const filters = filtersParam ? JSON.parse(filtersParam) : [];
-    const sorting = sortingParam ? JSON.parse(sortingParam) : [];
+    let filters: ExportColumnFilter[] = [];
+    let sorting: ExportSorting[] = [];
+
+    try {
+      if (filtersParam) {
+        const parsed = JSON.parse(filtersParam);
+        if (Array.isArray(parsed)) filters = parsed;
+      }
+      if (sortingParam) {
+        const parsed = JSON.parse(sortingParam);
+        if (Array.isArray(parsed)) sorting = parsed;
+      }
+    } catch {
+      // 不正なパラメータは無視してデフォルト値を使用
+      console.error('Failed to parse filters or sorting from URL');
+    }
 
     let result: { csv?: string; filename?: string; error?: string };
 

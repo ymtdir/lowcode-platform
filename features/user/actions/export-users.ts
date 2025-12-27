@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { convertToCSV } from '@/lib/csv';
+import type { UserRole } from '@prisma/client';
 import type {
   ExportColumnFilter,
   ExportSorting,
@@ -18,7 +19,7 @@ export async function exportUsersAction(
   const where: {
     email?: { contains: string; mode: 'insensitive' };
     name?: { contains: string; mode: 'insensitive' };
-    role?: string;
+    role?: UserRole;
   } = {};
 
   filters.forEach((filter) => {
@@ -29,7 +30,7 @@ export async function exportUsersAction(
       } else if (id === 'name') {
         where.name = { contains: value, mode: 'insensitive' };
       } else if (id === 'role') {
-        where.role = value;
+        where.role = value as UserRole;
       }
     }
   });
@@ -50,6 +51,7 @@ export async function exportUsersAction(
 
   // ユーザーデータを取得
   const users = await prisma.user.findMany({
+    where,
     orderBy: orderBy.length > 0 ? orderBy : { createdAt: 'desc' },
     select: {
       id: true,
