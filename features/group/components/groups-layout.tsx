@@ -1,8 +1,8 @@
 'use client';
 
-import { useExport } from '@/features/layout/providers/export-provider';
 import { GroupTable } from '@/features/group/components';
 import type { Group } from '@/features/group/types';
+import type { ColumnFiltersState, SortingState } from '@tanstack/react-table';
 
 type User = {
   id: string;
@@ -13,14 +13,19 @@ type User = {
 type GroupsLayoutProps = {
   groups: Group[];
   users: User[];
+  initialFilters?: ColumnFiltersState;
+  initialSorting?: SortingState;
 };
 
 /**
  * グループ管理ページのレイアウトコンポーネント
  */
-export function GroupsLayout({ groups, users }: GroupsLayoutProps) {
-  const { setExportFn } = useExport();
-
+export function GroupsLayout({
+  groups,
+  users,
+  initialFilters = [],
+  initialSorting = [],
+}: GroupsLayoutProps) {
   return (
     <div className="flex flex-col gap-6 p-6">
       <div className="flex items-center justify-between">
@@ -29,7 +34,12 @@ export function GroupsLayout({ groups, users }: GroupsLayoutProps) {
         </div>
       </div>
 
-      <GroupTable groups={groups} users={users} onExportCSV={setExportFn} />
+      <GroupTable
+        groups={groups}
+        users={users}
+        initialFilters={initialFilters}
+        initialSorting={initialSorting}
+      />
     </div>
   );
 }

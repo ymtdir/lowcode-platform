@@ -1,5 +1,6 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
 import { Ellipsis, FileOutput, FileInput } from 'lucide-react';
 import type { PageType } from './container';
 import {
@@ -9,21 +10,28 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { useExport } from '@/features/layout/providers/export-provider';
+import { exportTableAction } from '@/features/table/actions/export-table';
+import { exportUsersAction } from '@/features/user/actions/export-users';
+import { exportGroupsAction } from '@/features/group/actions/export-groups';
+import { downloadCSV } from '@/lib/csv';
 
 /**
  * アイテムオプションボタンのProps型
  */
 type ItemOptionsButtonProps = {
   pageType: PageType;
+  itemId?: string;
 };
 
 /**
  * アイテムオプションボタンコンポーネント
  * ページタイプに応じてインポート/エクスポートオプションを表示
  */
-export function ItemOptionsButton({ pageType }: ItemOptionsButtonProps) {
-  const { exportFn } = useExport();
+export function ItemOptionsButton({
+  pageType,
+  itemId,
+}: ItemOptionsButtonProps) {
+  const searchParams = useSearchParams();
 
   // エクスポート可能なページタイプ
   const exportableTypes: PageType[] = ['TABLE', 'USERS', 'GROUPS'];
@@ -32,12 +40,35 @@ export function ItemOptionsButton({ pageType }: ItemOptionsButtonProps) {
     return null;
   }
 
-  const handleExport = () => {
-    console.log('handleExport called, exportFn:', exportFn);
-    if (exportFn) {
-      exportFn();
+  const handleExport = async () => {
+    // URLからフィルタ・ソート条件を取得
+    const filtersParam = searchParams.get('filters');
+    const sortingParam = searchParams.get('sorting');
+
+    const filters = filtersParam ? JSON.parse(filtersParam) : [];
+    const sorting = sortingParam ? JSON.parse(sortingParam) : [];
+
+    let result: { csv?: string; filename?: string; error?: string };
+
+    // ページタイプに応じてServer Actionを呼び出し
+    if (pageType === 'TABLE' && itemId) {
+      result = await exportTableAction(itemId, filters, sorting);
+    } else if (pageType === 'USERS') {
+      result = await exportUsersAction(filters, sorting);
+    } else if (pageType === 'GROUPS') {
+      result = await exportGroupsAction(filters, sorting);
     } else {
-      console.error('exportFn is null or undefined');
+      console.error('Unknown page type:', pageType);
+      return;
+    }
+
+    if (result.error) {
+      console.error('Export error:', result.error);
+      return;
+    }
+
+    if (result.csv && result.filename) {
+      downloadCSV(result.csv, result.filename);
     }
   };
 

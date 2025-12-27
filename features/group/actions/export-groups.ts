@@ -1,0 +1,89 @@
+'use server';
+
+import { prisma } from '@/lib/prisma';
+import { convertToCSV } from '@/lib/csv';
+import type {
+  ExportColumnFilter,
+  ExportSorting,
+} from '@/features/table/types/export';
+
+/**
+ * グループデータをCSVエクスポートするServer Action
+ */
+export async function exportGroupsAction(
+  filters: ExportColumnFilter[],
+  sorting: ExportSorting[]
+) {
+  // フィルタ条件を構築
+  const where: {
+    name?: { contains: string; mode: 'insensitive' };
+    description?: { contains: string; mode: 'insensitive' };
+  } = {};
+
+  filters.forEach((filter) => {
+    const { id, value } = filter;
+    if (typeof value === 'string' && value.trim() !== '') {
+      if (id === 'name') {
+        where.name = { contains: value, mode: 'insensitive' };
+      } else if (id === 'description') {
+        where.description = { contains: value, mode: 'insensitive' };
+      }
+    }
+  });
+
+  // ソート条件を構築
+  const orderBy: Record<string, 'asc' | 'desc'>[] = [];
+  sorting.forEach((sort) => {
+    const { id, desc } = sort;
+    if (id === 'name' || id === 'description' || id === 'createdAt') {
+      orderBy.push({ [id]: desc ? 'desc' : 'asc' });
+    }
+  });
+
+  // グループデータを取得
+  const groups = await prisma.group.findMany({
+    where,
+    orderBy: orderBy.length > 0 ? orderBy : { createdAt: 'desc' },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      createdAt: true,
+      _count: {
+        select: {
+          members: true,
+        },
+      },
+    },
+  });
+
+  // ヘッダー行を作成
+  const headers = ['ID', 'グループ名', '説明', 'メンバー数', '作成日'];
+
+  // データ行を作成
+  const rows = groups.map((group) => [
+    group.id,
+    group.name,
+    group.description || '',
+    group._count.members.toString(),
+    group.createdAt.toISOString().split('T')[0], // YYYY-MM-DD
+  ]);
+
+  // CSV変換
+  const csv = convertToCSV(headers, rows);
+
+  // タイムスタンプ付きファイル名を生成
+  const timestamp = new Date()
+    .toLocaleString('ja-JP', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    })
+    .replace(/[/:\s]/g, '-');
+  const filename = `グループ管理_${timestamp}.csv`;
+
+  return { csv, filename };
+}

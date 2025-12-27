@@ -3,7 +3,10 @@
 import type { Permission } from '@prisma/client';
 import type { Column, RelationRecord } from '@/features/column/types';
 import type { Record } from '@/features/record/types';
-import { useExport } from '@/features/layout/providers/export-provider';
+import type {
+  ExportColumnFilter,
+  ExportSorting,
+} from '@/features/table/types/export';
 import { DataTable } from './data-table';
 
 /**
@@ -16,6 +19,8 @@ type TableLayoutProps = {
   records: Record[];
   relationRecords: Map<string, RelationRecord[]>;
   permissionLevel: Permission;
+  initialFilters?: ExportColumnFilter[];
+  initialSorting?: ExportSorting[];
 };
 
 /**
@@ -28,9 +33,9 @@ export function TableLayout({
   records,
   relationRecords,
   permissionLevel,
+  initialFilters = [],
+  initialSorting = [],
 }: TableLayoutProps) {
-  const { setExportFn } = useExport();
-
   return (
     <div className="w-full p-6">
       <div className="mb-6 flex items-center justify-between">
@@ -44,7 +49,8 @@ export function TableLayout({
         initialRecords={records}
         relationRecords={relationRecords}
         permissionLevel={permissionLevel}
-        onExportCSV={setExportFn}
+        initialFilters={initialFilters}
+        initialSorting={initialSorting}
       />
     </div>
   );

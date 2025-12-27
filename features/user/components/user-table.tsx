@@ -14,7 +14,6 @@ import {
 } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
 import { useLocalStorage } from '@/hooks/use-local-storage';
-import { exportTableToCSV } from '@/lib/table-export';
 import { CreateUserButton } from './create-user-button';
 import { BulkDeleteButton } from './bulk-delete-button';
 import { createColumns } from './columns';
@@ -35,27 +34,29 @@ import type { User } from '../types';
  */
 type UserTableProps = {
   users: User[];
-  onExportCSV?: (exportFn: () => void) => void;
+  initialFilters?: ColumnFiltersState;
+  initialSorting?: SortingState;
 };
 
 /**
  * ユーザーテーブルコンポーネント
  */
-export function UserTable({ users, onExportCSV }: UserTableProps) {
+export function UserTable({
+  users,
+  initialFilters = [],
+  initialSorting = [],
+}: UserTableProps) {
   const columns = createColumns();
   const [rowSelection, setRowSelection] = React.useState({});
 
   // localStorageに保存するテーブル状態
   const [columnVisibility, setColumnVisibility] =
     useLocalStorage<VisibilityState>('user-table-column-visibility', {});
-  const [sorting, setSorting] = useLocalStorage<SortingState>(
-    'user-table-sorting',
-    []
-  );
-  const [columnFilters, setColumnFilters] = useLocalStorage<ColumnFiltersState>(
-    'user-table-filters',
-    []
-  );
+
+  // フィルタとソートの状態をクライアント側で管理（即座に反映）
+  const [sorting, setSorting] = React.useState<SortingState>(initialSorting);
+  const [columnFilters, setColumnFilters] =
+    React.useState<ColumnFiltersState>(initialFilters);
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
@@ -69,6 +70,7 @@ export function UserTable({ users, onExportCSV }: UserTableProps) {
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    enableSortingRemoval: true,
     state: {
       sorting,
       columnFilters,
@@ -83,16 +85,6 @@ export function UserTable({ users, onExportCSV }: UserTableProps) {
   const handleDeleteComplete = () => {
     table.resetRowSelection();
   };
-
-  // CSV エクスポート関数
-  const handleExportCSV = React.useCallback(() => {
-    exportTableToCSV(table, 'ユーザー管理');
-  }, [table]);
-
-  // エクスポート関数を親コンポーネントに登録
-  React.useEffect(() => {
-    onExportCSV?.(() => handleExportCSV);
-  }, [onExportCSV, handleExportCSV]);
 
   return (
     <div className="w-full">

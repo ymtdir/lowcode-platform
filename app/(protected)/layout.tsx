@@ -5,7 +5,6 @@ import { Separator } from '@/components/ui/separator';
 import { AppSidebar } from '@/features/layout/components/app-sidebar';
 import { BreadcrumbContainer } from '@/features/layout/components/breadcrumb/container';
 import { ItemOptionsButtonContainer } from '@/features/layout/components/item-options-button/container';
-import { ExportProvider } from '@/features/layout/providers/export-provider';
 
 /**
  * 保護されたレイアウトコンポーネント（認証必須）
@@ -24,21 +23,19 @@ export default async function ProtectedLayout({
   return (
     <SidebarProvider>
       <AppSidebar userName={userName} userRole={userRole} />
-      <ExportProvider>
-        <main className="w-full overflow-hidden">
-          <div className="relative flex items-center m-4">
-            <div className="flex items-center gap-2">
-              <SidebarTrigger />
-              <Separator orientation="vertical" className="h-4" />
-              <BreadcrumbContainer />
-            </div>
-            <div className="absolute right-0">
-              <ItemOptionsButtonContainer />
-            </div>
+      <main className="w-full overflow-hidden">
+        <div className="relative flex items-center m-4">
+          <div className="flex items-center gap-2">
+            <SidebarTrigger />
+            <Separator orientation="vertical" className="h-4" />
+            <BreadcrumbContainer />
           </div>
-          {children}
-        </main>
-      </ExportProvider>
+          <div className="absolute right-0">
+            <ItemOptionsButtonContainer />
+          </div>
+        </div>
+        {children}
+      </main>
     </SidebarProvider>
   );
 }

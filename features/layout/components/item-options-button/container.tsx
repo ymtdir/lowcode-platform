@@ -59,5 +59,5 @@ export function ItemOptionsButtonContainer() {
     return null;
   }
 
-  return <ItemOptionsButton pageType={pageType} />;
+  return <ItemOptionsButton pageType={pageType} itemId={itemId} />;
 }

@@ -14,7 +14,6 @@ import {
 } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
 import { useLocalStorage } from '@/hooks/use-local-storage';
-import { exportTableToCSV } from '@/lib/table-export';
 import { CreateGroupButton } from './create-group-button';
 import { BulkDeleteButton } from './bulk-delete-button';
 import { createColumns } from './columns';
@@ -45,27 +44,30 @@ type User = {
 type GroupTableProps = {
   groups: Group[];
   users: User[];
-  onExportCSV?: (exportFn: () => void) => void;
+  initialFilters?: ColumnFiltersState;
+  initialSorting?: SortingState;
 };
 
 /**
  * グループテーブルコンポーネント
  */
-export function GroupTable({ groups, users, onExportCSV }: GroupTableProps) {
+export function GroupTable({
+  groups,
+  users,
+  initialFilters = [],
+  initialSorting = [],
+}: GroupTableProps) {
   const columns = createColumns(groups, users);
   const [rowSelection, setRowSelection] = React.useState({});
 
   // localStorageに保存するテーブル状態
   const [columnVisibility, setColumnVisibility] =
     useLocalStorage<VisibilityState>('group-table-column-visibility', {});
-  const [sorting, setSorting] = useLocalStorage<SortingState>(
-    'group-table-sorting',
-    []
-  );
-  const [columnFilters, setColumnFilters] = useLocalStorage<ColumnFiltersState>(
-    'group-table-filters',
-    []
-  );
+
+  // フィルタとソートの状態をクライアント側で管理（即座に反映）
+  const [sorting, setSorting] = React.useState<SortingState>(initialSorting);
+  const [columnFilters, setColumnFilters] =
+    React.useState<ColumnFiltersState>(initialFilters);
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
@@ -79,6 +81,7 @@ export function GroupTable({ groups, users, onExportCSV }: GroupTableProps) {
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    enableSortingRemoval: true,
     state: {
       sorting,
       columnFilters,
@@ -93,16 +96,6 @@ export function GroupTable({ groups, users, onExportCSV }: GroupTableProps) {
   const handleDeleteComplete = () => {
     table.resetRowSelection();
   };
-
-  // CSV エクスポート関数
-  const handleExportCSV = React.useCallback(() => {
-    exportTableToCSV(table, 'グループ管理');
-  }, [table]);
-
-  // エクスポート関数を親コンポーネントに登録
-  React.useEffect(() => {
-    onExportCSV?.(() => handleExportCSV);
-  }, [onExportCSV, handleExportCSV]);
 
   return (
     <div className="w-full">

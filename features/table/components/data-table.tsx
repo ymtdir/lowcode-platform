@@ -39,7 +39,6 @@ import { createRecord } from '@/features/record/api/create-record';
 import { applyDefaultValues } from '@/features/column/utils';
 import { hasPermission } from '@/lib/permissions';
 import { useLocalStorage } from '@/hooks/use-local-storage';
-import { exportTableToCSV } from '@/lib/table-export';
 import { createColumns } from './columns';
 import { BulkDeleteButton } from './bulk-delete-button';
 import { FilterButton } from './filter-button';
@@ -55,7 +54,8 @@ type DataTableProps = {
   initialRecords: Record[];
   relationRecords: Map<string, RelationRecord[]>;
   permissionLevel: Permission;
-  onExportCSV?: (exportFn: () => void) => void;
+  initialFilters?: ColumnFiltersState;
+  initialSorting?: SortingState;
 };
 
 /**
@@ -63,12 +63,12 @@ type DataTableProps = {
  */
 export function DataTable({
   tableId,
-  tableName,
   columns,
   initialRecords,
   relationRecords,
   permissionLevel,
-  onExportCSV,
+  initialFilters = [],
+  initialSorting = [],
 }: DataTableProps) {
   const [records, setRecords] = useState<Record[]>(initialRecords);
   const [isPending, startTransition] = useTransition();
@@ -77,12 +77,11 @@ export function DataTable({
   // localStorageに保存するテーブル状態
   const [columnVisibilityRaw, setColumnVisibility] =
     useLocalStorage<VisibilityState>(`table-${tableId}-column-visibility`, {});
-  const [sortingRaw, setSorting] = useLocalStorage<SortingState>(
-    `table-${tableId}-sorting`,
-    []
-  );
-  const [columnFiltersRaw, setColumnFilters] =
-    useLocalStorage<ColumnFiltersState>(`table-${tableId}-filters`, []);
+
+  // フィルタとソートの状態をクライアント側で管理（即座に反映）
+  const [sorting, setSorting] = useState<SortingState>(initialSorting);
+  const [columnFilters, setColumnFilters] =
+    useState<ColumnFiltersState>(initialFilters);
 
   // initialRecordsをrefで保持して、handleCellChangeの依存配列から除外する
   const initialRecordsRef = useRef(initialRecords);
@@ -90,7 +89,7 @@ export function DataTable({
     initialRecordsRef.current = initialRecords;
   }, [initialRecords]);
 
-  // カラム構成変更時に古い状態をクリーンアップ（同期処理）
+  // カラム構成変更時に古い状態をクリーンアップ
   const validColumnIds = useMemo(
     () => new Set(columns.map((c) => c.id)),
     [columns]
@@ -106,15 +105,6 @@ export function DataTable({
     return validVisibility;
   }, [columnVisibilityRaw, validColumnIds]);
 
-  const sorting = useMemo(() => {
-    return sortingRaw.filter((s) => validColumnIds.has(s.id));
-  }, [sortingRaw, validColumnIds]);
-
-  const columnFilters = useMemo(() => {
-    return columnFiltersRaw.filter((f) => validColumnIds.has(f.id));
-  }, [columnFiltersRaw, validColumnIds]);
-
-  // クリーンアップされた状態をlocalStorageに保存
   useEffect(() => {
     if (
       JSON.stringify(columnVisibility) !== JSON.stringify(columnVisibilityRaw)
@@ -122,18 +112,6 @@ export function DataTable({
       setColumnVisibility(columnVisibility);
     }
   }, [columnVisibility, columnVisibilityRaw, setColumnVisibility]);
-
-  useEffect(() => {
-    if (JSON.stringify(sorting) !== JSON.stringify(sortingRaw)) {
-      setSorting(sorting);
-    }
-  }, [sorting, sortingRaw, setSorting]);
-
-  useEffect(() => {
-    if (JSON.stringify(columnFilters) !== JSON.stringify(columnFiltersRaw)) {
-      setColumnFilters(columnFilters);
-    }
-  }, [columnFilters, columnFiltersRaw, setColumnFilters]);
 
   // WRITE権限があるかチェック
   const canWrite = hasPermission(permissionLevel, 'WRITE');
@@ -229,6 +207,7 @@ export function DataTable({
     onColumnVisibilityChange: setColumnVisibility,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    enableSortingRemoval: true,
     state: {
       rowSelection,
       columnVisibility,
@@ -240,16 +219,6 @@ export function DataTable({
   // 選択されたレコードのID一覧
   const selectedRows = table.getFilteredSelectedRowModel().rows;
   const selectedRecordIds = selectedRows.map((row) => row.original.id);
-
-  // CSVエクスポート関数
-  const handleExportCSV = useCallback(() => {
-    exportTableToCSV(table, tableName);
-  }, [table, tableName]);
-
-  // エクスポート関数を親コンポーネントに渡す
-  useEffect(() => {
-    onExportCSV?.(() => handleExportCSV);
-  }, [onExportCSV, handleExportCSV]);
 
   return (
     <div className="w-full h-full flex flex-col">

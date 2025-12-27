@@ -14,13 +14,18 @@ export const dynamic = 'force-dynamic';
  */
 type ItemPageProps = {
   params: Promise<{ itemId: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 /**
  * アイテム詳細ページ（フォルダ/テーブル）
  */
-export default async function ItemPage({ params }: ItemPageProps) {
+export default async function ItemPage({
+  params,
+  searchParams,
+}: ItemPageProps) {
   const { itemId } = await params;
+  const resolvedSearchParams = await searchParams;
 
   // 認証チェック
   const currentUser = await getCurrentUser();
@@ -61,9 +66,28 @@ export default async function ItemPage({ params }: ItemPageProps) {
     const columnSchema = getColumnSchema(item.meta);
     const columns = columnSchema?.columns || [];
 
+    // searchParamsからフィルタとソート条件を抽出
+    const filtersParam = resolvedSearchParams.filters;
+    const sortingParam = resolvedSearchParams.sorting;
+
+    const filters = filtersParam
+      ? JSON.parse(
+          typeof filtersParam === 'string'
+            ? filtersParam
+            : filtersParam[0] || '[]'
+        )
+      : [];
+    const sorting = sortingParam
+      ? JSON.parse(
+          typeof sortingParam === 'string'
+            ? sortingParam
+            : sortingParam[0] || '[]'
+        )
+      : [];
+
     // レコードとリレーション用データを並列取得
     const [records, relationRecords] = await Promise.all([
-      getRecords(itemId),
+      getRecords(itemId, { filters, sorting }),
       getRelationRecords(columns),
     ]);
 
@@ -75,6 +99,8 @@ export default async function ItemPage({ params }: ItemPageProps) {
         records={records}
         relationRecords={relationRecords}
         permissionLevel={level}
+        initialFilters={filters}
+        initialSorting={sorting}
       />
     );
   }
