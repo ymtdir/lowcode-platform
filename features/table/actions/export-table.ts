@@ -4,7 +4,7 @@ import { getRecords } from '@/features/record/api/get-records';
 import { getItemById } from '@/features/item/api';
 import { getColumnSchema } from '@/features/column/types/schema';
 import { convertToCSV } from '@/lib/csv';
-import type { ExportColumnFilter, ExportSorting } from '../types/export';
+import type { ExportColumnFilter } from '../types/export';
 import type { RecordData } from '@/features/record/types';
 
 /**
@@ -12,8 +12,7 @@ import type { RecordData } from '@/features/record/types';
  */
 export async function exportTableAction(
   itemId: string,
-  filters: ExportColumnFilter[],
-  sorting: ExportSorting[]
+  filters: ExportColumnFilter[]
 ) {
   // アイテム情報を取得
   const item = await getItemById(itemId);

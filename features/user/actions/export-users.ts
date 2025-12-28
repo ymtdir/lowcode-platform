@@ -3,18 +3,12 @@
 import { prisma } from '@/lib/prisma';
 import { convertToCSV } from '@/lib/csv';
 import type { UserRole } from '@prisma/client';
-import type {
-  ExportColumnFilter,
-  ExportSorting,
-} from '@/features/table/types/export';
+import type { ExportColumnFilter } from '@/features/table/types/export';
 
 /**
  * ユーザーデータをCSVエクスポートするServer Action
  */
-export async function exportUsersAction(
-  filters: ExportColumnFilter[],
-  sorting: ExportSorting[]
-) {
+export async function exportUsersAction(filters: ExportColumnFilter[]) {
   // フィルタ条件を構築
   const where: {
     email?: { contains: string; mode: 'insensitive' };
@@ -35,24 +29,11 @@ export async function exportUsersAction(
     }
   });
 
-  // ソート条件を構築
-  const orderBy: Record<string, 'asc' | 'desc'>[] = [];
-  sorting.forEach((sort) => {
-    const { id, desc } = sort;
-    if (
-      id === 'email' ||
-      id === 'name' ||
-      id === 'role' ||
-      id === 'createdAt'
-    ) {
-      orderBy.push({ [id]: desc ? 'desc' : 'asc' });
-    }
-  });
-
   // ユーザーデータを取得
+  // 注: ソートはクライアントサイド（TanStack Table）で処理済み
   const users = await prisma.user.findMany({
     where,
-    orderBy: orderBy.length > 0 ? orderBy : { createdAt: 'desc' },
+    orderBy: { createdAt: 'desc' },
     select: {
       id: true,
       email: true,

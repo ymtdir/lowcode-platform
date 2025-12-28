@@ -3,10 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import { Ellipsis, FileOutput, FileInput } from 'lucide-react';
 import type { PageType } from './container';
-import type {
-  ExportColumnFilter,
-  ExportSorting,
-} from '@/features/table/types/export';
+import type { ExportColumnFilter } from '@/features/table/types/export';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,36 +42,30 @@ export function ItemOptionsButton({
   }
 
   const handleExport = async () => {
-    // URLからフィルタ・ソート条件を取得
+    // URLからフィルタ条件を取得
     const filtersParam = searchParams.get('filters');
-    const sortingParam = searchParams.get('sorting');
 
     let filters: ExportColumnFilter[] = [];
-    let sorting: ExportSorting[] = [];
 
     try {
       if (filtersParam) {
         const parsed = JSON.parse(filtersParam);
         if (Array.isArray(parsed)) filters = parsed;
       }
-      if (sortingParam) {
-        const parsed = JSON.parse(sortingParam);
-        if (Array.isArray(parsed)) sorting = parsed;
-      }
     } catch {
       // 不正なパラメータは無視してデフォルト値を使用
-      console.error('Failed to parse filters or sorting from URL');
+      console.error('Failed to parse filters from URL');
     }
 
     let result: { csv?: string; filename?: string; error?: string };
 
     // ページタイプに応じてServer Actionを呼び出し
     if (pageType === 'TABLE' && itemId) {
-      result = await exportTableAction(itemId, filters, sorting);
+      result = await exportTableAction(itemId, filters);
     } else if (pageType === 'USERS') {
-      result = await exportUsersAction(filters, sorting);
+      result = await exportUsersAction(filters);
     } else if (pageType === 'GROUPS') {
-      result = await exportGroupsAction(filters, sorting);
+      result = await exportGroupsAction(filters);
     } else {
       console.error('Unknown page type:', pageType);
       return;

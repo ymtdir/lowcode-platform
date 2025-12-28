@@ -2,18 +2,12 @@
 
 import { prisma } from '@/lib/prisma';
 import { convertToCSV } from '@/lib/csv';
-import type {
-  ExportColumnFilter,
-  ExportSorting,
-} from '@/features/table/types/export';
+import type { ExportColumnFilter } from '@/features/table/types/export';
 
 /**
  * グループデータをCSVエクスポートするServer Action
  */
-export async function exportGroupsAction(
-  filters: ExportColumnFilter[],
-  sorting: ExportSorting[]
-) {
+export async function exportGroupsAction(filters: ExportColumnFilter[]) {
   // フィルタ条件を構築
   const where: {
     name?: { contains: string; mode: 'insensitive' };
@@ -31,19 +25,11 @@ export async function exportGroupsAction(
     }
   });
 
-  // ソート条件を構築
-  const orderBy: Record<string, 'asc' | 'desc'>[] = [];
-  sorting.forEach((sort) => {
-    const { id, desc } = sort;
-    if (id === 'name' || id === 'description' || id === 'createdAt') {
-      orderBy.push({ [id]: desc ? 'desc' : 'asc' });
-    }
-  });
-
   // グループデータを取得
+  // 注: ソートはクライアントサイド（TanStack Table）で処理済み
   const groups = await prisma.group.findMany({
     where,
-    orderBy: orderBy.length > 0 ? orderBy : { createdAt: 'desc' },
+    orderBy: { createdAt: 'desc' },
     select: {
       id: true,
       name: true,
