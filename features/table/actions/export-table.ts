@@ -43,9 +43,28 @@ export async function exportTableAction(
     const referencedTable = await getItemById(referencedTableId);
     if (!referencedTable || referencedTable.type !== 'TABLE') continue;
 
-    // リレーション先のレコードを全件取得
+    // 実際に使用されているレコードIDを収集
+    const usedRecordIds = new Set<string>();
+    for (const record of records) {
+      const data = record.data as RecordData;
+      const value = data[relationCol.id];
+      if (value) {
+        // 文字列または配列の両方に対応
+        const ids = Array.isArray(value) ? value : [value];
+        ids.forEach((id) => {
+          if (typeof id === 'string') {
+            usedRecordIds.add(id);
+          }
+        });
+      }
+    }
+
+    // 使用されているIDのみ取得（パフォーマンス・セキュリティ改善）
     const referencedRecords = await prisma.record.findMany({
-      where: { tableId: referencedTableId },
+      where: {
+        tableId: referencedTableId,
+        id: { in: Array.from(usedRecordIds) },
+      },
     });
 
     // レコードIDから表示値へのマップを作成
