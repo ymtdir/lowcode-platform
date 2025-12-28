@@ -47,12 +47,31 @@ export function ItemOptionsButtonContainer() {
       return;
     }
 
+    // 競合状態を防ぐためのフラグ
+    let cancelled = false;
+
     const fetchItemType = async () => {
-      const item = await getItemById(itemId);
-      setItemType(item?.type ?? null);
+      try {
+        const item = await getItemById(itemId);
+        // コンポーネントがアンマウントされた、または新しいitemIdでリクエストが開始された場合は状態更新しない
+        if (!cancelled) {
+          setItemType(item?.type ?? null);
+        }
+      } catch (error) {
+        // エラー時も競合状態チェック
+        if (!cancelled) {
+          console.error('Failed to fetch item type:', error);
+          setItemType(null);
+        }
+      }
     };
 
     fetchItemType();
+
+    // クリーンアップ: 新しいitemIdでリクエストが開始されたら古いリクエストの結果を無視
+    return () => {
+      cancelled = true;
+    };
   }, [itemId, pathname]);
 
   if (!pageType) {
