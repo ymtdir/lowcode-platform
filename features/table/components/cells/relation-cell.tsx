@@ -36,16 +36,16 @@ export function RelationCell({
 }: RelationCellProps) {
   const [open, setOpen] = useState(false);
   // 複数選択用のローカルステート（常に呼び出す）
-  // 値の形式を正規化: stringもarrayとして扱う
-  const [localValue, setLocalValue] = useState<string[]>(() => {
-    if (!value) return [];
-    return Array.isArray(value) ? value : [value];
-  });
+  // NOTE: データは normalizeColumnValue() で正規化済み
+  // allowMultiple=true なら value は配列、allowMultiple=false なら文字列
+  const [localValue, setLocalValue] = useState<string[]>(
+    (value as string[]) || []
+  );
 
   // 選択中のレコードを取得
   const selectedRecords = (() => {
     if (!value) return [];
-    const ids = Array.isArray(value) ? value : [value];
+    const ids = allowMultiple ? (value as string[]) : [value as string];
     return ids
       .map((id) => {
         const record = records.find((r) => r.id === id);
@@ -93,16 +93,10 @@ export function RelationCell({
     // メニューが開いたときに値を同期
     const handleOpenChange = (newOpen: boolean) => {
       if (newOpen) {
-        // 値の形式を正規化: stringもarrayとして扱う
-        if (!value) {
-          setLocalValue([]);
-        } else {
-          setLocalValue(Array.isArray(value) ? value : [value]);
-        }
+        setLocalValue((value as string[]) || []);
       } else {
         // 閉じたときに変更があれば保存
-        // 値の形式を正規化して比較
-        const currentIds = !value ? [] : Array.isArray(value) ? value : [value];
+        const currentIds = (value as string[]) || [];
         const hasChanges =
           localValue.length !== currentIds.length ||
           localValue.some((id) => !currentIds.includes(id));
@@ -191,17 +185,9 @@ export function RelationCell({
     setOpen(false);
   };
 
-  // 単一選択モードでの値を正規化（配列の場合は最初の要素を使用）
-  const singleValue = (() => {
-    if (!value) return undefined;
-    if (typeof value === 'string') return value;
-    // 配列の場合は最初の要素を使用（allowMultiple切り替え時の互換性）
-    return Array.isArray(value) && value.length > 0 ? value[0] : undefined;
-  })();
-
   return (
     <Select
-      value={singleValue}
+      value={(value as string) || undefined}
       onValueChange={handleSelect}
       open={open}
       onOpenChange={setOpen}

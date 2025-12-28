@@ -58,14 +58,16 @@ export function SelectCell({
 }: SelectCellProps) {
   const [open, setOpen] = useState(false);
   // 複数選択用のローカルステート（常に呼び出す）
+  // NOTE: データは normalizeColumnValue() で正規化済み
+  // allowMultiple=true なら value は配列、allowMultiple=false なら文字列
   const [localValue, setLocalValue] = useState<string[]>(
-    Array.isArray(value) ? value : []
+    (value as string[]) || []
   );
 
   // 選択中のオプションを取得
   const selectedOptions = (() => {
     if (!value) return [];
-    const ids = Array.isArray(value) ? value : [value];
+    const ids = allowMultiple ? (value as string[]) : [value as string];
     return ids
       .map((id) => options.find((opt) => opt.id === id))
       .filter((opt) => opt !== undefined);
@@ -96,10 +98,10 @@ export function SelectCell({
     // メニューが開いたときに値を同期
     const handleOpenChange = (newOpen: boolean) => {
       if (newOpen) {
-        setLocalValue(Array.isArray(value) ? value : []);
+        setLocalValue((value as string[]) || []);
       } else {
         // 閉じたときに変更があれば保存
-        const currentIds = Array.isArray(value) ? value : [];
+        const currentIds = (value as string[]) || [];
         const hasChanges =
           localValue.length !== currentIds.length ||
           localValue.some((id) => !currentIds.includes(id));

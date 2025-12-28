@@ -37,6 +37,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { updateRecord } from '@/features/record/api/update-record';
 import { createRecord } from '@/features/record/api/create-record';
 import { applyDefaultValues } from '@/features/column/utils';
+import { normalizeRecordData } from '@/features/column/utils/normalize-column-value';
 import { hasPermission } from '@/lib/permissions';
 import { useLocalStorage } from '@/hooks/use-local-storage';
 import { createColumns } from './columns';
@@ -67,7 +68,17 @@ export function DataTable({
   permissionLevel,
   initialFilters = [],
 }: DataTableProps) {
-  const [records, setRecords] = useState<Record[]>(initialRecords);
+  // 初期レコードのデータを正規化（SELECT/RELATION型の形式統一）
+  const normalizedInitialRecords = useMemo(
+    () =>
+      initialRecords.map((record) => ({
+        ...record,
+        data: normalizeRecordData(record.data as RecordData, columns),
+      })),
+    [initialRecords, columns]
+  );
+
+  const [records, setRecords] = useState<Record[]>(normalizedInitialRecords);
   const [isPending, startTransition] = useTransition();
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
@@ -88,6 +99,11 @@ export function DataTable({
   useEffect(() => {
     initialRecordsRef.current = initialRecords;
   }, [initialRecords]);
+
+  // 正規化されたレコードをステートに反映
+  useEffect(() => {
+    setRecords(normalizedInitialRecords);
+  }, [normalizedInitialRecords]);
 
   // カラム構成変更時に古い状態をクリーンアップ
   const validColumnIds = useMemo(

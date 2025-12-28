@@ -73,9 +73,11 @@ export async function exportTableAction(
         return value.split('T')[0]; // YYYY-MM-DD
       }
 
-      // SELECT型カラムの場合はIDをラベルに変換（文字列・配列両方対応）
+      // SELECT型カラムの場合はIDをラベルに変換
+      // NOTE: エクスポート時は DB から直接データを取得するため、
+      // allowMultiple切り替え前の古いデータ形式が残っている可能性がある
       if (col.type === 'SELECT' && col.config?.options && value) {
-        // 配列または文字列を配列に統一
+        // 配列または文字列を配列に統一（互換性のため）
         const ids = Array.isArray(value) ? value : [value];
         return ids
           .map((id) => {
@@ -85,12 +87,14 @@ export async function exportTableAction(
           .join(', ');
       }
 
-      // RELATION型カラムの場合はIDを表示値に変換（文字列・配列両方対応）
+      // RELATION型カラムの場合はIDを表示値に変換
+      // NOTE: エクスポート時は DB から直接データを取得するため、
+      // allowMultiple切り替え前の古いデータ形式が残っている可能性がある
       if (col.type === 'RELATION' && value) {
         const idToValueMap = relationDataMap.get(col.id);
         if (!idToValueMap) return '';
 
-        // 配列または文字列を配列に統一
+        // 配列または文字列を配列に統一（互換性のため）
         const ids = Array.isArray(value) ? value : [value];
         return ids.map((id) => idToValueMap.get(id as string) || id).join(', ');
       }
