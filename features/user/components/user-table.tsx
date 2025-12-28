@@ -17,8 +17,9 @@ import { useLocalStorage } from '@/hooks/use-local-storage';
 import { CreateUserButton } from './create-user-button';
 import { BulkDeleteButton } from './bulk-delete-button';
 import { createColumns } from './columns';
-import { Input } from '@/components/ui/input';
 import { ColumnVisibilityButton } from '@/features/table/components/column-visibility-button';
+import { FilterButton } from '@/features/table/components/filter-button';
+import type { Column } from '@/features/column/types';
 import {
   Table,
   TableBody,
@@ -37,6 +38,54 @@ type UserTableProps = {
   initialFilters?: ColumnFiltersState;
   initialSorting?: SortingState;
 };
+
+/**
+ * ユーザーテーブル用のフィルター可能なカラム定義
+ */
+const filterableColumns: Column[] = [
+  {
+    id: 'email',
+    name: 'メールアドレス',
+    type: 'TEXT',
+    order: 0,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    enableFilter: true,
+  },
+  {
+    id: 'name',
+    name: '名前',
+    type: 'TEXT',
+    order: 1,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    enableFilter: true,
+  },
+  {
+    id: 'role',
+    name: 'ロール',
+    type: 'SELECT',
+    order: 2,
+    config: {
+      options: [
+        { id: 'ADMIN', label: '管理者' },
+        { id: 'MEMBER', label: 'メンバー' },
+      ],
+    },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    enableFilter: true,
+  },
+  {
+    id: 'createdAt',
+    name: '登録日',
+    type: 'DATE',
+    order: 3,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    enableFilter: true,
+  },
+];
 
 /**
  * ユーザーテーブルコンポーネント
@@ -89,13 +138,10 @@ export function UserTable({
   return (
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
-        <Input
-          placeholder="メールアドレスで検索..."
-          value={(table.getColumn('email')?.getFilterValue() as string) ?? ''}
-          onChange={(event) =>
-            table.getColumn('email')?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
+        <FilterButton
+          columns={filterableColumns}
+          columnFilters={columnFilters}
+          onColumnFiltersChange={setColumnFilters}
         />
         <div className="flex items-center gap-2">
           <ColumnVisibilityButton table={table} />

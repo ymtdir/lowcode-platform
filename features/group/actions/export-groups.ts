@@ -12,6 +12,7 @@ export async function exportGroupsAction(filters: ExportColumnFilter[]) {
   const where: {
     name?: { contains: string; mode: 'insensitive' };
     description?: { contains: string; mode: 'insensitive' };
+    parentId?: string | null;
   } = {};
 
   filters.forEach((filter) => {
@@ -21,6 +22,8 @@ export async function exportGroupsAction(filters: ExportColumnFilter[]) {
         where.name = { contains: value, mode: 'insensitive' };
       } else if (id === 'description') {
         where.description = { contains: value, mode: 'insensitive' };
+      } else if (id === 'parentId') {
+        where.parentId = value;
       }
     }
   });
@@ -35,6 +38,11 @@ export async function exportGroupsAction(filters: ExportColumnFilter[]) {
       name: true,
       description: true,
       createdAt: true,
+      parent: {
+        select: {
+          name: true,
+        },
+      },
       _count: {
         select: {
           members: true,
@@ -44,13 +52,21 @@ export async function exportGroupsAction(filters: ExportColumnFilter[]) {
   });
 
   // ヘッダー行を作成
-  const headers = ['ID', 'グループ名', '説明', 'メンバー数', '作成日'];
+  const headers = [
+    'ID',
+    'グループ名',
+    '説明',
+    '親グループ',
+    'メンバー数',
+    '作成日',
+  ];
 
   // データ行を作成
   const rows = groups.map((group) => [
     group.id,
     group.name,
     group.description || '',
+    group.parent?.name || '',
     group._count.members.toString(),
     group.createdAt.toISOString().split('T')[0], // YYYY-MM-DD
   ]);

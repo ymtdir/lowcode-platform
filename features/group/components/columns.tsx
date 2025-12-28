@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ColumnDef } from '@tanstack/react-table';
+import { ColumnDef, FilterFn } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -10,6 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { SortableHeader } from '@/features/table/components/sortable-header';
 import { EditGroupOption } from './edit-group-option';
 import { DeleteGroupOption } from './delete-group-option';
 import { ManageMembersOption } from './manage-members-option';
@@ -22,6 +23,41 @@ type User = {
   id: string;
   email: string;
   name: string | null;
+};
+
+/**
+ * テキストフィルタ関数
+ */
+const textFilterFn: FilterFn<Group> = (row, columnId, filterValue) => {
+  const value = row.getValue(columnId) as string | null;
+  const search = filterValue as string;
+  if (!search) return true;
+  return (value || '').toLowerCase().includes(search.toLowerCase());
+};
+
+/**
+ * DATEフィルタ関数
+ */
+const dateFilterFn: FilterFn<Group> = (row, columnId, filterValue) => {
+  const value = row.getValue(columnId) as Date | string | null;
+  const filter = filterValue as {
+    preset?: string;
+    startDate: Date | null;
+    endDate: Date | null;
+  };
+  if (!value) return false;
+  if (!filter.startDate && !filter.endDate) return true;
+
+  const date = new Date(value);
+  const start = filter.startDate ? new Date(filter.startDate) : new Date(0);
+  const end = filter.endDate
+    ? new Date(filter.endDate)
+    : new Date(8640000000000000);
+
+  start.setHours(0, 0, 0, 0);
+  end.setHours(23, 59, 59, 999);
+
+  return date >= start && date <= end;
 };
 
 /**
@@ -56,19 +92,25 @@ export const createColumns = (
   },
   {
     accessorKey: 'name',
-    header: 'グループ名',
+    header: ({ column }) => (
+      <SortableHeader column={column} title="グループ名" />
+    ),
     cell: ({ row }) => <div>{row.getValue('name')}</div>,
     meta: { width: 'w-[15%]' },
+    filterFn: textFilterFn,
   },
   {
     accessorKey: 'description',
-    header: '説明',
+    header: ({ column }) => <SortableHeader column={column} title="説明" />,
     cell: ({ row }) => <div>{row.getValue('description') || '-'}</div>,
     meta: { width: 'w-[20%]' },
+    filterFn: textFilterFn,
   },
   {
     accessorKey: 'parentId',
-    header: '親グループ',
+    header: ({ column }) => (
+      <SortableHeader column={column} title="親グループ" />
+    ),
     cell: ({ row }) => {
       const group = row.original;
       return <div>{group.parent?.name || '-'}</div>;
@@ -77,7 +119,9 @@ export const createColumns = (
   },
   {
     accessorKey: 'members',
-    header: 'メンバー数',
+    header: ({ column }) => (
+      <SortableHeader column={column} title="メンバー数" />
+    ),
     cell: ({ row }) => {
       const group = row.original;
       return <div>{group._count?.members || 0}人</div>;
@@ -86,12 +130,13 @@ export const createColumns = (
   },
   {
     accessorKey: 'createdAt',
-    header: '作成日',
+    header: ({ column }) => <SortableHeader column={column} title="作成日" />,
     cell: ({ row }) => {
       const date = row.getValue('createdAt') as Date;
       return <div>{new Date(date).toLocaleDateString('ja-JP')}</div>;
     },
     meta: { width: 'w-[15%]' },
+    filterFn: dateFilterFn,
   },
   {
     id: 'actions',
