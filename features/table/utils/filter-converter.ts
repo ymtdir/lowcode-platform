@@ -194,7 +194,7 @@ function convertNumberFilter(
         },
       } as Prisma.RecordWhereInput;
 
-    case 'range':
+    case 'range': {
       if (value1 === null && value2 === null) {
         return null;
       }
@@ -218,6 +218,7 @@ function convertNumberFilter(
       return {
         AND: rangeConditions,
       } as Prisma.RecordWhereInput;
+    }
 
     default:
       return null;
@@ -265,17 +266,4 @@ function convertDateFilter(
   return {
     AND: dateConditions,
   } as Prisma.RecordWhereInput;
-}
-
-/**
- * TanStack TableのソートをPrisma ORDER BY条件に変換
- *
- * 注意: PrismaはJSONフィールドの動的ソートをサポートしていないため、
- * ソートはクライアント側でのみ実行されます。
- * サーバー側では createdAt でソートして全データを返します。
- */
-export function convertSortingToPrismaOrderBy(): Prisma.RecordOrderByWithRelationInput[] {
-  // PrismaはJSONフィールドの動的ソートをサポートしていないため、
-  // 空配列を返してデフォルトソート（createdAt）を使用
-  return [];
 }
