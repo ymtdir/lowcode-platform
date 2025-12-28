@@ -49,7 +49,6 @@ import { ColumnVisibilityButton } from './column-visibility-button';
  */
 type DataTableProps = {
   tableId: string;
-  tableName: string;
   columns: Column[];
   initialRecords: Record[];
   relationRecords: Map<string, RelationRecord[]>;

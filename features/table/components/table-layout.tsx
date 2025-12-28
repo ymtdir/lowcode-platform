@@ -44,7 +44,6 @@ export function TableLayout({
 
       <DataTable
         tableId={itemId}
-        tableName={itemName}
         columns={columns}
         initialRecords={records}
         relationRecords={relationRecords}
