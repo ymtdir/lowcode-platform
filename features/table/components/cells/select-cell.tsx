@@ -16,8 +16,8 @@ import {
 import type { SelectOption } from '@/features/column/types';
 
 type SelectCellProps = {
-  value: string | string[] | null;
-  onChange: (value: string | string[] | null) => void;
+  value: string[] | null;
+  onChange: (value: string[] | null) => void;
   options: SelectOption[];
   allowMultiple?: boolean;
   readOnly?: boolean;
@@ -174,14 +174,18 @@ export function SelectCell({
     if (optionId === '__clear__') {
       onChange(null);
     } else {
-      onChange(optionId);
+      // 単一選択でも配列形式で保存
+      onChange([optionId]);
     }
     setOpen(false);
   };
 
+  // 単一選択の現在値を取得（配列の最初の要素）
+  const singleValue = Array.isArray(value) ? value[0] : value;
+
   return (
     <Select
-      value={(value as string) || undefined}
+      value={(singleValue as string) || undefined}
       onValueChange={handleSelect}
       open={open}
       onOpenChange={setOpen}

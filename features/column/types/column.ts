@@ -79,7 +79,7 @@ export type ColumnTypeConfig = {
   SELECT: {
     options: SelectOption[];
     allowMultiple?: boolean; // 複数選択を許可（デフォルト: false）
-    defaultValue?: string | string[]; // デフォルト値（選択肢のIDまたはIDの配列）
+    defaultValue?: string | string[]; // デフォルト値（選択肢のIDまたはIDの配列。保存時は常に配列に変換される）
   };
   CHECKBOX: {
     checkedLabel?: string; // チェック時のラベル（例: 「完了」）

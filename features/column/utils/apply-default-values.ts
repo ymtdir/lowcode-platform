@@ -15,7 +15,9 @@ export function applyDefaultValues(columns: Column[]): RecordData {
     } else if (column.type === 'TEXTAREA' && column.config?.defaultValue) {
       data[column.id] = column.config.defaultValue;
     } else if (column.type === 'SELECT' && column.config?.defaultValue) {
-      data[column.id] = column.config.defaultValue;
+      // SELECT型は常に配列形式で保存
+      const defaultValue = column.config.defaultValue;
+      data[column.id] = Array.isArray(defaultValue) ? defaultValue : [defaultValue];
     } else if (
       column.type === 'CHECKBOX' &&
       column.config?.defaultValue !== undefined

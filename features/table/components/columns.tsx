@@ -181,7 +181,7 @@ export const createColumns = (
         case 'SELECT':
           return (
             <SelectCell
-              value={(value as string | string[]) ?? null}
+              value={(value as string[]) ?? null}
               onChange={handleChange}
               options={(column as SelectColumn).config?.options ?? []}
               allowMultiple={(column as SelectColumn).config?.allowMultiple}

@@ -214,6 +214,7 @@ function validateDateValue(
 
 /**
  * SELECT型のバリデーション
+ * 注: 単一選択・複数選択に関わらず、常に配列形式で保存される
  */
 function validateSelectValue(
   value: unknown,
@@ -221,31 +222,7 @@ function validateSelectValue(
 ): ValidationError | null {
   const allowMultiple = column.config.allowMultiple || false;
 
-  // 単一選択の場合
-  if (!allowMultiple) {
-    if (typeof value !== 'string') {
-      return {
-        columnId: column.id,
-        columnName: column.name,
-        message: `${column.name}は文字列である必要があります`,
-      };
-    }
-
-    const validOptionIds = column.config.options.map((opt) => opt.id);
-
-    // 選択肢のIDにマッチしない場合はエラー
-    if (!validOptionIds.includes(value)) {
-      return {
-        columnId: column.id,
-        columnName: column.name,
-        message: `${column.name}は有効な選択肢から選んでください`,
-      };
-    }
-
-    return null;
-  }
-
-  // 複数選択の場合
+  // 配列でない場合はエラー
   if (!Array.isArray(value)) {
     return {
       columnId: column.id,
@@ -257,6 +234,15 @@ function validateSelectValue(
   // 空配列の場合はOK
   if (value.length === 0) {
     return null;
+  }
+
+  // 単一選択の場合、配列の長さは1まで
+  if (!allowMultiple && value.length > 1) {
+    return {
+      columnId: column.id,
+      columnName: column.name,
+      message: `${column.name}は1つまで選択できます`,
+    };
   }
 
   const validOptionIds = column.config.options.map((opt) => opt.id);

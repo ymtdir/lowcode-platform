@@ -27,20 +27,33 @@ export async function exportTableAction(
   // フィルタ適用済みのレコードを取得
   const records = await getRecords(itemId, { filters });
 
-  // ヘッダー行を作成（カラム名）
-  const headers = columns.map((col) => col.name);
+  // ヘッダー行を作成（IDを1列目に追加）
+  const headers = ['ID', ...columns.map((col) => col.name)];
 
-  // データ行を作成
+  // データ行を作成（record.idを1列目に追加）
   const rows = records.map((record) => {
     const data = record.data as RecordData;
-    return columns.map((col) => {
+    const columnValues = columns.map((col) => {
       const value = data[col.id];
+
       // DATE型カラムの場合はフォーマット（JSONから取得した値は文字列）
       if (col.type === 'DATE' && typeof value === 'string') {
         return value.split('T')[0]; // YYYY-MM-DD
       }
+
+      // SELECT型カラムの場合はIDをラベルに変換（常に配列形式）
+      if (col.type === 'SELECT' && col.config?.options && Array.isArray(value)) {
+        return value
+          .map((id) => {
+            const option = col.config.options.find((opt) => opt.id === id);
+            return option?.label || id;
+          })
+          .join(', ');
+      }
+
       return value as string | number | boolean | null | undefined;
     });
+    return [record.id, ...columnValues];
   });
 
   // CSV変換
