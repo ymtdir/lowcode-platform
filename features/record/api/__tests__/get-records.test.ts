@@ -1,8 +1,5 @@
 import { getRecords } from '../get-records';
-import type {
-  ExportColumnFilter,
-  ExportSorting,
-} from '@/features/table/types/export';
+import type { ExportColumnFilter } from '@/features/table/types/export';
 
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
@@ -16,21 +13,16 @@ jest.mock('@/lib/prisma', () => ({
 // filter-converterをモック化
 jest.mock('@/features/table/utils/filter-converter', () => ({
   convertFiltersToPrismaWhere: jest.fn(() => ({})),
-  convertSortingToPrismaOrderBy: jest.fn(() => []),
 }));
 
 import { prisma } from '@/lib/prisma';
-import {
-  convertFiltersToPrismaWhere,
-  convertSortingToPrismaOrderBy,
-} from '@/features/table/utils/filter-converter';
+import { convertFiltersToPrismaWhere } from '@/features/table/utils/filter-converter';
 
 describe('getRecords', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // デフォルトのモック戻り値をリセット
     (convertFiltersToPrismaWhere as jest.Mock).mockReturnValue({});
-    (convertSortingToPrismaOrderBy as jest.Mock).mockReturnValue([]);
   });
 
   it('テーブルに紐づくレコード一覧を取得できる', async () => {
@@ -64,7 +56,6 @@ describe('getRecords', () => {
       orderBy: { createdAt: 'desc' },
     });
     expect(convertFiltersToPrismaWhere).toHaveBeenCalledWith([]);
-    expect(convertSortingToPrismaOrderBy).toHaveBeenCalled();
   });
 
   it('レコードが存在しない場合は空配列を返す', async () => {
@@ -120,74 +111,6 @@ describe('getRecords', () => {
     expect(prisma.record.findMany).toHaveBeenCalledWith({
       where: { tableId, ...mockWhere },
       orderBy: { createdAt: 'desc' },
-    });
-  });
-
-  it('ソート条件を指定してレコードを取得できる', async () => {
-    const tableId = 'table-1';
-    const sorting: ExportSorting[] = [{ id: 'name', desc: true }];
-    const mockRecords = [
-      {
-        id: 'record-2',
-        tableId,
-        data: { name: 'テスト2' },
-        createdById: 'user-1',
-        createdAt: new Date('2024-01-02'),
-        updatedAt: new Date('2024-01-02'),
-      },
-      {
-        id: 'record-1',
-        tableId,
-        data: { name: 'テスト1' },
-        createdById: 'user-1',
-        createdAt: new Date('2024-01-01'),
-        updatedAt: new Date('2024-01-01'),
-      },
-    ];
-
-    const mockOrderBy = [{ data: { path: ['name'], sort: 'desc' } }];
-    (convertSortingToPrismaOrderBy as jest.Mock).mockReturnValue(mockOrderBy);
-    (prisma.record.findMany as jest.Mock).mockResolvedValue(mockRecords);
-
-    const result = await getRecords(tableId, { sorting });
-
-    expect(result).toEqual(mockRecords);
-    expect(convertSortingToPrismaOrderBy).toHaveBeenCalled();
-    expect(prisma.record.findMany).toHaveBeenCalledWith({
-      where: { tableId },
-      orderBy: mockOrderBy,
-    });
-  });
-
-  it('フィルタとソートの両方を指定してレコードを取得できる', async () => {
-    const tableId = 'table-1';
-    const filters: ExportColumnFilter[] = [{ id: 'status', value: 'active' }];
-    const sorting: ExportSorting[] = [{ id: 'createdAt', desc: true }];
-    const mockRecords = [
-      {
-        id: 'record-2',
-        tableId,
-        data: { status: 'active', name: 'テスト2' },
-        createdById: 'user-1',
-        createdAt: new Date('2024-01-02'),
-        updatedAt: new Date('2024-01-02'),
-      },
-    ];
-
-    const mockWhere = { data: { path: ['status'], equals: 'active' } };
-    const mockOrderBy = [{ createdAt: 'desc' }];
-    (convertFiltersToPrismaWhere as jest.Mock).mockReturnValue(mockWhere);
-    (convertSortingToPrismaOrderBy as jest.Mock).mockReturnValue(mockOrderBy);
-    (prisma.record.findMany as jest.Mock).mockResolvedValue(mockRecords);
-
-    const result = await getRecords(tableId, { filters, sorting });
-
-    expect(result).toEqual(mockRecords);
-    expect(convertFiltersToPrismaWhere).toHaveBeenCalledWith(filters);
-    expect(convertSortingToPrismaOrderBy).toHaveBeenCalled();
-    expect(prisma.record.findMany).toHaveBeenCalledWith({
-      where: { tableId, ...mockWhere },
-      orderBy: mockOrderBy,
     });
   });
 });

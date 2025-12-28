@@ -40,13 +40,17 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
   try {
     if (filtersParam) {
       const parsed = JSON.parse(
-        typeof filtersParam === 'string' ? filtersParam : filtersParam[0] || '[]'
+        typeof filtersParam === 'string'
+          ? filtersParam
+          : filtersParam[0] || '[]'
       );
       if (Array.isArray(parsed)) filters = parsed;
     }
     if (sortingParam) {
       const parsed = JSON.parse(
-        typeof sortingParam === 'string' ? sortingParam : sortingParam[0] || '[]'
+        typeof sortingParam === 'string'
+          ? sortingParam
+          : sortingParam[0] || '[]'
       );
       if (Array.isArray(parsed)) sorting = parsed;
     }

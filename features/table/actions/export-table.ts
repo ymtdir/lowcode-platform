@@ -25,8 +25,8 @@ export async function exportTableAction(
   const columnSchema = getColumnSchema(item.meta);
   const columns = columnSchema?.columns || [];
 
-  // フィルタ・ソート適用済みのレコードを取得
-  const records = await getRecords(itemId, { filters, sorting });
+  // フィルタ適用済みのレコードを取得
+  const records = await getRecords(itemId, { filters });
 
   // ヘッダー行を作成（カラム名）
   const headers = columns.map((col) => col.name);

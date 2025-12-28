@@ -100,7 +100,7 @@ export default async function ItemPage({
 
     // レコードとリレーション用データを並列取得
     const [records, relationRecords] = await Promise.all([
-      getRecords(itemId, { filters, sorting }),
+      getRecords(itemId, { filters }),
       getRelationRecords(columns),
     ]);
 
