@@ -25,9 +25,9 @@ const getItemLabel = (itemType: ItemType) => {
 };
 
 /**
- * 名前変更アイテムのProps型
+ * 名前変更オプションのProps型
  */
-type RenameItemButtonProps = {
+type RenameItemOptionProps = {
   itemId: string;
   itemType: ItemType;
   currentName: string;
@@ -115,14 +115,14 @@ function RenameContent({
 }
 
 /**
- * 名前変更アイテムコンポーネント
+ * 名前変更オプションコンポーネント
  */
-export function RenameItemButton({
+export function RenameItemOption({
   itemId,
   itemType,
   currentName,
   onOpenChange: onDropdownOpenChange,
-}: RenameItemButtonProps) {
+}: RenameItemOptionProps) {
   const [open, setOpen] = useState(false);
   const [resetKey, setResetKey] = useState(0);
   const label = getItemLabel(itemType);

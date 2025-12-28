@@ -7,8 +7,8 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { CreateFolderButton } from './create-folder-button';
-import { CreateTableButton } from './create-table-button';
+import { CreateFolderOption } from './create-folder-option';
+import { CreateTableOption } from './create-table-option';
 
 /**
  * アイテム作成ボタンのProps型
@@ -38,8 +38,8 @@ export function CreateItemButton({ parentId }: CreateItemButtonProps) {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" sideOffset={4}>
-        <CreateFolderButton parentId={parentId} onOpenChange={setOpen} />
-        <CreateTableButton parentId={parentId} onOpenChange={setOpen} />
+        <CreateFolderOption parentId={parentId} onOpenChange={setOpen} />
+        <CreateTableOption parentId={parentId} onOpenChange={setOpen} />
       </DropdownMenuContent>
     </DropdownMenu>
   );

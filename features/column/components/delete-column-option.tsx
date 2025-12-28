@@ -19,9 +19,9 @@ import { removeColumn } from '../api/remove-column';
 import type { Column } from '../types/column';
 
 /**
- * カラム削除アイテムのProps型
+ * カラム削除オプションのProps型
  */
-type DeleteColumnItemProps = {
+type DeleteColumnOptionProps = {
   itemId: string;
   column: Column;
   onOpenChange: (open: boolean) => void;
@@ -29,14 +29,14 @@ type DeleteColumnItemProps = {
 };
 
 /**
- * カラム削除アイテムコンポーネント
+ * カラム削除オプションコンポーネント
  */
-export function DeleteColumnItem({
+export function DeleteColumnOption({
   itemId,
   column,
   onOpenChange: onDropdownOpenChange,
   onDeleted,
-}: DeleteColumnItemProps) {
+}: DeleteColumnOptionProps) {
   const [open, setOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 

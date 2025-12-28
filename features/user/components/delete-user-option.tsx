@@ -15,31 +15,31 @@ import {
 } from '@/components/ui/alert-dialog';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import { deleteGroup } from '../api/delete-group';
-import type { Group } from '../types';
+import { deleteUser } from '../api/delete-user';
+import type { User } from '../types';
 
 /**
- * グループ削除アイテムのProps型
+ * ユーザー削除オプションのProps型
  */
-type DeleteGroupItemProps = {
-  group: Group;
+type DeleteUserOptionProps = {
+  user: User;
   onOpenChange: (open: boolean) => void;
 };
 
 /**
- * グループ削除アイテムコンポーネント
+ * ユーザー削除オプションコンポーネント
  */
-export function DeleteGroupItem({
-  group,
+export function DeleteUserOption({
+  user,
   onOpenChange: onDropdownOpenChange,
-}: DeleteGroupItemProps) {
+}: DeleteUserOptionProps) {
   const [open, setOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
     setIsDeleting(true);
 
-    const result = await deleteGroup(group.id);
+    const result = await deleteUser(user.id);
 
     setOpen(false);
     setIsDeleting(false);
@@ -49,8 +49,8 @@ export function DeleteGroupItem({
         description: result.error,
       });
     } else {
-      toast.success('グループを削除しました', {
-        description: `${group.name}を削除しました`,
+      toast.success('ユーザーを削除しました', {
+        description: `${user.name}のアカウントを削除しました`,
       });
     }
   };
@@ -78,11 +78,11 @@ export function DeleteGroupItem({
           <div className="flex items-center space-x-2">
             <AlertCircle className="text-destructive" />
             <AlertDialogTitle className="text-destructive">
-              {group.name}を削除
+              {user.name}を削除
             </AlertDialogTitle>
           </div>
           <AlertDialogDescription>
-            削除したグループは復元できません。
+            削除したユーザーは復元できません。
             <br />
             本当に削除しますか？
           </AlertDialogDescription>

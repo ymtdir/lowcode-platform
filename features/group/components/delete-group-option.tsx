@@ -1,9 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Trash2, AlertCircle } from 'lucide-react';
-import type { ItemType } from '@prisma/client';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,43 +15,31 @@ import {
 } from '@/components/ui/alert-dialog';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import { deleteItem } from '@/features/item/api';
+import { deleteGroup } from '../api/delete-group';
+import type { Group } from '../types';
 
 /**
- * アイテムタイプに応じたラベルを取得
+ * グループ削除オプションのProps型
  */
-const getItemLabel = (itemType: ItemType) => {
-  return itemType === 'TABLE' ? 'テーブル' : 'フォルダ';
-};
-
-/**
- * 削除アイテムのProps型
- */
-type DeleteItemButtonProps = {
-  itemId: string;
-  itemType: ItemType;
-  itemName: string;
+type DeleteGroupOptionProps = {
+  group: Group;
   onOpenChange: (open: boolean) => void;
 };
 
 /**
- * 削除アイテムコンポーネント
+ * グループ削除オプションコンポーネント
  */
-export function DeleteItemButton({
-  itemId,
-  itemType,
-  itemName,
+export function DeleteGroupOption({
+  group,
   onOpenChange: onDropdownOpenChange,
-}: DeleteItemButtonProps) {
-  const router = useRouter();
+}: DeleteGroupOptionProps) {
   const [open, setOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const label = getItemLabel(itemType);
 
   const handleDelete = async () => {
     setIsDeleting(true);
 
-    const result = await deleteItem(itemId);
+    const result = await deleteGroup(group.id);
 
     setOpen(false);
     setIsDeleting(false);
@@ -63,10 +49,9 @@ export function DeleteItemButton({
         description: result.error,
       });
     } else {
-      toast.success(`${label}を削除しました`, {
-        description: `${itemName}を削除しました`,
+      toast.success('グループを削除しました', {
+        description: `${group.name}を削除しました`,
       });
-      router.push('/workspace');
     }
   };
 
@@ -93,13 +78,11 @@ export function DeleteItemButton({
           <div className="flex items-center space-x-2">
             <AlertCircle className="text-destructive" />
             <AlertDialogTitle className="text-destructive">
-              {itemName}を削除
+              {group.name}を削除
             </AlertDialogTitle>
           </div>
           <AlertDialogDescription>
-            削除した{label}は復元できません。
-            <br />
-            {label}内のすべてのデータが完全に削除されます。
+            削除したグループは復元できません。
             <br />
             本当に削除しますか？
           </AlertDialogDescription>

@@ -8,9 +8,9 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { RenameItemButton } from './rename-item-button';
-import { ManageItemButton } from './manage-item-button';
-import { DeleteItemButton } from './delete-item-button';
+import { RenameItemOption } from './rename-item-option';
+import { ManageItemOption } from './manage-item-option';
+import { DeleteItemOption } from './delete-item-option';
 
 /**
  * アイテム編集ボタンのProps型
@@ -46,14 +46,14 @@ export function EditItemButton({
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" sideOffset={4}>
-        <RenameItemButton
+        <RenameItemOption
           itemId={itemId}
           itemType={itemType}
           currentName={itemName}
           onOpenChange={setOpen}
         />
-        <ManageItemButton itemId={itemId} itemType={itemType} />
-        <DeleteItemButton
+        <ManageItemOption itemId={itemId} itemType={itemType} />
+        <DeleteItemOption
           itemId={itemId}
           itemType={itemType}
           itemName={itemName}

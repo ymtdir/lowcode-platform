@@ -49,22 +49,22 @@ type Group = {
 };
 
 /**
- * メンバー管理アイテムのProps型
+ * メンバー管理オプションのProps型
  */
-type ManageMembersItemProps = {
+type ManageMembersOptionProps = {
   group: Group;
   allUsers: User[];
   onOpenChange: (open: boolean) => void;
 };
 
 /**
- * メンバー管理アイテムコンポーネント
+ * メンバー管理オプションコンポーネント
  */
-export function ManageMembersItem({
+export function ManageMembersOption({
   group,
   allUsers,
   onOpenChange: onDropdownOpenChange,
-}: ManageMembersItemProps) {
+}: ManageMembersOptionProps) {
   const [open, setOpen] = useState(false);
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(
     new Set()

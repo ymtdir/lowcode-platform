@@ -13,8 +13,8 @@ import {
 import type { Column } from '../types/column';
 import type { Item } from '@/features/item/types';
 import { COLUMN_CONFIGS } from '../constants';
-import { EditColumnItem } from './edit-column-item';
-import { DeleteColumnItem } from './delete-column-item';
+import { EditColumnOption } from './edit-column-option';
+import { DeleteColumnOption } from './delete-column-option';
 
 /**
  * カラムアイテムのProps型
@@ -105,14 +105,14 @@ export function ColumnItem({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent side="bottom">
-          <EditColumnItem
+          <EditColumnOption
             itemId={itemId}
             column={column}
             tables={tables}
             onOpenChange={setOpen}
             onUpdated={onUpdated}
           />
-          <DeleteColumnItem
+          <DeleteColumnOption
             itemId={itemId}
             column={column}
             onOpenChange={setOpen}

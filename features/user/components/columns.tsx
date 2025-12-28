@@ -10,8 +10,8 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { EditUserItem } from './edit-user-item';
-import { DeleteUserItem } from './delete-user-item';
+import { EditUserOption } from './edit-user-option';
+import { DeleteUserOption } from './delete-user-option';
 import type { User } from '../types';
 
 /**
@@ -88,8 +88,8 @@ export const createColumns = (): ColumnDef<User>[] => [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="bottom">
-            <EditUserItem user={user} onOpenChange={setOpen} />
-            <DeleteUserItem user={user} onOpenChange={setOpen} />
+            <EditUserOption user={user} onOpenChange={setOpen} />
+            <DeleteUserOption user={user} onOpenChange={setOpen} />
           </DropdownMenuContent>
         </DropdownMenu>
       );
