@@ -19,22 +19,10 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { CalendarIcon } from 'lucide-react';
-
-type DatePreset =
-  | 'today'
-  | 'this_week'
-  | 'this_month'
-  | 'last_month'
-  | 'custom';
-
-/**
- * 日付フィルタの値の型
- */
-export type DateFilterValue = {
-  preset: DatePreset;
-  startDate: Date | null;
-  endDate: Date | null;
-};
+import type {
+  DateFilterValue,
+  DatePreset,
+} from '@/features/table/utils/filter-functions';
 
 type DateFilterProps = {
   value: DateFilterValue;

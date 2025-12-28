@@ -8,17 +8,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import type { NumberFilterValue } from '@/features/table/utils/filter-functions';
 
 type NumberOperator = 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' | 'range';
-
-/**
- * 数値フィルタの値の型
- */
-export type NumberFilterValue = {
-  operator: NumberOperator;
-  value1: number | null;
-  value2: number | null;
-};
 
 type NumberFilterProps = {
   value: NumberFilterValue;
