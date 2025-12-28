@@ -26,9 +26,9 @@ import { updateUserProfile, updateUserPassword } from '../api/update-user';
 import type { User } from '../types';
 
 /**
- * ユーザー編集アイテムのProps型
+ * ユーザー編集オプションのProps型
  */
-type EditUserItemProps = {
+type EditUserOptionProps = {
   user: User;
   onOpenChange: (open: boolean) => void;
 };
@@ -168,12 +168,12 @@ function EditUserContent({ user, onClose }: EditUserContentProps) {
 }
 
 /**
- * ユーザー編集アイテムコンポーネント
+ * ユーザー編集オプションコンポーネント
  */
-export function EditUserItem({
+export function EditUserOption({
   user,
   onOpenChange: onDropdownOpenChange,
-}: EditUserItemProps) {
+}: EditUserOptionProps) {
   const [open, setOpen] = useState(false);
   const [resetKey, setResetKey] = useState(0);
 

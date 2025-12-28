@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Trash2, AlertCircle } from 'lucide-react';
+import type { ItemType } from '@prisma/client';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,31 +17,43 @@ import {
 } from '@/components/ui/alert-dialog';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import { deleteUser } from '../api/delete-user';
-import type { User } from '../types';
+import { deleteItem } from '@/features/item/api';
 
 /**
- * ユーザー削除アイテムのProps型
+ * アイテムタイプに応じたラベルを取得
  */
-type DeleteUserItemProps = {
-  user: User;
+const getItemLabel = (itemType: ItemType) => {
+  return itemType === 'TABLE' ? 'テーブル' : 'フォルダ';
+};
+
+/**
+ * 削除オプションのProps型
+ */
+type DeleteItemOptionProps = {
+  itemId: string;
+  itemType: ItemType;
+  itemName: string;
   onOpenChange: (open: boolean) => void;
 };
 
 /**
- * ユーザー削除アイテムコンポーネント
+ * 削除オプションコンポーネント
  */
-export function DeleteUserItem({
-  user,
+export function DeleteItemOption({
+  itemId,
+  itemType,
+  itemName,
   onOpenChange: onDropdownOpenChange,
-}: DeleteUserItemProps) {
+}: DeleteItemOptionProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const label = getItemLabel(itemType);
 
   const handleDelete = async () => {
     setIsDeleting(true);
 
-    const result = await deleteUser(user.id);
+    const result = await deleteItem(itemId);
 
     setOpen(false);
     setIsDeleting(false);
@@ -49,9 +63,10 @@ export function DeleteUserItem({
         description: result.error,
       });
     } else {
-      toast.success('ユーザーを削除しました', {
-        description: `${user.name}のアカウントを削除しました`,
+      toast.success(`${label}を削除しました`, {
+        description: `${itemName}を削除しました`,
       });
+      router.push('/workspace');
     }
   };
 
@@ -78,11 +93,13 @@ export function DeleteUserItem({
           <div className="flex items-center space-x-2">
             <AlertCircle className="text-destructive" />
             <AlertDialogTitle className="text-destructive">
-              {user.name}を削除
+              {itemName}を削除
             </AlertDialogTitle>
           </div>
           <AlertDialogDescription>
-            削除したユーザーは復元できません。
+            削除した{label}は復元できません。
+            <br />
+            {label}内のすべてのデータが完全に削除されます。
             <br />
             本当に削除しますか？
           </AlertDialogDescription>

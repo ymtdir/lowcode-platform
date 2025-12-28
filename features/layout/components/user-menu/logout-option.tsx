@@ -3,9 +3,9 @@ import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { logout } from '@/features/auth/api';
 
 /**
- * ログアウトアイテムコンポーネント
+ * ログアウトオプションコンポーネント
  */
-export function LogoutItem() {
+export function LogoutOption() {
   return (
     <DropdownMenuItem asChild>
       <form action={logout} className="w-full">

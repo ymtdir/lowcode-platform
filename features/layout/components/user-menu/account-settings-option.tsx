@@ -14,9 +14,9 @@ import { ThemeSelector } from '@/features/theme/components/theme-selector';
 import { ColorSelector } from '@/features/theme/components/color-selector';
 
 /**
- * アカウント設定アイテムコンポーネント
+ * アカウント設定オプションコンポーネント
  */
-export function AccountSettingsItem() {
+export function AccountSettingsOption() {
   return (
     <Dialog>
       <DialogTrigger asChild>

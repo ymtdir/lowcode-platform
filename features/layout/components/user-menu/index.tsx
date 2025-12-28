@@ -7,8 +7,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { SidebarMenuButton } from '@/components/ui/sidebar';
 
-import { AccountSettingsItem } from './account-settings-item';
-import { LogoutItem } from './logout-item';
+import { AccountSettingsOption } from './account-settings-option';
+import { LogoutOption } from './logout-option';
 
 /**
  * ユーザーメニューのProps型
@@ -30,12 +30,12 @@ export function UserMenu({ userName }: UserMenuProps) {
         </SidebarMenuButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent side="top" className="py-1.5">
-        <AccountSettingsItem />
-        <LogoutItem />
+        <AccountSettingsOption />
+        <LogoutOption />
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
 
-export { AccountSettingsItem } from './account-settings-item';
-export { LogoutItem } from './logout-item';
+export { AccountSettingsOption } from './account-settings-option';
+export { LogoutOption } from './logout-option';

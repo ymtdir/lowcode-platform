@@ -6,18 +6,18 @@ import type { ItemType } from '@prisma/client';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 /**
- * アイテム管理ボタンのProps型
+ * アイテム管理オプションのProps型
  */
-type ManageItemButtonProps = {
+type ManageItemOptionProps = {
   itemId: string;
   itemType: ItemType;
 };
 
 /**
- * アイテム管理ボタンコンポーネント
+ * アイテム管理オプションコンポーネント
  * アイテムタイプに応じて管理画面へのリンクを表示
  */
-export function ManageItemButton({ itemId, itemType }: ManageItemButtonProps) {
+export function ManageItemOption({ itemId, itemType }: ManageItemOptionProps) {
   // FOLDERとTABLEの場合のみ表示
   if (itemType !== 'TABLE' && itemType !== 'FOLDER') {
     return null;

@@ -10,9 +10,9 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { EditGroupItem } from './edit-group-item';
-import { DeleteGroupItem } from './delete-group-item';
-import { ManageMembersItem } from './manage-members-item';
+import { EditGroupOption } from './edit-group-option';
+import { DeleteGroupOption } from './delete-group-option';
+import { ManageMembersOption } from './manage-members-option';
 import type { Group } from '../types';
 
 /**
@@ -110,17 +110,17 @@ export const createColumns = (
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="bottom">
-            <EditGroupItem
+            <EditGroupOption
               group={group}
               allGroups={allGroups}
               onOpenChange={setOpen}
             />
-            <ManageMembersItem
+            <ManageMembersOption
               group={group}
               allUsers={allUsers}
               onOpenChange={setOpen}
             />
-            <DeleteGroupItem group={group} onOpenChange={setOpen} />
+            <DeleteGroupOption group={group} onOpenChange={setOpen} />
           </DropdownMenuContent>
         </DropdownMenu>
       );

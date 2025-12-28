@@ -30,9 +30,9 @@ import type { DatePrecision } from '../types/column';
 import type { Item } from '@/features/item/types';
 
 /**
- * カラム編集アイテムのProps型
+ * カラム編集オプションのProps型
  */
-type EditColumnItemProps = {
+type EditColumnOptionProps = {
   itemId: string;
   column: Column;
   onOpenChange: (open: boolean) => void;
@@ -45,15 +45,15 @@ type EditColumnItemProps = {
 };
 
 /**
- * カラム編集アイテムコンポーネント
+ * カラム編集オプションコンポーネント
  */
-export function EditColumnItem({
+export function EditColumnOption({
   itemId,
   column,
   onOpenChange: onDropdownOpenChange,
   onUpdated,
   tables = [],
-}: EditColumnItemProps) {
+}: EditColumnOptionProps) {
   const [open, setOpen] = useState(false);
   const [columnName, setColumnName] = useState(column.name);
   const [isRequired, setIsRequired] = useState(

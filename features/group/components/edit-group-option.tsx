@@ -32,9 +32,9 @@ import { updateGroup } from '../api/update-group';
 import type { Group } from '../types';
 
 /**
- * グループ編集アイテムのProps型
+ * グループ編集オプションのProps型
  */
-type EditGroupItemProps = {
+type EditGroupOptionProps = {
   group: Group;
   allGroups: Group[];
   onOpenChange: (open: boolean) => void;
@@ -164,13 +164,13 @@ function EditGroupContent({
 }
 
 /**
- * グループ編集アイテムコンポーネント
+ * グループ編集オプションコンポーネント
  */
-export function EditGroupItem({
+export function EditGroupOption({
   group,
   allGroups,
   onOpenChange: onDropdownOpenChange,
-}: EditGroupItemProps) {
+}: EditGroupOptionProps) {
   const [open, setOpen] = useState(false);
   const [resetKey, setResetKey] = useState(0);
 
