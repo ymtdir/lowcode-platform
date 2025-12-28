@@ -33,9 +33,11 @@ import {
   SelectFilter,
   RelationFilter,
   CheckboxFilter,
-  type NumberFilterValue,
-  type DateFilterValue,
 } from './filters';
+import type {
+  NumberFilterValue,
+  DateFilterValue,
+} from '@/features/table/utils/filter-functions';
 
 /**
  * FilterButtonのProps型

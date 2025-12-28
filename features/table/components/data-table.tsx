@@ -37,6 +37,10 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { updateRecord } from '@/features/record/api/update-record';
 import { createRecord } from '@/features/record/api/create-record';
 import { applyDefaultValues } from '@/features/column/utils';
+import {
+  normalizeRecordData,
+  normalizeColumnValue,
+} from '@/features/column/utils/normalize-column-value';
 import { hasPermission } from '@/lib/permissions';
 import { useLocalStorage } from '@/hooks/use-local-storage';
 import { createColumns } from './columns';
@@ -67,7 +71,17 @@ export function DataTable({
   permissionLevel,
   initialFilters = [],
 }: DataTableProps) {
-  const [records, setRecords] = useState<Record[]>(initialRecords);
+  // 初期レコードのデータを正規化（SELECT/RELATION型の形式統一）
+  const normalizedInitialRecords = useMemo(
+    () =>
+      initialRecords.map((record) => ({
+        ...record,
+        data: normalizeRecordData(record.data as RecordData, columns),
+      })),
+    [initialRecords, columns]
+  );
+
+  const [records, setRecords] = useState<Record[]>(normalizedInitialRecords);
   const [isPending, startTransition] = useTransition();
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
@@ -88,6 +102,14 @@ export function DataTable({
   useEffect(() => {
     initialRecordsRef.current = initialRecords;
   }, [initialRecords]);
+
+  // 正規化されたレコードをステートに反映
+  // NOTE: サーバー更新中（isPending=true）は上書きしない（編集中のデータ保護）
+  useEffect(() => {
+    if (!isPending) {
+      setRecords(normalizedInitialRecords);
+    }
+  }, [normalizedInitialRecords, isPending]);
 
   // カラム構成変更時に古い状態をクリーンアップ
   const validColumnIds = useMemo(
@@ -119,7 +141,13 @@ export function DataTable({
   // セル値の更新ハンドラ
   const handleCellChange = useCallback(
     (recordId: string, columnId: string, value: unknown) => {
-      // 楽観的更新
+      // カラム定義を取得して値を正規化
+      const column = columns.find((col) => col.id === columnId);
+      const normalizedValue = column
+        ? normalizeColumnValue(value, column)
+        : value;
+
+      // 楽観的更新（正規化済みの値を使用）
       setRecords((prev) =>
         prev.map((record) =>
           record.id === recordId
@@ -127,16 +155,18 @@ export function DataTable({
                 ...record,
                 data: {
                   ...(record.data as RecordData),
-                  [columnId]: value,
+                  [columnId]: normalizedValue,
                 },
               }
             : record
         )
       );
 
-      // サーバーに保存
+      // サーバーに保存（正規化済みの値を使用）
       startTransition(async () => {
-        const result = await updateRecord(recordId, { [columnId]: value });
+        const result = await updateRecord(recordId, {
+          [columnId]: normalizedValue,
+        });
         if (result.error) {
           console.error('更新エラー:', result.error);
           // エラー時はリバート（簡易実装）
@@ -144,7 +174,7 @@ export function DataTable({
         }
       });
     },
-    []
+    [columns]
   );
 
   // 新規レコード作成

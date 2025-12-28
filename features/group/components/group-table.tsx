@@ -17,8 +17,9 @@ import { useLocalStorage } from '@/hooks/use-local-storage';
 import { CreateGroupButton } from './create-group-button';
 import { BulkDeleteButton } from './bulk-delete-button';
 import { createColumns } from './columns';
-import { Input } from '@/components/ui/input';
 import { ColumnVisibilityButton } from '@/features/table/components/column-visibility-button';
+import { FilterButton } from '@/features/table/components/filter-button';
+import type { Column } from '@/features/column/types';
 import {
   Table,
   TableBody,
@@ -47,6 +48,39 @@ type GroupTableProps = {
   initialFilters?: ColumnFiltersState;
   initialSorting?: SortingState;
 };
+
+/**
+ * グループテーブル用のフィルター可能なカラム定義
+ */
+const filterableColumns: Column[] = [
+  {
+    id: 'name',
+    name: 'グループ名',
+    type: 'TEXT',
+    order: 0,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    enableFilter: true,
+  },
+  {
+    id: 'description',
+    name: '説明',
+    type: 'TEXT',
+    order: 1,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    enableFilter: true,
+  },
+  {
+    id: 'createdAt',
+    name: '作成日',
+    type: 'DATE',
+    order: 2,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    enableFilter: true,
+  },
+];
 
 /**
  * グループテーブルコンポーネント
@@ -100,13 +134,10 @@ export function GroupTable({
   return (
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
-        <Input
-          placeholder="グループ名で検索..."
-          value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
-          onChange={(event) =>
-            table.getColumn('name')?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
+        <FilterButton
+          columns={filterableColumns}
+          columnFilters={columnFilters}
+          onColumnFiltersChange={setColumnFilters}
         />
         <div className="flex items-center gap-2">
           <ColumnVisibilityButton table={table} />

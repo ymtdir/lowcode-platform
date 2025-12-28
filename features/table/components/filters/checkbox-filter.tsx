@@ -2,8 +2,7 @@
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-
-type CheckboxFilterValue = 'all' | 'checked' | 'unchecked';
+import type { CheckboxFilterValue } from '@/features/table/utils/filter-functions';
 
 type CheckboxFilterProps = {
   value: CheckboxFilterValue;

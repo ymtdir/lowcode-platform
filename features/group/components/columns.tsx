@@ -10,6 +10,11 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { SortableHeader } from '@/features/table/components/sortable-header';
+import {
+  createTextFilterFn,
+  createDateFilterFn,
+} from '@/features/table/utils/filter-functions';
 import { EditGroupOption } from './edit-group-option';
 import { DeleteGroupOption } from './delete-group-option';
 import { ManageMembersOption } from './manage-members-option';
@@ -23,6 +28,10 @@ type User = {
   email: string;
   name: string | null;
 };
+
+// フィルタ関数を生成
+const textFilterFn = createTextFilterFn<Group>();
+const dateFilterFn = createDateFilterFn<Group>();
 
 /**
  * グループテーブルのカラム定義を生成する関数
@@ -56,42 +65,51 @@ export const createColumns = (
   },
   {
     accessorKey: 'name',
-    header: 'グループ名',
+    header: ({ column }) => (
+      <SortableHeader column={column} title="グループ名" />
+    ),
     cell: ({ row }) => <div>{row.getValue('name')}</div>,
-    meta: { width: 'w-[15%]' },
+    meta: { width: 'w-[15%]', title: 'グループ名' },
+    filterFn: textFilterFn,
   },
   {
     accessorKey: 'description',
-    header: '説明',
+    header: ({ column }) => <SortableHeader column={column} title="説明" />,
     cell: ({ row }) => <div>{row.getValue('description') || '-'}</div>,
-    meta: { width: 'w-[20%]' },
+    meta: { width: 'w-[20%]', title: '説明' },
+    filterFn: textFilterFn,
   },
   {
     accessorKey: 'parentId',
-    header: '親グループ',
+    header: ({ column }) => (
+      <SortableHeader column={column} title="親グループ" />
+    ),
     cell: ({ row }) => {
       const group = row.original;
       return <div>{group.parent?.name || '-'}</div>;
     },
-    meta: { width: 'w-[15%]' },
+    meta: { width: 'w-[15%]', title: '親グループ' },
   },
   {
     accessorKey: 'members',
-    header: 'メンバー数',
+    header: ({ column }) => (
+      <SortableHeader column={column} title="メンバー数" />
+    ),
     cell: ({ row }) => {
       const group = row.original;
       return <div>{group._count?.members || 0}人</div>;
     },
-    meta: { width: 'w-[15%]' },
+    meta: { width: 'w-[15%]', title: 'メンバー数' },
   },
   {
     accessorKey: 'createdAt',
-    header: '作成日',
+    header: ({ column }) => <SortableHeader column={column} title="作成日" />,
     cell: ({ row }) => {
       const date = row.getValue('createdAt') as Date;
       return <div>{new Date(date).toLocaleDateString('ja-JP')}</div>;
     },
-    meta: { width: 'w-[15%]' },
+    meta: { width: 'w-[15%]', title: '作成日' },
+    filterFn: dateFilterFn,
   },
   {
     id: 'actions',

@@ -252,7 +252,8 @@ export function SelectConfigEditor({
   const handleToggleDefault = (id: string) => {
     let newDefaultValue: string | string[];
     if (localAllowMultiple) {
-      const current = (localDefaultValue as string[]) || [];
+      // 配列であることを保証（文字列の場合は配列に変換）
+      const current = Array.isArray(localDefaultValue) ? localDefaultValue : [];
       if (current.includes(id)) {
         newDefaultValue = current.filter((val) => val !== id);
       } else {

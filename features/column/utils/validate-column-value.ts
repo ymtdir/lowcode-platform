@@ -214,6 +214,9 @@ function validateDateValue(
 
 /**
  * SELECT型のバリデーション
+ *
+ * NOTE: データ正規化は normalizeColumnValue() で事前に行われる想定。
+ * このバリデーションでは、正規化済みのデータに対して厳格にチェックを行う。
  */
 function validateSelectValue(
   value: unknown,
@@ -298,6 +301,9 @@ function validateCheckboxValue(
 
 /**
  * RELATION型のバリデーション
+ *
+ * NOTE: データ正規化は normalizeColumnValue() で事前に行われる想定。
+ * このバリデーションでは、正規化済みのデータに対して厳格にチェックを行う。
  */
 function validateRelationValue(
   value: unknown,
