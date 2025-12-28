@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import {
@@ -92,6 +93,8 @@ export function DateFilter({ value, onChange }: DateFilterProps) {
   const preset = value.preset || 'custom';
   const startDate = value.startDate || undefined;
   const endDate = value.endDate || undefined;
+  const [startOpen, setStartOpen] = useState(false);
+  const [endOpen, setEndOpen] = useState(false);
 
   const handlePresetChange = (newPreset: DatePreset) => {
     const [start, end] = getPresetDates(newPreset);
@@ -108,6 +111,7 @@ export function DateFilter({ value, onChange }: DateFilterProps) {
       startDate: date || null,
       endDate: value.endDate,
     });
+    setStartOpen(false);
   };
 
   const handleEndDateChange = (date: Date | undefined) => {
@@ -116,6 +120,7 @@ export function DateFilter({ value, onChange }: DateFilterProps) {
       startDate: value.startDate,
       endDate: date || null,
     });
+    setEndOpen(false);
   };
 
   return (
@@ -133,60 +138,65 @@ export function DateFilter({ value, onChange }: DateFilterProps) {
         </SelectContent>
       </Select>
       {preset === 'custom' && (
-        <div className="flex items-center gap-2">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  'h-8 w-full justify-start text-left font-normal',
-                  !startDate && 'text-muted-foreground'
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {startDate ? (
-                  format(startDate, 'yyyy/MM/dd', { locale: ja })
-                ) : (
-                  <span>開始日</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={startDate}
-                onSelect={handleStartDateChange}
-                locale={ja}
-              />
-            </PopoverContent>
-          </Popover>
-          <span className="text-muted-foreground text-sm">～</span>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  'h-8 w-full justify-start text-left font-normal',
-                  !endDate && 'text-muted-foreground'
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {endDate ? (
-                  format(endDate, 'yyyy/MM/dd', { locale: ja })
-                ) : (
-                  <span>終了日</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={endDate}
-                onSelect={handleEndDateChange}
-                locale={ja}
-              />
-            </PopoverContent>
-          </Popover>
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-muted-foreground">開始日</span>
+            <Popover open={startOpen} onOpenChange={setStartOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    'h-8 w-full justify-start text-left font-normal',
+                    !startDate && 'text-muted-foreground'
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {startDate ? (
+                    format(startDate, 'yyyy/MM/dd', { locale: ja })
+                  ) : (
+                    <span>開始日</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={startDate}
+                  onSelect={handleStartDateChange}
+                  locale={ja}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-muted-foreground">終了日</span>
+            <Popover open={endOpen} onOpenChange={setEndOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    'h-8 w-full justify-start text-left font-normal',
+                    !endDate && 'text-muted-foreground'
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {endDate ? (
+                    format(endDate, 'yyyy/MM/dd', { locale: ja })
+                  ) : (
+                    <span>終了日</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={endDate}
+                  onSelect={handleEndDateChange}
+                  locale={ja}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
       )}
     </div>
