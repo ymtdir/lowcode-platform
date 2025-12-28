@@ -3,10 +3,7 @@
 import type { Permission } from '@prisma/client';
 import type { Column, RelationRecord } from '@/features/column/types';
 import type { Record } from '@/features/record/types';
-import type {
-  ExportColumnFilter,
-  ExportSorting,
-} from '@/features/table/types/export';
+import type { ExportColumnFilter } from '@/features/table/types/export';
 import { DataTable } from './data-table';
 
 /**
@@ -20,7 +17,6 @@ type TableLayoutProps = {
   relationRecords: Map<string, RelationRecord[]>;
   permissionLevel: Permission;
   initialFilters?: ExportColumnFilter[];
-  initialSorting?: ExportSorting[];
 };
 
 /**
@@ -34,7 +30,6 @@ export function TableLayout({
   relationRecords,
   permissionLevel,
   initialFilters = [],
-  initialSorting = [],
 }: TableLayoutProps) {
   return (
     <div className="w-full p-6">
@@ -49,7 +44,6 @@ export function TableLayout({
         relationRecords={relationRecords}
         permissionLevel={permissionLevel}
         initialFilters={initialFilters}
-        initialSorting={initialSorting}
       />
     </div>
   );

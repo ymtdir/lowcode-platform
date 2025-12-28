@@ -53,8 +53,7 @@ type DataTableProps = {
   initialRecords: Record[];
   relationRecords: Map<string, RelationRecord[]>;
   permissionLevel: Permission;
-  initialFilters?: ColumnFiltersState;
-  initialSorting?: SortingState;
+  initialFilters?: { id: string; value: unknown }[];
 };
 
 /**
@@ -67,7 +66,6 @@ export function DataTable({
   relationRecords,
   permissionLevel,
   initialFilters = [],
-  initialSorting = [],
 }: DataTableProps) {
   const [records, setRecords] = useState<Record[]>(initialRecords);
   const [isPending, startTransition] = useTransition();
@@ -78,9 +76,12 @@ export function DataTable({
     useLocalStorage<VisibilityState>(`table-${tableId}-column-visibility`, {});
 
   // フィルタとソートの状態をクライアント側で管理（即座に反映）
-  const [sorting, setSorting] = useState<SortingState>(initialSorting);
-  const [columnFilters, setColumnFilters] =
-    useState<ColumnFiltersState>(initialFilters);
+  // ソート: クライアントサイドのみ（初期値なし）
+  // フィルタ: サーバーサイド処理（URLパラメータから初期値を取得）
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
+    initialFilters?.map((f) => ({ id: f.id, value: f.value })) || []
+  );
 
   // initialRecordsをrefで保持して、handleCellChangeの依存配列から除外する
   const initialRecordsRef = useRef(initialRecords);

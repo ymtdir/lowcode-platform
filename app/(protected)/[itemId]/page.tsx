@@ -6,10 +6,7 @@ import { FolderLayout } from '@/features/folder/components';
 import { notFound } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import { canAccessItem } from '@/lib/permissions';
-import type {
-  ExportColumnFilter,
-  ExportSorting,
-} from '@/features/table/types/export';
+import type { ExportColumnFilter } from '@/features/table/types/export';
 
 export const dynamic = 'force-dynamic';
 
@@ -70,12 +67,10 @@ export default async function ItemPage({
     const columnSchema = getColumnSchema(item.meta);
     const columns = columnSchema?.columns || [];
 
-    // searchParamsからフィルタとソート条件を抽出
+    // searchParamsからフィルタ条件を抽出
     const filtersParam = resolvedSearchParams.filters;
-    const sortingParam = resolvedSearchParams.sorting;
 
     let filters: ExportColumnFilter[] = [];
-    let sorting: ExportSorting[] = [];
 
     try {
       if (filtersParam) {
@@ -85,14 +80,6 @@ export default async function ItemPage({
             : filtersParam[0] || '[]'
         );
         if (Array.isArray(parsed)) filters = parsed;
-      }
-      if (sortingParam) {
-        const parsed = JSON.parse(
-          typeof sortingParam === 'string'
-            ? sortingParam
-            : sortingParam[0] || '[]'
-        );
-        if (Array.isArray(parsed)) sorting = parsed;
       }
     } catch {
       // 不正なパラメータは無視してデフォルト値を使用
@@ -113,7 +100,6 @@ export default async function ItemPage({
         relationRecords={relationRecords}
         permissionLevel={level}
         initialFilters={filters}
-        initialSorting={sorting}
       />
     );
   }
