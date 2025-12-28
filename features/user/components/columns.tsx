@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ColumnDef, FilterFn } from '@tanstack/react-table';
+import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -11,55 +11,19 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SortableHeader } from '@/features/table/components/sortable-header';
+import {
+  createTextFilterFn,
+  createSelectFilterFn,
+  createDateFilterFn,
+} from '@/features/table/utils/filter-functions';
 import { EditUserOption } from './edit-user-option';
 import { DeleteUserOption } from './delete-user-option';
 import type { User } from '../types';
 
-/**
- * テキストフィルタ関数
- */
-const textFilterFn: FilterFn<User> = (row, columnId, filterValue) => {
-  const value = row.getValue(columnId) as string | null;
-  const search = filterValue as string;
-  if (!search) return true;
-  return (value || '').toLowerCase().includes(search.toLowerCase());
-};
-
-/**
- * SELECTフィルタ関数
- */
-const selectFilterFn: FilterFn<User> = (row, columnId, filterValue) => {
-  const value = row.getValue(columnId) as string | null;
-  const filter = filterValue as string[];
-  if (!filter || filter.length === 0) return true;
-  if (!value) return false;
-  return filter.includes(value);
-};
-
-/**
- * DATEフィルタ関数
- */
-const dateFilterFn: FilterFn<User> = (row, columnId, filterValue) => {
-  const value = row.getValue(columnId) as Date | string | null;
-  const filter = filterValue as {
-    preset?: string;
-    startDate: Date | null;
-    endDate: Date | null;
-  };
-  if (!value) return false;
-  if (!filter.startDate && !filter.endDate) return true;
-
-  const date = new Date(value);
-  const start = filter.startDate ? new Date(filter.startDate) : new Date(0);
-  const end = filter.endDate
-    ? new Date(filter.endDate)
-    : new Date(8640000000000000);
-
-  start.setHours(0, 0, 0, 0);
-  end.setHours(23, 59, 59, 999);
-
-  return date >= start && date <= end;
-};
+// フィルタ関数を生成
+const textFilterFn = createTextFilterFn<User>();
+const selectFilterFn = createSelectFilterFn<User>();
+const dateFilterFn = createDateFilterFn<User>();
 
 /**
  * ユーザーテーブルのカラム定義を生成する関数
