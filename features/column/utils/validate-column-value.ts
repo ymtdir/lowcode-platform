@@ -214,7 +214,6 @@ function validateDateValue(
 
 /**
  * SELECT型のバリデーション
- * 注: 単一選択・複数選択に関わらず、常に配列形式で保存される
  */
 function validateSelectValue(
   value: unknown,
@@ -222,7 +221,31 @@ function validateSelectValue(
 ): ValidationError | null {
   const allowMultiple = column.config.allowMultiple || false;
 
-  // 配列でない場合はエラー
+  // 単一選択の場合
+  if (!allowMultiple) {
+    if (typeof value !== 'string') {
+      return {
+        columnId: column.id,
+        columnName: column.name,
+        message: `${column.name}は文字列である必要があります`,
+      };
+    }
+
+    const validOptionIds = column.config.options.map((opt) => opt.id);
+
+    // 選択肢のIDにマッチしない場合はエラー
+    if (!validOptionIds.includes(value)) {
+      return {
+        columnId: column.id,
+        columnName: column.name,
+        message: `${column.name}は有効な選択肢から選んでください`,
+      };
+    }
+
+    return null;
+  }
+
+  // 複数選択の場合
   if (!Array.isArray(value)) {
     return {
       columnId: column.id,
@@ -234,15 +257,6 @@ function validateSelectValue(
   // 空配列の場合はOK
   if (value.length === 0) {
     return null;
-  }
-
-  // 単一選択の場合、配列の長さは1まで
-  if (!allowMultiple && value.length > 1) {
-    return {
-      columnId: column.id,
-      columnName: column.name,
-      message: `${column.name}は1つまで選択できます`,
-    };
   }
 
   const validOptionIds = column.config.options.map((opt) => opt.id);
@@ -291,24 +305,39 @@ function validateRelationValue(
 ): ValidationError | null {
   const allowMultiple = column.config.allowMultiple || false;
 
-  // 単一参照の場合
+  // 単一参照の場合（文字列または配列を許容 - 互換性のため）
   if (!allowMultiple) {
-    if (typeof value !== 'string') {
-      return {
-        columnId: column.id,
-        columnName: column.name,
-        message: `${column.name}は文字列である必要があります`,
-      };
+    // 文字列の場合
+    if (typeof value === 'string') {
+      return null;
     }
+    // 配列の場合（allowMultiple切り替え時の互換性）
+    if (Array.isArray(value)) {
+      // 空配列はOK
+      if (value.length === 0) return null;
+      // すべて文字列ならOK
+      const invalidValues = value.filter((v) => typeof v !== 'string');
+      if (invalidValues.length === 0) return null;
+    }
+    return {
+      columnId: column.id,
+      columnName: column.name,
+      message: `${column.name}は文字列またはレコードIDの配列である必要があります`,
+    };
+  }
+
+  // 複数参照の場合（配列または文字列を許容 - 互換性のため）
+  // 文字列の場合（allowMultiple切り替え時の互換性）
+  if (typeof value === 'string') {
     return null;
   }
 
-  // 複数参照の場合
+  // 配列の場合
   if (!Array.isArray(value)) {
     return {
       columnId: column.id,
       columnName: column.name,
-      message: `${column.name}は配列である必要があります`,
+      message: `${column.name}は配列またはレコードIDである必要があります`,
     };
   }
 

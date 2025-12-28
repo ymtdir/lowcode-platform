@@ -36,9 +36,11 @@ export function RelationCell({
 }: RelationCellProps) {
   const [open, setOpen] = useState(false);
   // 複数選択用のローカルステート（常に呼び出す）
-  const [localValue, setLocalValue] = useState<string[]>(
-    Array.isArray(value) ? value : []
-  );
+  // 値の形式を正規化: stringもarrayとして扱う
+  const [localValue, setLocalValue] = useState<string[]>(() => {
+    if (!value) return [];
+    return Array.isArray(value) ? value : [value];
+  });
 
   // 選択中のレコードを取得
   const selectedRecords = (() => {
@@ -91,10 +93,16 @@ export function RelationCell({
     // メニューが開いたときに値を同期
     const handleOpenChange = (newOpen: boolean) => {
       if (newOpen) {
-        setLocalValue(Array.isArray(value) ? value : []);
+        // 値の形式を正規化: stringもarrayとして扱う
+        if (!value) {
+          setLocalValue([]);
+        } else {
+          setLocalValue(Array.isArray(value) ? value : [value]);
+        }
       } else {
         // 閉じたときに変更があれば保存
-        const currentIds = Array.isArray(value) ? value : [];
+        // 値の形式を正規化して比較
+        const currentIds = !value ? [] : Array.isArray(value) ? value : [value];
         const hasChanges =
           localValue.length !== currentIds.length ||
           localValue.some((id) => !currentIds.includes(id));
@@ -183,9 +191,17 @@ export function RelationCell({
     setOpen(false);
   };
 
+  // 単一選択モードでの値を正規化（配列の場合は最初の要素を使用）
+  const singleValue = (() => {
+    if (!value) return undefined;
+    if (typeof value === 'string') return value;
+    // 配列の場合は最初の要素を使用（allowMultiple切り替え時の互換性）
+    return Array.isArray(value) && value.length > 0 ? value[0] : undefined;
+  })();
+
   return (
     <Select
-      value={(value as string) || undefined}
+      value={singleValue}
       onValueChange={handleSelect}
       open={open}
       onOpenChange={setOpen}
