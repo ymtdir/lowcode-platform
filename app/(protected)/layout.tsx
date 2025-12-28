@@ -4,6 +4,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
 import { AppSidebar } from '@/features/layout/components/app-sidebar';
 import { BreadcrumbContainer } from '@/features/layout/components/breadcrumb/container';
+import { ItemOptionsButtonContainer } from '@/features/layout/components/item-options-button/container';
 
 /**
  * 保護されたレイアウトコンポーネント（認証必須）
@@ -23,10 +24,15 @@ export default async function ProtectedLayout({
     <SidebarProvider>
       <AppSidebar userName={userName} userRole={userRole} />
       <main className="w-full overflow-hidden">
-        <div className="flex items-center gap-2 m-4">
-          <SidebarTrigger />
-          <Separator orientation="vertical" className="h-4" />
-          <BreadcrumbContainer />
+        <div className="relative flex items-center m-4">
+          <div className="flex items-center gap-2">
+            <SidebarTrigger />
+            <Separator orientation="vertical" className="h-4" />
+            <BreadcrumbContainer />
+          </div>
+          <div className="absolute right-0">
+            <ItemOptionsButtonContainer />
+          </div>
         </div>
         {children}
       </main>

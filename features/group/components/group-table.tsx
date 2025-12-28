@@ -44,26 +44,30 @@ type User = {
 type GroupTableProps = {
   groups: Group[];
   users: User[];
+  initialFilters?: ColumnFiltersState;
+  initialSorting?: SortingState;
 };
 
 /**
  * グループテーブルコンポーネント
  */
-export function GroupTable({ groups, users }: GroupTableProps) {
+export function GroupTable({
+  groups,
+  users,
+  initialFilters = [],
+  initialSorting = [],
+}: GroupTableProps) {
   const columns = createColumns(groups, users);
   const [rowSelection, setRowSelection] = React.useState({});
 
   // localStorageに保存するテーブル状態
   const [columnVisibility, setColumnVisibility] =
     useLocalStorage<VisibilityState>('group-table-column-visibility', {});
-  const [sorting, setSorting] = useLocalStorage<SortingState>(
-    'group-table-sorting',
-    []
-  );
-  const [columnFilters, setColumnFilters] = useLocalStorage<ColumnFiltersState>(
-    'group-table-filters',
-    []
-  );
+
+  // フィルタとソートの状態をクライアント側で管理（即座に反映）
+  const [sorting, setSorting] = React.useState<SortingState>(initialSorting);
+  const [columnFilters, setColumnFilters] =
+    React.useState<ColumnFiltersState>(initialFilters);
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
@@ -77,6 +81,7 @@ export function GroupTable({ groups, users }: GroupTableProps) {
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    enableSortingRemoval: true,
     state: {
       sorting,
       columnFilters,

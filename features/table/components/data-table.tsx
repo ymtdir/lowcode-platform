@@ -53,6 +53,7 @@ type DataTableProps = {
   initialRecords: Record[];
   relationRecords: Map<string, RelationRecord[]>;
   permissionLevel: Permission;
+  initialFilters?: { id: string; value: unknown }[];
 };
 
 /**
@@ -64,6 +65,7 @@ export function DataTable({
   initialRecords,
   relationRecords,
   permissionLevel,
+  initialFilters = [],
 }: DataTableProps) {
   const [records, setRecords] = useState<Record[]>(initialRecords);
   const [isPending, startTransition] = useTransition();
@@ -72,12 +74,14 @@ export function DataTable({
   // localStorageに保存するテーブル状態
   const [columnVisibilityRaw, setColumnVisibility] =
     useLocalStorage<VisibilityState>(`table-${tableId}-column-visibility`, {});
-  const [sortingRaw, setSorting] = useLocalStorage<SortingState>(
-    `table-${tableId}-sorting`,
-    []
+
+  // フィルタとソートの状態をクライアント側で管理（即座に反映）
+  // ソート: クライアントサイドのみ（初期値なし）
+  // フィルタ: サーバーサイド処理（URLパラメータから初期値を取得）
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
+    initialFilters?.map((f) => ({ id: f.id, value: f.value })) || []
   );
-  const [columnFiltersRaw, setColumnFilters] =
-    useLocalStorage<ColumnFiltersState>(`table-${tableId}-filters`, []);
 
   // initialRecordsをrefで保持して、handleCellChangeの依存配列から除外する
   const initialRecordsRef = useRef(initialRecords);
@@ -85,7 +89,7 @@ export function DataTable({
     initialRecordsRef.current = initialRecords;
   }, [initialRecords]);
 
-  // カラム構成変更時に古い状態をクリーンアップ（同期処理）
+  // カラム構成変更時に古い状態をクリーンアップ
   const validColumnIds = useMemo(
     () => new Set(columns.map((c) => c.id)),
     [columns]
@@ -101,15 +105,6 @@ export function DataTable({
     return validVisibility;
   }, [columnVisibilityRaw, validColumnIds]);
 
-  const sorting = useMemo(() => {
-    return sortingRaw.filter((s) => validColumnIds.has(s.id));
-  }, [sortingRaw, validColumnIds]);
-
-  const columnFilters = useMemo(() => {
-    return columnFiltersRaw.filter((f) => validColumnIds.has(f.id));
-  }, [columnFiltersRaw, validColumnIds]);
-
-  // クリーンアップされた状態をlocalStorageに保存
   useEffect(() => {
     if (
       JSON.stringify(columnVisibility) !== JSON.stringify(columnVisibilityRaw)
@@ -117,18 +112,6 @@ export function DataTable({
       setColumnVisibility(columnVisibility);
     }
   }, [columnVisibility, columnVisibilityRaw, setColumnVisibility]);
-
-  useEffect(() => {
-    if (JSON.stringify(sorting) !== JSON.stringify(sortingRaw)) {
-      setSorting(sorting);
-    }
-  }, [sorting, sortingRaw, setSorting]);
-
-  useEffect(() => {
-    if (JSON.stringify(columnFilters) !== JSON.stringify(columnFiltersRaw)) {
-      setColumnFilters(columnFilters);
-    }
-  }, [columnFilters, columnFiltersRaw, setColumnFilters]);
 
   // WRITE権限があるかチェック
   const canWrite = hasPermission(permissionLevel, 'WRITE');
@@ -224,6 +207,7 @@ export function DataTable({
     onColumnVisibilityChange: setColumnVisibility,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    enableSortingRemoval: true,
     state: {
       rowSelection,
       columnVisibility,
@@ -264,7 +248,7 @@ export function DataTable({
 
       {/* テーブル */}
       <ScrollArea className="border-y **:data-[slot=table-container]:overflow-visible">
-        <Table className="table-auto w-max">
+        <Table className="table-auto w-full">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>

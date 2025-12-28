@@ -1,6 +1,9 @@
+'use client';
+
 import type { Permission } from '@prisma/client';
 import type { Column, RelationRecord } from '@/features/column/types';
 import type { Record } from '@/features/record/types';
+import type { ExportColumnFilter } from '@/features/table/types/export';
 import { DataTable } from './data-table';
 
 /**
@@ -13,6 +16,7 @@ type TableLayoutProps = {
   records: Record[];
   relationRecords: Map<string, RelationRecord[]>;
   permissionLevel: Permission;
+  initialFilters?: ExportColumnFilter[];
 };
 
 /**
@@ -25,6 +29,7 @@ export function TableLayout({
   records,
   relationRecords,
   permissionLevel,
+  initialFilters = [],
 }: TableLayoutProps) {
   return (
     <div className="w-full p-6">
@@ -38,6 +43,7 @@ export function TableLayout({
         initialRecords={records}
         relationRecords={relationRecords}
         permissionLevel={permissionLevel}
+        initialFilters={initialFilters}
       />
     </div>
   );

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Settings2, ChevronDown, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -65,7 +66,29 @@ export function FilterButton({
   onColumnFiltersChange,
   relationRecords,
 }: FilterButtonProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [, startTransition] = useTransition();
   const [isOpen, setIsOpen] = useState(false);
+
+  // フィルター更新とURL同期
+  const updateFilters = (newFilters: ColumnFiltersState) => {
+    // 即座にクライアント側のフィルタを更新（リロードなし）
+    onColumnFiltersChange(newFilters);
+
+    // バックグラウンドでURLを更新（状態の永続化）
+    const params = new URLSearchParams(searchParams.toString());
+    if (newFilters.length > 0) {
+      params.set('filters', JSON.stringify(newFilters));
+    } else {
+      params.delete('filters');
+    }
+
+    startTransition(() => {
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    });
+  };
 
   // フィルター有効なカラムのみ取得
   const filterableColumns = columns.filter(
@@ -118,10 +141,11 @@ export function FilterButton({
         break;
     }
 
-    onColumnFiltersChange([
+    const newFilters = [
       ...columnFilters,
       { id: columnId, value: initialValue },
-    ]);
+    ];
+    updateFilters(newFilters);
     setIsOpen(false);
   };
 
@@ -133,13 +157,14 @@ export function FilterButton({
     if (existingFilterIndex >= 0) {
       const newFilters = [...columnFilters];
       newFilters[existingFilterIndex] = { id: columnId, value };
-      onColumnFiltersChange(newFilters);
+      updateFilters(newFilters);
     }
   };
 
   // フィルター削除
   const removeFilter = (columnId: string) => {
-    onColumnFiltersChange(columnFilters.filter((f) => f.id !== columnId));
+    const newFilters = columnFilters.filter((f) => f.id !== columnId);
+    updateFilters(newFilters);
   };
 
   return (
@@ -150,7 +175,7 @@ export function FilterButton({
           <Tooltip>
             <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost">
+                <Button variant="ghost" size="icon">
                   <Settings2 />
                 </Button>
               </DropdownMenuTrigger>

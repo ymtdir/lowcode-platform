@@ -6,6 +6,7 @@ import { FolderLayout } from '@/features/folder/components';
 import { notFound } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import { canAccessItem } from '@/lib/permissions';
+import type { ExportColumnFilter } from '@/features/table/types/export';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,13 +15,18 @@ export const dynamic = 'force-dynamic';
  */
 type ItemPageProps = {
   params: Promise<{ itemId: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 /**
  * アイテム詳細ページ（フォルダ/テーブル）
  */
-export default async function ItemPage({ params }: ItemPageProps) {
+export default async function ItemPage({
+  params,
+  searchParams,
+}: ItemPageProps) {
   const { itemId } = await params;
+  const resolvedSearchParams = await searchParams;
 
   // 認証チェック
   const currentUser = await getCurrentUser();
@@ -61,9 +67,27 @@ export default async function ItemPage({ params }: ItemPageProps) {
     const columnSchema = getColumnSchema(item.meta);
     const columns = columnSchema?.columns || [];
 
+    // searchParamsからフィルタ条件を抽出
+    const filtersParam = resolvedSearchParams.filters;
+
+    let filters: ExportColumnFilter[] = [];
+
+    try {
+      if (filtersParam) {
+        const parsed = JSON.parse(
+          typeof filtersParam === 'string'
+            ? filtersParam
+            : filtersParam[0] || '[]'
+        );
+        if (Array.isArray(parsed)) filters = parsed;
+      }
+    } catch {
+      // 不正なパラメータは無視してデフォルト値を使用
+    }
+
     // レコードとリレーション用データを並列取得
     const [records, relationRecords] = await Promise.all([
-      getRecords(itemId),
+      getRecords(itemId, { filters }),
       getRelationRecords(columns),
     ]);
 
@@ -75,6 +99,7 @@ export default async function ItemPage({ params }: ItemPageProps) {
         records={records}
         relationRecords={relationRecords}
         permissionLevel={level}
+        initialFilters={filters}
       />
     );
   }

@@ -6,3 +6,4 @@ export * from './delete-group-item';
 export * from './bulk-delete-button';
 export * from './member-list';
 export * from './manage-members-item';
+export * from './groups-layout';

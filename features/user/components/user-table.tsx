@@ -34,26 +34,29 @@ import type { User } from '../types';
  */
 type UserTableProps = {
   users: User[];
+  initialFilters?: ColumnFiltersState;
+  initialSorting?: SortingState;
 };
 
 /**
  * ユーザーテーブルコンポーネント
  */
-export function UserTable({ users }: UserTableProps) {
+export function UserTable({
+  users,
+  initialFilters = [],
+  initialSorting = [],
+}: UserTableProps) {
   const columns = createColumns();
   const [rowSelection, setRowSelection] = React.useState({});
 
   // localStorageに保存するテーブル状態
   const [columnVisibility, setColumnVisibility] =
     useLocalStorage<VisibilityState>('user-table-column-visibility', {});
-  const [sorting, setSorting] = useLocalStorage<SortingState>(
-    'user-table-sorting',
-    []
-  );
-  const [columnFilters, setColumnFilters] = useLocalStorage<ColumnFiltersState>(
-    'user-table-filters',
-    []
-  );
+
+  // フィルタとソートの状態をクライアント側で管理（即座に反映）
+  const [sorting, setSorting] = React.useState<SortingState>(initialSorting);
+  const [columnFilters, setColumnFilters] =
+    React.useState<ColumnFiltersState>(initialFilters);
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
@@ -67,6 +70,7 @@ export function UserTable({ users }: UserTableProps) {
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    enableSortingRemoval: true,
     state: {
       sorting,
       columnFilters,
