@@ -94,14 +94,14 @@ export const createColumns = (): ColumnDef<User>[] => [
       <SortableHeader column={column} title="メールアドレス" />
     ),
     cell: ({ row }) => <div className="lowercase">{row.getValue('email')}</div>,
-    meta: { width: 'w-[30%]' },
+    meta: { width: 'w-[30%]', title: 'メールアドレス' },
     filterFn: textFilterFn,
   },
   {
     accessorKey: 'name',
     header: ({ column }) => <SortableHeader column={column} title="名前" />,
     cell: ({ row }) => <div>{row.getValue('name') || 'Unknown'}</div>,
-    meta: { width: 'w-[15%]' },
+    meta: { width: 'w-[15%]', title: '名前' },
     filterFn: textFilterFn,
   },
   {
@@ -111,7 +111,7 @@ export const createColumns = (): ColumnDef<User>[] => [
       const role = row.getValue('role') as string;
       return <div>{role === 'ADMIN' ? '管理者' : 'メンバー'}</div>;
     },
-    meta: { width: 'w-[15%]' },
+    meta: { width: 'w-[15%]', title: 'ロール' },
     filterFn: selectFilterFn,
   },
   {
@@ -121,7 +121,7 @@ export const createColumns = (): ColumnDef<User>[] => [
       const date = row.getValue('createdAt') as Date;
       return <div>{new Date(date).toLocaleDateString('ja-JP')}</div>;
     },
-    meta: { width: 'w-[15%]' },
+    meta: { width: 'w-[15%]', title: '登録日' },
     filterFn: dateFilterFn,
   },
   {

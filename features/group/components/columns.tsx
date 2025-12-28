@@ -96,14 +96,14 @@ export const createColumns = (
       <SortableHeader column={column} title="グループ名" />
     ),
     cell: ({ row }) => <div>{row.getValue('name')}</div>,
-    meta: { width: 'w-[15%]' },
+    meta: { width: 'w-[15%]', title: 'グループ名' },
     filterFn: textFilterFn,
   },
   {
     accessorKey: 'description',
     header: ({ column }) => <SortableHeader column={column} title="説明" />,
     cell: ({ row }) => <div>{row.getValue('description') || '-'}</div>,
-    meta: { width: 'w-[20%]' },
+    meta: { width: 'w-[20%]', title: '説明' },
     filterFn: textFilterFn,
   },
   {
@@ -115,7 +115,7 @@ export const createColumns = (
       const group = row.original;
       return <div>{group.parent?.name || '-'}</div>;
     },
-    meta: { width: 'w-[15%]' },
+    meta: { width: 'w-[15%]', title: '親グループ' },
   },
   {
     accessorKey: 'members',
@@ -126,7 +126,7 @@ export const createColumns = (
       const group = row.original;
       return <div>{group._count?.members || 0}人</div>;
     },
-    meta: { width: 'w-[15%]' },
+    meta: { width: 'w-[15%]', title: 'メンバー数' },
   },
   {
     accessorKey: 'createdAt',
@@ -135,7 +135,7 @@ export const createColumns = (
       const date = row.getValue('createdAt') as Date;
       return <div>{new Date(date).toLocaleDateString('ja-JP')}</div>;
     },
-    meta: { width: 'w-[15%]' },
+    meta: { width: 'w-[15%]', title: '作成日' },
     filterFn: dateFilterFn,
   },
   {
