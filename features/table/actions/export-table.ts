@@ -36,9 +36,9 @@ export async function exportTableAction(
     const data = record.data as RecordData;
     return columns.map((col) => {
       const value = data[col.id];
-      // Date型の場合はフォーマット
-      if (value instanceof Date) {
-        return value.toISOString().split('T')[0]; // YYYY-MM-DD
+      // DATE型カラムの場合はフォーマット（JSONから取得した値は文字列）
+      if (col.type === 'DATE' && typeof value === 'string') {
+        return value.split('T')[0]; // YYYY-MM-DD
       }
       return value as string | number | boolean | null | undefined;
     });
