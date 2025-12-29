@@ -13,7 +13,7 @@ import {
   MultiSelectContent,
   MultiSelectItem,
   MultiSelectTrigger,
-} from '@/components/ui/multi-select';
+} from '@/components/shared/multi-select';
 import type { RelationRecord } from '@/features/column/types';
 
 type RelationCellProps = {
