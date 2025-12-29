@@ -12,14 +12,7 @@ import type {
 /**
  * グループインポート用のCSVヘッダー定義
  */
-const REQUIRED_HEADERS = [
-  'ID',
-  'グループ名',
-  '説明',
-  '親グループ',
-  'メンバー数',
-  '作成日',
-];
+const REQUIRED_HEADERS = ['ID', 'グループ名', '説明', '親グループ'];
 
 /**
  * グループデータをCSVインポートするServer Action

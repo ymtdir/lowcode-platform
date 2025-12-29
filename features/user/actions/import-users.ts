@@ -14,7 +14,7 @@ import type {
 /**
  * ユーザーインポート用のCSVヘッダー定義
  */
-const REQUIRED_HEADERS = ['ID', 'メールアドレス', '名前', 'ロール', '作成日'];
+const REQUIRED_HEADERS = ['ID', 'メールアドレス', '名前', 'ロール'];
 
 /**
  * 有効なUserRole
