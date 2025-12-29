@@ -205,7 +205,7 @@ export async function importTableAction(
           // 新規レコードを作成
           await tx.record.create({
             data: {
-              id: row.recordId, // recordIdが指定されていればそれを使用、なければ自動生成
+              ...(row.recordId ? { id: row.recordId } : {}), // recordIdが指定されていればそれを使用、なければ自動生成
               tableId: itemId,
               data: jsonData,
               createdById: currentUser.id,
