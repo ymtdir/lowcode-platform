@@ -22,6 +22,12 @@ const REQUIRED_HEADERS = ['ID', 'メールアドレス', '名前', 'ロール', 
 const VALID_ROLES: UserRole[] = ['ADMIN', 'DEVELOPER', 'MEMBER'];
 
 /**
+ * CSVインポートで作成されるユーザーのデフォルトパスワード
+ * 環境変数 DEFAULT_USER_PASSWORD から取得
+ */
+const DEFAULT_PASSWORD = process.env.DEFAULT_USER_PASSWORD || 'ChangeMe123!';
+
+/**
  * ユーザーデータをCSVインポートするServer Action
  * @param csvContent - CSV文字列
  * @returns インポート結果
@@ -208,21 +214,21 @@ export async function importUsersAction(
         }
         // 新規ユーザーを作成
         else {
+          // Supabase Admin APIでユーザー作成（固定のデフォルトパスワードを設定）
+          const { data: authData, error } =
+            await adminSupabase.auth.admin.createUser({
+              email: row.email,
+              password: DEFAULT_PASSWORD,
+              email_confirm: true,
+            });
+
+          if (error || !authData.user) {
+            console.error('Supabaseユーザー作成エラー:', error?.message);
+            skippedCount++;
+            continue;
+          }
+
           try {
-            // Supabase Admin APIでユーザー作成（仮パスワード設定）
-            const { data: authData, error } =
-              await adminSupabase.auth.admin.createUser({
-                email: row.email,
-                password: Math.random().toString(36).slice(-12), // ランダムな仮パスワード
-                email_confirm: true,
-              });
-
-            if (error || !authData.user) {
-              console.error('Supabaseユーザー作成エラー:', error?.message);
-              skippedCount++;
-              continue;
-            }
-
             // Prismaにユーザー情報を保存
             await tx.user.create({
               data: {
@@ -235,7 +241,9 @@ export async function importUsersAction(
 
             insertedCount++;
           } catch (error) {
-            console.error('ユーザー作成エラー:', error);
+            // ロールバック: Prisma保存失敗時にSupabase Authユーザーを削除
+            await adminSupabase.auth.admin.deleteUser(authData.user.id);
+            console.error('ユーザー作成エラー（ロールバック済み）:', error);
             skippedCount++;
           }
         }
