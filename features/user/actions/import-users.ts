@@ -35,7 +35,7 @@ export async function importUsersAction(
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
+  if (!user?.email) {
     return {
       success: false,
       insertedCount: 0,
@@ -49,7 +49,7 @@ export async function importUsersAction(
 
   // 権限チェック
   const currentUser = await prisma.user.findUnique({
-    where: { email: user.email! },
+    where: { email: user.email },
     select: { role: true },
   });
 
