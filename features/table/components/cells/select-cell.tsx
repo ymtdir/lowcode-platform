@@ -12,7 +12,7 @@ import {
   MultiSelectContent,
   MultiSelectItem,
   MultiSelectTrigger,
-} from '@/components/ui/multi-select';
+} from '@/components/shared/multi-select';
 import type { SelectOption } from '@/features/column/types';
 
 type SelectCellProps = {
