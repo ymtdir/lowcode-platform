@@ -30,7 +30,8 @@ export const mainMenuItems: MainMenuItem[] = [
   },
   {
     title: '設定',
-    url: '#',
+    url: '/settings',
     icon: Settings,
+    requiredRole: 'ADMIN',
   },
 ];

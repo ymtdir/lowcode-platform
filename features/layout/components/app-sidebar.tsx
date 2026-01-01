@@ -1,4 +1,5 @@
 import type { UserRole } from '@prisma/client';
+import Image from 'next/image';
 import {
   Sidebar,
   SidebarContent,
@@ -31,10 +32,14 @@ export async function AppSidebar({ userName, userRole }: AppSidebarProps) {
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center gap-2 p-1">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
-            <span className="text-base font-bold text-primary-foreground">
-              L
-            </span>
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg overflow-hidden">
+            <Image
+              src="/system/app-icon.png"
+              alt="App Icon"
+              width={28}
+              height={28}
+              className="object-cover"
+            />
           </div>
           <div className="flex flex-col">
             <span className="text-base font-semibold">Lowcode Platform</span>
