@@ -48,6 +48,14 @@ export function canManageGroups(role: UserRole): boolean {
 }
 
 /**
+ * アプリケーション設定の権限があるかチェック
+ * ADMIN, DEVELOPERのみ
+ */
+export function canManageSettings(role: UserRole): boolean {
+  return hasRole(role, 'DEVELOPER');
+}
+
+/**
  * テーブル/フォルダ構造を管理する権限があるかチェック
  * ADMIN, DEVELOPERのみ
  */

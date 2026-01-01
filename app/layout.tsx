@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { ThemeProvider } from '@/features/theme/providers/theme-provider';
 import { ColorProvider } from '@/features/theme/providers/color-provider';
 import { Toaster } from '@/components/ui/sonner';
+import { getSettings } from '@/features/setting/api';
 import './globals.css';
 
 const geistSans = Geist({
@@ -15,10 +16,17 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-export const metadata: Metadata = {
-  title: 'Lowcode Platform',
-  description: 'Lowcode Platform',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSettings();
+
+  return {
+    title: settings.appTitle,
+    description: settings.appTitle,
+    icons: {
+      icon: settings.faviconUrl,
+    },
+  };
+}
 
 /**
  * ルートレイアウトコンポーネント

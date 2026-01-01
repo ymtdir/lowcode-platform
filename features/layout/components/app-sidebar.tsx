@@ -13,6 +13,7 @@ import { UserMenu } from './user-menu';
 import { MainMenu, mainMenuItems } from './main-menu';
 import { WorkspaceMenu } from './workspace-menu';
 import { getItems } from '@/features/item/api';
+import { getSettings } from '@/features/setting/api';
 
 /**
  * アプリケーションサイドバーのProps型
@@ -27,6 +28,7 @@ type AppSidebarProps = {
  */
 export async function AppSidebar({ userName, userRole }: AppSidebarProps) {
   const items = await getItems();
+  const settings = await getSettings();
 
   return (
     <Sidebar>
@@ -34,7 +36,7 @@ export async function AppSidebar({ userName, userRole }: AppSidebarProps) {
         <div className="flex items-center gap-2 p-1">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg overflow-hidden">
             <Image
-              src="/system/app-icon.png"
+              src={settings.logoUrl}
               alt="App Icon"
               width={28}
               height={28}
@@ -42,7 +44,7 @@ export async function AppSidebar({ userName, userRole }: AppSidebarProps) {
             />
           </div>
           <div className="flex flex-col">
-            <span className="text-base font-semibold">Lowcode Platform</span>
+            <span className="text-base font-semibold">{settings.appTitle}</span>
           </div>
         </div>
       </SidebarHeader>
