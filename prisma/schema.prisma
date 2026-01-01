@@ -126,8 +126,8 @@ enum Permission {
 model Setting {
   id         String   @id
   appTitle   String?
-  logoUrl    String?
-  faviconUrl String?
+  appIcon    String?
+  appFavicon String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }

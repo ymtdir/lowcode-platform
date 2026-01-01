@@ -8,8 +8,8 @@ import type { AppSettings } from '../types';
  */
 const DEFAULT_SETTINGS: AppSettings = {
   appTitle: 'Lowcode Platform',
-  logoUrl: '/system/app-icon.png',
-  faviconUrl: '/system/favicon.ico',
+  appIcon: '/system/app-icon.png',
+  appFavicon: '/system/favicon.ico',
 };
 
 /**
@@ -24,7 +24,7 @@ export async function getSettings(): Promise<AppSettings> {
 
   return {
     appTitle: setting?.appTitle ?? DEFAULT_SETTINGS.appTitle,
-    logoUrl: setting?.logoUrl ?? DEFAULT_SETTINGS.logoUrl,
-    faviconUrl: setting?.faviconUrl ?? DEFAULT_SETTINGS.faviconUrl,
+    appIcon: setting?.appIcon ?? DEFAULT_SETTINGS.appIcon,
+    appFavicon: setting?.appFavicon ?? DEFAULT_SETTINGS.appFavicon,
   };
 }

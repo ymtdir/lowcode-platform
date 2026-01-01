@@ -19,8 +19,8 @@ describe('updateSettings', () => {
   it('設定を新規作成できる', async () => {
     const input = {
       appTitle: 'My App',
-      logoUrl: '/uploads/system/logo.png',
-      faviconUrl: '/uploads/system/favicon.ico',
+      appIcon: '/uploads/system/logo.png',
+      appFavicon: '/uploads/system/favicon.ico',
     };
 
     const mockSetting = {
@@ -36,8 +36,8 @@ describe('updateSettings', () => {
 
     expect(result).toEqual({
       appTitle: 'My App',
-      logoUrl: '/uploads/system/logo.png',
-      faviconUrl: '/uploads/system/favicon.ico',
+      appIcon: '/uploads/system/logo.png',
+      appFavicon: '/uploads/system/favicon.ico',
     });
     expect(prisma.setting.upsert).toHaveBeenCalledWith({
       where: { id: 'singleton' },
@@ -52,8 +52,8 @@ describe('updateSettings', () => {
   it('既存の設定を更新できる', async () => {
     const input = {
       appTitle: 'Updated App',
-      logoUrl: '/new-logo.png',
-      faviconUrl: '/new-favicon.ico',
+      appIcon: '/new-logo.png',
+      appFavicon: '/new-favicon.ico',
     };
 
     const mockSetting = {
@@ -69,8 +69,8 @@ describe('updateSettings', () => {
 
     expect(result).toEqual({
       appTitle: 'Updated App',
-      logoUrl: '/new-logo.png',
-      faviconUrl: '/new-favicon.ico',
+      appIcon: '/new-logo.png',
+      appFavicon: '/new-favicon.ico',
     });
   });
 
@@ -82,8 +82,8 @@ describe('updateSettings', () => {
     const mockSetting = {
       id: 'singleton',
       appTitle: 'Only Title Updated',
-      logoUrl: null,
-      faviconUrl: null,
+      appIcon: null,
+      appFavicon: null,
       createdAt: new Date('2024-01-01'),
       updatedAt: new Date('2024-01-02'),
     };
@@ -94,8 +94,8 @@ describe('updateSettings', () => {
 
     expect(result).toEqual({
       appTitle: 'Only Title Updated',
-      logoUrl: '/system/app-icon.png',
-      faviconUrl: '/system/favicon.ico',
+      appIcon: '/system/app-icon.png',
+      appFavicon: '/system/favicon.ico',
     });
     expect(prisma.setting.upsert).toHaveBeenCalledWith({
       where: { id: 'singleton' },
@@ -115,8 +115,8 @@ describe('updateSettings', () => {
     const mockSetting = {
       id: 'singleton',
       appTitle: null,
-      logoUrl: null,
-      faviconUrl: null,
+      appIcon: null,
+      appFavicon: null,
       createdAt: new Date('2024-01-01'),
       updatedAt: new Date('2024-01-01'),
     };
@@ -127,8 +127,8 @@ describe('updateSettings', () => {
 
     expect(result).toEqual({
       appTitle: 'Lowcode Platform',
-      logoUrl: '/system/app-icon.png',
-      faviconUrl: '/system/favicon.ico',
+      appIcon: '/system/app-icon.png',
+      appFavicon: '/system/favicon.ico',
     });
   });
 
@@ -147,15 +147,15 @@ describe('updateSettings', () => {
   it('nullを明示的に設定できる', async () => {
     const input = {
       appTitle: undefined,
-      logoUrl: undefined,
-      faviconUrl: undefined,
+      appIcon: undefined,
+      appFavicon: undefined,
     };
 
     const mockSetting = {
       id: 'singleton',
       appTitle: null,
-      logoUrl: null,
-      faviconUrl: null,
+      appIcon: null,
+      appFavicon: null,
       createdAt: new Date('2024-01-01'),
       updatedAt: new Date('2024-01-02'),
     };
@@ -166,8 +166,8 @@ describe('updateSettings', () => {
 
     expect(result).toEqual({
       appTitle: 'Lowcode Platform',
-      logoUrl: '/system/app-icon.png',
-      faviconUrl: '/system/favicon.ico',
+      appIcon: '/system/app-icon.png',
+      appFavicon: '/system/favicon.ico',
     });
   });
 });

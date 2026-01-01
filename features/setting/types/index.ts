@@ -10,8 +10,8 @@ export type Setting = PrismaSetting;
  */
 export type AppSettings = {
   appTitle: string;
-  logoUrl: string;
-  faviconUrl: string;
+  appIcon: string;
+  appFavicon: string;
 };
 
 /**
@@ -19,6 +19,6 @@ export type AppSettings = {
  */
 export type UpdateSettingInput = {
   appTitle?: string;
-  logoUrl?: string;
-  faviconUrl?: string;
+  appIcon?: string;
+  appFavicon?: string;
 };

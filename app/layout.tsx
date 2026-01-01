@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: settings.appTitle,
     description: settings.appTitle,
     icons: {
-      icon: settings.faviconUrl,
+      icon: settings.appFavicon,
     },
   };
 }

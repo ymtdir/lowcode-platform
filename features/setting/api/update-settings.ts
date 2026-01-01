@@ -16,19 +16,19 @@ export async function updateSettings(
     create: {
       id: 'singleton',
       appTitle: input.appTitle,
-      logoUrl: input.logoUrl,
-      faviconUrl: input.faviconUrl,
+      appIcon: input.appIcon,
+      appFavicon: input.appFavicon,
     },
     update: {
       appTitle: input.appTitle,
-      logoUrl: input.logoUrl,
-      faviconUrl: input.faviconUrl,
+      appIcon: input.appIcon,
+      appFavicon: input.appFavicon,
     },
   });
 
   return {
     appTitle: setting.appTitle ?? 'Lowcode Platform',
-    logoUrl: setting.logoUrl ?? '/system/app-icon.png',
-    faviconUrl: setting.faviconUrl ?? '/system/favicon.ico',
+    appIcon: setting.appIcon ?? '/system/app-icon.png',
+    appFavicon: setting.appFavicon ?? '/system/favicon.ico',
   };
 }

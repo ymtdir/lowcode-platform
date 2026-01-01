@@ -20,8 +20,8 @@ describe('getSettings', () => {
     const mockSetting = {
       id: 'singleton',
       appTitle: 'My App',
-      logoUrl: '/uploads/system/logo.png',
-      faviconUrl: '/uploads/system/favicon.ico',
+      appIcon: '/uploads/system/logo.png',
+      appFavicon: '/uploads/system/favicon.ico',
       createdAt: new Date('2024-01-01'),
       updatedAt: new Date('2024-01-01'),
     };
@@ -32,8 +32,8 @@ describe('getSettings', () => {
 
     expect(result).toEqual({
       appTitle: 'My App',
-      logoUrl: '/uploads/system/logo.png',
-      faviconUrl: '/uploads/system/favicon.ico',
+      appIcon: '/uploads/system/logo.png',
+      appFavicon: '/uploads/system/favicon.ico',
     });
     expect(prisma.setting.findUnique).toHaveBeenCalledWith({
       where: { id: 'singleton' },
@@ -47,8 +47,8 @@ describe('getSettings', () => {
 
     expect(result).toEqual({
       appTitle: 'Lowcode Platform',
-      logoUrl: '/system/app-icon.png',
-      faviconUrl: '/system/favicon.ico',
+      appIcon: '/system/app-icon.png',
+      appFavicon: '/system/favicon.ico',
     });
     expect(prisma.setting.findUnique).toHaveBeenCalledTimes(1);
   });
@@ -57,8 +57,8 @@ describe('getSettings', () => {
     const mockSetting = {
       id: 'singleton',
       appTitle: 'My App',
-      logoUrl: null,
-      faviconUrl: null,
+      appIcon: null,
+      appFavicon: null,
       createdAt: new Date('2024-01-01'),
       updatedAt: new Date('2024-01-01'),
     };
@@ -69,8 +69,8 @@ describe('getSettings', () => {
 
     expect(result).toEqual({
       appTitle: 'My App',
-      logoUrl: '/system/app-icon.png',
-      faviconUrl: '/system/favicon.ico',
+      appIcon: '/system/app-icon.png',
+      appFavicon: '/system/favicon.ico',
     });
   });
 });

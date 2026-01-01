@@ -36,7 +36,7 @@ export async function AppSidebar({ userName, userRole }: AppSidebarProps) {
         <div className="flex items-center gap-2 p-1">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg overflow-hidden">
             <Image
-              src={settings.logoUrl}
+              src={settings.appIcon}
               alt="App Icon"
               width={28}
               height={28}

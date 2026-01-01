@@ -17,17 +17,17 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [appTitle, setAppTitle] = useState(initialSettings.appTitle);
-  const [logoUrl, setLogoUrl] = useState(initialSettings.logoUrl);
-  const [faviconUrl, setFaviconUrl] = useState(initialSettings.faviconUrl);
+  const [appIcon, setAppIcon] = useState(initialSettings.appIcon);
+  const [appFavicon, setAppFavicon] = useState(initialSettings.appFavicon);
 
   // 変更があるかどうかを判定
   const hasChanges = useMemo(() => {
     return (
       appTitle !== initialSettings.appTitle ||
-      logoUrl !== initialSettings.logoUrl ||
-      faviconUrl !== initialSettings.faviconUrl
+      appIcon !== initialSettings.appIcon ||
+      appFavicon !== initialSettings.appFavicon
     );
-  }, [appTitle, logoUrl, faviconUrl, initialSettings]);
+  }, [appTitle, appIcon, appFavicon, initialSettings]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,8 +36,8 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
     try {
       await updateSettings({
         appTitle,
-        logoUrl,
-        faviconUrl,
+        appIcon,
+        appFavicon,
       });
 
       toast.success('設定を更新しました');
@@ -66,23 +66,23 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="logoUrl">ロゴURL</FieldLabel>
+            <FieldLabel htmlFor="appIcon">アプリアイコン</FieldLabel>
             <Input
-              id="logoUrl"
+              id="appIcon"
               type="text"
-              value={logoUrl}
-              onChange={(e) => setLogoUrl(e.target.value)}
+              value={appIcon}
+              onChange={(e) => setAppIcon(e.target.value)}
               placeholder="/system/app-icon.png"
             />
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="faviconUrl">ファビコンURL</FieldLabel>
+            <FieldLabel htmlFor="appFavicon">ファビコン</FieldLabel>
             <Input
-              id="faviconUrl"
+              id="appFavicon"
               type="text"
-              value={faviconUrl}
-              onChange={(e) => setFaviconUrl(e.target.value)}
+              value={appFavicon}
+              onChange={(e) => setAppFavicon(e.target.value)}
               placeholder="/system/favicon.ico"
             />
           </Field>
@@ -94,8 +94,8 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
             variant="outline"
             onClick={() => {
               setAppTitle(initialSettings.appTitle);
-              setLogoUrl(initialSettings.logoUrl);
-              setFaviconUrl(initialSettings.faviconUrl);
+              setAppIcon(initialSettings.appIcon);
+              setAppFavicon(initialSettings.appFavicon);
             }}
             disabled={!hasChanges || isSubmitting}
           >
