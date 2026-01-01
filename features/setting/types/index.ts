@@ -12,6 +12,7 @@ export type AppSettings = {
   appTitle: string;
   appIcon: string;
   appFavicon: string;
+  showTitleInIcon: boolean;
 };
 
 /**
@@ -21,4 +22,5 @@ export type UpdateSettingInput = {
   appTitle?: string;
   appIcon?: string;
   appFavicon?: string;
+  showTitleInIcon?: boolean;
 };

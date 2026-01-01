@@ -10,6 +10,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   appTitle: 'Lowcode Platform',
   appIcon: '/system/app-icon.png',
   appFavicon: '/system/favicon.ico',
+  showTitleInIcon: false,
 };
 
 /**
@@ -26,5 +27,6 @@ export async function getSettings(): Promise<AppSettings> {
     appTitle: setting?.appTitle ?? DEFAULT_SETTINGS.appTitle,
     appIcon: setting?.appIcon ?? DEFAULT_SETTINGS.appIcon,
     appFavicon: setting?.appFavicon ?? DEFAULT_SETTINGS.appFavicon,
+    showTitleInIcon: setting?.showTitleInIcon ?? DEFAULT_SETTINGS.showTitleInIcon,
   };
 }

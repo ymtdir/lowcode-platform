@@ -18,11 +18,13 @@ export async function updateSettings(
       appTitle: input.appTitle,
       appIcon: input.appIcon,
       appFavicon: input.appFavicon,
+      showTitleInIcon: input.showTitleInIcon,
     },
     update: {
       appTitle: input.appTitle,
       appIcon: input.appIcon,
       appFavicon: input.appFavicon,
+      showTitleInIcon: input.showTitleInIcon,
     },
   });
 
@@ -30,5 +32,6 @@ export async function updateSettings(
     appTitle: setting.appTitle ?? 'Lowcode Platform',
     appIcon: setting.appIcon ?? '/system/app-icon.png',
     appFavicon: setting.appFavicon ?? '/system/favicon.ico',
+    showTitleInIcon: setting.showTitleInIcon ?? false,
   };
 }

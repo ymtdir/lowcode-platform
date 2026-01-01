@@ -124,10 +124,11 @@ enum Permission {
 }
 
 model Setting {
-  id         String   @id
-  appTitle   String?
-  appIcon    String?
-  appFavicon String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id              String   @id
+  appTitle        String?
+  appIcon         String?
+  appFavicon      String?
+  showTitleInIcon Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }

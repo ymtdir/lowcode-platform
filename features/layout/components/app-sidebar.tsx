@@ -34,18 +34,26 @@ export async function AppSidebar({ userName, userRole }: AppSidebarProps) {
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center gap-2 p-1">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg overflow-hidden">
+          <div
+            className={`flex items-center justify-start rounded-lg overflow-hidden ${
+              settings.showTitleInIcon ? 'h-7 w-full' : 'h-7 w-7'
+            }`}
+          >
             <Image
               src={settings.appIcon}
               alt="App Icon"
-              width={28}
+              width={settings.showTitleInIcon ? 200 : 28}
               height={28}
-              className="object-cover"
+              className="object-contain object-left"
             />
           </div>
-          <div className="flex flex-col">
-            <span className="text-base font-semibold">{settings.appTitle}</span>
-          </div>
+          {!settings.showTitleInIcon && (
+            <div className="flex flex-col">
+              <span className="text-base font-semibold">
+                {settings.appTitle}
+              </span>
+            </div>
+          )}
         </div>
       </SidebarHeader>
       <SidebarContent>
