@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 /**
  * アプリケーション設定ページ
- * ADMIN, DEVELOPERロールのみアクセス可能
+ * ADMINロールのみアクセス可能
  */
 export default async function SettingsPage() {
   // 権限チェック

@@ -49,10 +49,10 @@ export function canManageGroups(role: UserRole): boolean {
 
 /**
  * アプリケーション設定の権限があるかチェック
- * ADMIN, DEVELOPERのみ
+ * ADMINのみ
  */
 export function canManageSettings(role: UserRole): boolean {
-  return hasRole(role, 'DEVELOPER');
+  return role === 'ADMIN';
 }
 
 /**
