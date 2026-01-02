@@ -99,7 +99,7 @@ describe('updateSettings', () => {
 
     expect(result).toEqual({
       appName: 'Only Title Updated',
-      appIcon: '/system/app-icon.png',
+      appIcon: '/system/icon.png',
       appFavicon: '/system/favicon.ico',
       hideAppName: false,
     });
@@ -134,7 +134,7 @@ describe('updateSettings', () => {
 
     expect(result).toEqual({
       appName: 'Lowcode Platform',
-      appIcon: '/system/app-icon.png',
+      appIcon: '/system/icon.png',
       appFavicon: '/system/favicon.ico',
       hideAppName: false,
     });
@@ -176,7 +176,7 @@ describe('updateSettings', () => {
 
     expect(result).toEqual({
       appName: 'Lowcode Platform',
-      appIcon: '/system/app-icon.png',
+      appIcon: '/system/icon.png',
       appFavicon: '/system/favicon.ico',
       hideAppName: false,
     });
