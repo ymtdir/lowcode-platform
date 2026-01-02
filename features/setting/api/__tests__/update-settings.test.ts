@@ -152,7 +152,7 @@ describe('updateSettings', () => {
     await expect(updateSettings(input)).rejects.toThrow('Database error');
   });
 
-  it('nullを明示的に設定できる', async () => {
+  it('undefinedを渡した場合にデフォルト値が使用される', async () => {
     const input = {
       appName: undefined,
       appIcon: undefined,
