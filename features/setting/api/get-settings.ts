@@ -1,5 +1,6 @@
 'use server';
 
+import { cache } from 'react';
 import { prisma } from '@/lib/prisma';
 import type { AppSettings } from '../types';
 
@@ -17,8 +18,9 @@ const DEFAULT_SETTINGS: AppSettings = {
  * アプリケーション設定を取得するServer Action
  *
  * データベースに設定がない場合はデフォルト値を返す
+ * React cacheでリクエスト単位でメモ化される
  */
-export async function getSettings(): Promise<AppSettings> {
+export const getSettings = cache(async (): Promise<AppSettings> => {
   const setting = await prisma.setting.findUnique({
     where: { id: 'singleton' },
   });
@@ -29,4 +31,4 @@ export async function getSettings(): Promise<AppSettings> {
     appFavicon: setting?.appFavicon ?? DEFAULT_SETTINGS.appFavicon,
     hideAppName: setting?.hideAppName ?? DEFAULT_SETTINGS.hideAppName,
   };
-}
+});
