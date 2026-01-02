@@ -7,10 +7,10 @@ import type { AppSettings } from '../types';
  * デフォルト設定値
  */
 const DEFAULT_SETTINGS: AppSettings = {
-  appTitle: 'Lowcode Platform',
+  appName: 'Lowcode Platform',
   appIcon: '/system/app-icon.png',
   appFavicon: '/system/favicon.ico',
-  showTitleInIcon: false,
+  hideAppName: false,
 };
 
 /**
@@ -24,9 +24,9 @@ export async function getSettings(): Promise<AppSettings> {
   });
 
   return {
-    appTitle: setting?.appTitle ?? DEFAULT_SETTINGS.appTitle,
+    appName: setting?.appName ?? DEFAULT_SETTINGS.appName,
     appIcon: setting?.appIcon ?? DEFAULT_SETTINGS.appIcon,
     appFavicon: setting?.appFavicon ?? DEFAULT_SETTINGS.appFavicon,
-    showTitleInIcon: setting?.showTitleInIcon ?? DEFAULT_SETTINGS.showTitleInIcon,
+    hideAppName: setting?.hideAppName ?? DEFAULT_SETTINGS.hideAppName,
   };
 }

@@ -9,18 +9,18 @@ export type Setting = PrismaSetting;
  * アプリケーション設定（デフォルト値込み）
  */
 export type AppSettings = {
-  appTitle: string;
+  appName: string;
   appIcon: string;
   appFavicon: string;
-  showTitleInIcon: boolean;
+  hideAppName: boolean;
 };
 
 /**
  * 設定更新用の入力型
  */
 export type UpdateSettingInput = {
-  appTitle?: string;
+  appName?: string;
   appIcon?: string;
   appFavicon?: string;
-  showTitleInIcon?: boolean;
+  hideAppName?: boolean;
 };

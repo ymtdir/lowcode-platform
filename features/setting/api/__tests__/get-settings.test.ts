@@ -19,9 +19,10 @@ describe('getSettings', () => {
   it('設定を取得できる', async () => {
     const mockSetting = {
       id: 'singleton',
-      appTitle: 'My App',
+      appName: 'My App',
       appIcon: '/uploads/system/logo.png',
       appFavicon: '/uploads/system/favicon.ico',
+      hideAppName: false,
       createdAt: new Date('2024-01-01'),
       updatedAt: new Date('2024-01-01'),
     };
@@ -31,9 +32,10 @@ describe('getSettings', () => {
     const result = await getSettings();
 
     expect(result).toEqual({
-      appTitle: 'My App',
+      appName: 'My App',
       appIcon: '/uploads/system/logo.png',
       appFavicon: '/uploads/system/favicon.ico',
+      hideAppName: false,
     });
     expect(prisma.setting.findUnique).toHaveBeenCalledWith({
       where: { id: 'singleton' },
@@ -46,9 +48,10 @@ describe('getSettings', () => {
     const result = await getSettings();
 
     expect(result).toEqual({
-      appTitle: 'Lowcode Platform',
+      appName: 'Lowcode Platform',
       appIcon: '/system/app-icon.png',
       appFavicon: '/system/favicon.ico',
+      hideAppName: false,
     });
     expect(prisma.setting.findUnique).toHaveBeenCalledTimes(1);
   });
@@ -56,9 +59,10 @@ describe('getSettings', () => {
   it('一部の値がnullの場合はデフォルト値で補完する', async () => {
     const mockSetting = {
       id: 'singleton',
-      appTitle: 'My App',
+      appName: 'My App',
       appIcon: null,
       appFavicon: null,
+      hideAppName: false,
       createdAt: new Date('2024-01-01'),
       updatedAt: new Date('2024-01-01'),
     };
@@ -68,9 +72,10 @@ describe('getSettings', () => {
     const result = await getSettings();
 
     expect(result).toEqual({
-      appTitle: 'My App',
+      appName: 'My App',
       appIcon: '/system/app-icon.png',
       appFavicon: '/system/favicon.ico',
+      hideAppName: false,
     });
   });
 });

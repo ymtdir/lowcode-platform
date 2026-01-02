@@ -18,9 +18,10 @@ describe('updateSettings', () => {
 
   it('設定を新規作成できる', async () => {
     const input = {
-      appTitle: 'My App',
+      appName: 'My App',
       appIcon: '/uploads/system/logo.png',
       appFavicon: '/uploads/system/favicon.ico',
+      hideAppName: false,
     };
 
     const mockSetting = {
@@ -35,9 +36,10 @@ describe('updateSettings', () => {
     const result = await updateSettings(input);
 
     expect(result).toEqual({
-      appTitle: 'My App',
+      appName: 'My App',
       appIcon: '/uploads/system/logo.png',
       appFavicon: '/uploads/system/favicon.ico',
+      hideAppName: false,
     });
     expect(prisma.setting.upsert).toHaveBeenCalledWith({
       where: { id: 'singleton' },
@@ -51,9 +53,10 @@ describe('updateSettings', () => {
 
   it('既存の設定を更新できる', async () => {
     const input = {
-      appTitle: 'Updated App',
+      appName: 'Updated App',
       appIcon: '/new-logo.png',
       appFavicon: '/new-favicon.ico',
+      hideAppName: true,
     };
 
     const mockSetting = {
@@ -68,22 +71,24 @@ describe('updateSettings', () => {
     const result = await updateSettings(input);
 
     expect(result).toEqual({
-      appTitle: 'Updated App',
+      appName: 'Updated App',
       appIcon: '/new-logo.png',
       appFavicon: '/new-favicon.ico',
+      hideAppName: true,
     });
   });
 
   it('一部の値のみを更新できる', async () => {
     const input = {
-      appTitle: 'Only Title Updated',
+      appName: 'Only Title Updated',
     };
 
     const mockSetting = {
       id: 'singleton',
-      appTitle: 'Only Title Updated',
+      appName: 'Only Title Updated',
       appIcon: null,
       appFavicon: null,
+      hideAppName: false,
       createdAt: new Date('2024-01-01'),
       updatedAt: new Date('2024-01-02'),
     };
@@ -93,18 +98,19 @@ describe('updateSettings', () => {
     const result = await updateSettings(input);
 
     expect(result).toEqual({
-      appTitle: 'Only Title Updated',
+      appName: 'Only Title Updated',
       appIcon: '/system/app-icon.png',
       appFavicon: '/system/favicon.ico',
+      hideAppName: false,
     });
     expect(prisma.setting.upsert).toHaveBeenCalledWith({
       where: { id: 'singleton' },
       create: {
         id: 'singleton',
-        appTitle: 'Only Title Updated',
+        appName: 'Only Title Updated',
       },
       update: {
-        appTitle: 'Only Title Updated',
+        appName: 'Only Title Updated',
       },
     });
   });
@@ -114,9 +120,10 @@ describe('updateSettings', () => {
 
     const mockSetting = {
       id: 'singleton',
-      appTitle: null,
+      appName: null,
       appIcon: null,
       appFavicon: null,
+      hideAppName: false,
       createdAt: new Date('2024-01-01'),
       updatedAt: new Date('2024-01-01'),
     };
@@ -126,15 +133,16 @@ describe('updateSettings', () => {
     const result = await updateSettings(input);
 
     expect(result).toEqual({
-      appTitle: 'Lowcode Platform',
+      appName: 'Lowcode Platform',
       appIcon: '/system/app-icon.png',
       appFavicon: '/system/favicon.ico',
+      hideAppName: false,
     });
   });
 
   it('データベースエラーが発生した場合は例外をスローする', async () => {
     const input = {
-      appTitle: 'My App',
+      appName: 'My App',
     };
 
     (prisma.setting.upsert as jest.Mock).mockRejectedValue(
@@ -146,16 +154,18 @@ describe('updateSettings', () => {
 
   it('nullを明示的に設定できる', async () => {
     const input = {
-      appTitle: undefined,
+      appName: undefined,
       appIcon: undefined,
       appFavicon: undefined,
+      hideAppName: undefined,
     };
 
     const mockSetting = {
       id: 'singleton',
-      appTitle: null,
+      appName: null,
       appIcon: null,
       appFavicon: null,
+      hideAppName: false,
       createdAt: new Date('2024-01-01'),
       updatedAt: new Date('2024-01-02'),
     };
@@ -165,9 +175,10 @@ describe('updateSettings', () => {
     const result = await updateSettings(input);
 
     expect(result).toEqual({
-      appTitle: 'Lowcode Platform',
+      appName: 'Lowcode Platform',
       appIcon: '/system/app-icon.png',
       appFavicon: '/system/favicon.ico',
+      hideAppName: false,
     });
   });
 });

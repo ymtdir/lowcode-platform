@@ -20,8 +20,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
 
   return {
-    title: settings.appTitle,
-    description: settings.appTitle,
+    title: settings.appName,
+    description: settings.appName,
     icons: {
       icon: settings.appFavicon,
     },

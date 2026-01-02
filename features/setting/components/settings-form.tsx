@@ -17,22 +17,22 @@ type SettingsFormProps = {
 export function SettingsForm({ initialSettings }: SettingsFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [appTitle, setAppTitle] = useState(initialSettings.appTitle);
+  const [appName, setAppName] = useState(initialSettings.appName);
   const [appIcon, setAppIcon] = useState(initialSettings.appIcon);
   const [appFavicon, setAppFavicon] = useState(initialSettings.appFavicon);
-  const [showTitleInIcon, setShowTitleInIcon] = useState(
-    initialSettings.showTitleInIcon
+  const [hideAppName, setHideAppName] = useState(
+    initialSettings.hideAppName
   );
 
   // 変更があるかどうかを判定
   const hasChanges = useMemo(() => {
     return (
-      appTitle !== initialSettings.appTitle ||
+      appName !== initialSettings.appName ||
       appIcon !== initialSettings.appIcon ||
       appFavicon !== initialSettings.appFavicon ||
-      showTitleInIcon !== initialSettings.showTitleInIcon
+      hideAppName !== initialSettings.hideAppName
     );
-  }, [appTitle, appIcon, appFavicon, showTitleInIcon, initialSettings]);
+  }, [appName, appIcon, appFavicon, hideAppName, initialSettings]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,10 +40,10 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
 
     try {
       await updateSettings({
-        appTitle,
+        appName,
         appIcon,
         appFavicon,
-        showTitleInIcon,
+        hideAppName,
       });
 
       toast.success('設定を更新しました');
@@ -62,25 +62,25 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
         <FieldGroup>
           <Field>
             <div className="flex items-center justify-between">
-              <FieldLabel htmlFor="showTitleInIcon">
-                アプリアイコンにアプリケーション名を含める
+              <FieldLabel htmlFor="hideAppName">
+                アプリケーション名を非表示
               </FieldLabel>
               <Switch
-                id="showTitleInIcon"
-                checked={showTitleInIcon}
-                onCheckedChange={setShowTitleInIcon}
+                id="hideAppName"
+                checked={hideAppName}
+                onCheckedChange={setHideAppName}
               />
             </div>
           </Field>
           <Field>
-            <FieldLabel htmlFor="appTitle">アプリケーション名</FieldLabel>
+            <FieldLabel htmlFor="appName">アプリケーション名</FieldLabel>
             <Input
-              id="appTitle"
+              id="appName"
               type="text"
-              value={appTitle}
-              onChange={(e) => setAppTitle(e.target.value)}
+              value={appName}
+              onChange={(e) => setAppName(e.target.value)}
               placeholder="Lowcode Platform"
-              disabled={showTitleInIcon}
+              disabled={hideAppName}
             />
           </Field>
 
@@ -112,10 +112,10 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
             type="button"
             variant="outline"
             onClick={() => {
-              setAppTitle(initialSettings.appTitle);
+              setAppName(initialSettings.appName);
               setAppIcon(initialSettings.appIcon);
               setAppFavicon(initialSettings.appFavicon);
-              setShowTitleInIcon(initialSettings.showTitleInIcon);
+              setHideAppName(initialSettings.hideAppName);
             }}
             disabled={!hasChanges || isSubmitting}
           >
