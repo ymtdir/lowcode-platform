@@ -2,7 +2,6 @@
 
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
-import { existsSync } from 'fs';
 import { randomBytes } from 'crypto';
 
 /**
@@ -52,9 +51,9 @@ export async function uploadImage(
     const uploadDir = subDir
       ? join(process.cwd(), 'public', 'uploads', subDir)
       : join(process.cwd(), 'public', 'uploads');
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true });
-    }
+
+    // ディレクトリが存在しない場合は作成（recursive: trueで既存チェック不要）
+    await mkdir(uploadDir, { recursive: true });
 
     // ファイル名を生成（タイムスタンプ + ランダム文字列 + 拡張子）
     const parts = file.name.split('.');

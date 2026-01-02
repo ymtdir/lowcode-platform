@@ -1,15 +1,12 @@
 import { uploadImage } from '../upload-image';
 import { writeFile, mkdir } from 'fs/promises';
-import { existsSync } from 'fs';
 
 // fs/promisesをモック化
 jest.mock('fs/promises');
-jest.mock('fs');
 
 describe('uploadImage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (existsSync as jest.Mock).mockReturnValue(true);
   });
 
   it('画像をアップロードできる', async () => {
@@ -65,7 +62,6 @@ describe('uploadImage', () => {
     const formData = new FormData();
     formData.append('file', mockFile);
 
-    (existsSync as jest.Mock).mockReturnValue(false);
     (mkdir as jest.Mock).mockResolvedValue(undefined);
     (writeFile as jest.Mock).mockResolvedValue(undefined);
 
@@ -156,7 +152,6 @@ describe('uploadImage', () => {
     const formData = new FormData();
     formData.append('file', mockFile);
 
-    (existsSync as jest.Mock).mockReturnValue(false);
     (mkdir as jest.Mock).mockRejectedValue(new Error('Permission denied'));
 
     const result = await uploadImage(formData, 'icon');
