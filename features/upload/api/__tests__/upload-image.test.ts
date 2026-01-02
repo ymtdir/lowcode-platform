@@ -120,4 +120,48 @@ describe('uploadImage', () => {
     expect(result.success).toBe(true);
     expect(result.path).toMatch(/^\/uploads\/icons\/[\w-]+\.jpg$/);
   });
+
+  it('拡張子がない場合はデフォルトでpngが使用される', async () => {
+    const mockFile = new File(['test'], 'noextension', {
+      type: 'image/png',
+    });
+    const formData = new FormData();
+    formData.append('file', mockFile);
+
+    (writeFile as jest.Mock).mockResolvedValue(undefined);
+
+    const result = await uploadImage(formData, 'icon');
+
+    expect(result.success).toBe(true);
+    expect(result.path).toMatch(/^\/uploads\/icons\/[\w-]+\.png$/);
+  });
+
+  it('ファイル書き込みが失敗した場合はエラーを返す', async () => {
+    const mockFile = new File(['test'], 'test.png', { type: 'image/png' });
+    const formData = new FormData();
+    formData.append('file', mockFile);
+
+    (writeFile as jest.Mock).mockRejectedValue(
+      new Error('Write permission denied')
+    );
+
+    const result = await uploadImage(formData, 'icon');
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('ファイルのアップロードに失敗しました');
+  });
+
+  it('ディレクトリ作成が失敗した場合はエラーを返す', async () => {
+    const mockFile = new File(['test'], 'test.png', { type: 'image/png' });
+    const formData = new FormData();
+    formData.append('file', mockFile);
+
+    (existsSync as jest.Mock).mockReturnValue(false);
+    (mkdir as jest.Mock).mockRejectedValue(new Error('Permission denied'));
+
+    const result = await uploadImage(formData, 'icon');
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('ファイルのアップロードに失敗しました');
+  });
 });

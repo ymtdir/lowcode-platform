@@ -57,7 +57,8 @@ export async function uploadImage(
     }
 
     // ファイル名を生成（タイムスタンプ + ランダム文字列 + 拡張子）
-    const ext = file.name.split('.').pop() || 'png';
+    const parts = file.name.split('.');
+    const ext = parts.length > 1 ? parts.pop() : 'png';
     const timestamp = Date.now().toString(36); // 36進数で短縮
     const random = randomBytes(4).toString('hex'); // 8文字のランダム文字列
     const fileName = `${timestamp}_${random}.${ext}`;
