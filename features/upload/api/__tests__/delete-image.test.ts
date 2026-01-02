@@ -84,4 +84,28 @@ describe('deleteImage', () => {
       expect.stringContaining('public/uploads/image.png')
     );
   });
+
+  it('パストラバーサル攻撃を防ぐ: ../ を含むパス', async () => {
+    const result = await deleteImage('/uploads/../../../etc/passwd');
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('無効なパスです');
+    expect(unlink).not.toHaveBeenCalled();
+  });
+
+  it('パストラバーサル攻撃を防ぐ: ..を含むパス', async () => {
+    const result = await deleteImage('/uploads/icons/../../secret.txt');
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('無効なパスです');
+    expect(unlink).not.toHaveBeenCalled();
+  });
+
+  it('パストラバーサル攻撃を防ぐ: エンコードされた../', async () => {
+    const result = await deleteImage('/uploads/%2e%2e%2f%2e%2e%2f/etc/passwd');
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('無効なパスです');
+    expect(unlink).not.toHaveBeenCalled();
+  });
 });

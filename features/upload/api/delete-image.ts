@@ -11,13 +11,21 @@ export async function deleteImage(
   imagePath: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    // URLデコードしてからパスを検証
+    const decodedPath = decodeURIComponent(imagePath);
+
     // パスがpublic/uploadsで始まることを検証（セキュリティ対策）
-    if (!imagePath.startsWith('/uploads/')) {
+    if (!decodedPath.startsWith('/uploads/')) {
+      return { success: false, error: '無効なパスです' };
+    }
+
+    // パストラバーサル攻撃を防ぐため、..を含むパスを拒否
+    if (decodedPath.includes('..')) {
       return { success: false, error: '無効なパスです' };
     }
 
     // ファイルパスを構築
-    const filePath = join(process.cwd(), 'public', imagePath);
+    const filePath = join(process.cwd(), 'public', decodedPath);
 
     // ファイルが存在するか確認
     if (!existsSync(filePath)) {
