@@ -8,7 +8,7 @@ import type { AppSettings } from '../types';
  */
 const DEFAULT_SETTINGS: AppSettings = {
   appName: 'Lowcode Platform',
-  appIcon: '/system/app-icon.png',
+  appIcon: '/system/icon.png',
   appFavicon: '/system/favicon.ico',
   hideAppName: false,
 };

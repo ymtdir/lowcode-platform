@@ -30,7 +30,7 @@ export async function updateSettings(
 
   return {
     appName: setting.appName ?? 'Lowcode Platform',
-    appIcon: setting.appIcon ?? '/system/app-icon.png',
+    appIcon: setting.appIcon ?? '/system/icon.png',
     appFavicon: setting.appFavicon ?? '/system/favicon.ico',
     hideAppName: setting.hideAppName ?? false,
   };
