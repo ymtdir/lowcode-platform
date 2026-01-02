@@ -16,16 +16,29 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSettings();
+export const dynamic = 'force-dynamic';
 
-  return {
-    title: settings.appName,
-    description: settings.appName,
-    icons: {
-      icon: settings.appFavicon,
-    },
-  };
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const settings = await getSettings();
+
+    return {
+      title: settings.appName,
+      description: settings.appName,
+      icons: {
+        icon: settings.appFavicon,
+      },
+    };
+  } catch {
+    // ビルド時などDBに接続できない場合はデフォルト値を返す
+    return {
+      title: 'Lowcode Platform',
+      description: 'Lowcode Platform',
+      icons: {
+        icon: '/system/favicon.ico',
+      },
+    };
+  }
 }
 
 /**
