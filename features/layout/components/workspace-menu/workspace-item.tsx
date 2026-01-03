@@ -18,6 +18,7 @@ import type { Item as ItemType } from '@/features/item/types';
 import { ITEM_CONFIGS } from '@/features/item/constants';
 import { getItemIcon } from '@/features/item/utils';
 import { canManageStructure } from '@/lib/permissions';
+import { createElement } from 'react';
 
 /**
  * ドロップ位置の型
@@ -52,7 +53,7 @@ export function Item({
   userRole,
 }: ItemProps) {
   const [isOpen, setIsOpen] = useState(true);
-  const Icon = getItemIcon(item);
+  const IconComponent = getItemIcon(item);
   const config = ITEM_CONFIGS[item.type];
   const hasChildren =
     config.canHaveChildren && item.children && item.children.length > 0;
@@ -127,13 +128,11 @@ export function Item({
               }}
               className="flex items-center justify-center shrink-0 rounded hover:bg-primary/10"
             >
-              <Icon
-                className={
-                  config.showChevron
-                    ? 'size-4 group-hover/item:hidden'
-                    : 'size-4'
-                }
-              />
+              {createElement(IconComponent, {
+                className: config.showChevron
+                  ? 'size-4 group-hover/item:hidden'
+                  : 'size-4',
+              })}
               {config.showChevron && (
                 <ChevronRight
                   className={`size-4 hidden group-hover/item:block transition-transform duration-200 ${
@@ -222,11 +221,11 @@ export function Item({
             }}
             className="flex items-center justify-center shrink-0 rounded hover:bg-primary/10"
           >
-            <Icon
-              className={
-                config.showChevron ? 'size-4 group-hover/item:hidden' : 'size-4'
-              }
-            />
+            {createElement(IconComponent, {
+              className: config.showChevron
+                ? 'size-4 group-hover/item:hidden'
+                : 'size-4',
+            })}
             {config.showChevron && (
               <ChevronRight
                 className={`size-4 hidden group-hover/item:block transition-transform duration-200 ${
