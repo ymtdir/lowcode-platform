@@ -131,6 +131,15 @@ export function FolderLayout({ item }: FolderLayoutProps) {
     setSortedChildren(serverChildren);
   }, [serverChildren]);
 
+  // コンポーネントアンマウント時のクリーンアップ
+  useEffect(() => {
+    return () => {
+      if (dropTimeoutRef.current) {
+        clearTimeout(dropTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: DRAG_ACTIVATION_DISTANCE },
