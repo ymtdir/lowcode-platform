@@ -9,6 +9,7 @@ import * as LucideIcons from 'lucide-react';
 type FormState = {
   error?: string;
   success?: boolean;
+  iconName?: string | null;
 };
 
 /**
@@ -46,15 +47,26 @@ export async function updateItemIcon(
 
     // アイコン名のバリデーション
     if (iconName !== null) {
-      const icon = LucideIcons[iconName as keyof typeof LucideIcons];
+      // IconPickerはケバブケース（kebab-case）で返すため、
+      // パスカルケース（PascalCase）に変換
+      // 例: "alarm-clock" -> "AlarmClock", "accessibility" -> "Accessibility"
+      const pascalCaseIconName = iconName
+        .split('-')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join('');
+
+      const icon = LucideIcons[pascalCaseIconName as keyof typeof LucideIcons];
       const isValidIcon =
-        iconName in LucideIcons &&
+        pascalCaseIconName in LucideIcons &&
         icon &&
         (typeof icon === 'object' || typeof icon === 'function');
 
       if (!isValidIcon) {
         return { error: '無効なアイコン名です' };
       }
+
+      // データベースにはパスカルケースの正しい名前で保存
+      iconName = pascalCaseIconName;
     }
 
     // 対象アイテムを確認
@@ -76,7 +88,7 @@ export async function updateItemIcon(
     // キャッシュを再検証
     revalidatePath('/', 'layout');
 
-    return { success: true };
+    return { success: true, iconName };
   } catch (error) {
     console.error('アイコン更新エラー:', error);
     return { error: 'アイコンの更新に失敗しました' };

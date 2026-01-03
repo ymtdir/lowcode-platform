@@ -32,8 +32,18 @@ export function IconPickerDialog({
   onSelect,
   currentIcon,
 }: IconPickerDialogProps) {
+  // IconPickerはケバブケースを期待するため、DBのパスカルケースの値をケバブケースに変換
+  // 例: "AlarmClock" -> "alarm-clock", "Accessibility" -> "accessibility"
+  const convertToKebabCase = (str: string | null | undefined) => {
+    if (!str) return null;
+    return str
+      .replace(/([A-Z])/g, '-$1')
+      .toLowerCase()
+      .replace(/^-/, '');
+  };
+
   const [selectedIcon, setSelectedIcon] = useState<string | null>(
-    currentIcon ?? null
+    convertToKebabCase(currentIcon)
   );
 
   const handleConfirm = () => {

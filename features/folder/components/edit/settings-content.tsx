@@ -64,7 +64,8 @@ export function SettingsContent({
   const handleIconSelect = async (iconName: string | null) => {
     const result = await updateItemIcon(folderId, iconName);
     if (result.success) {
-      setCurrentIcon(iconName);
+      // サーバーから返された正規化されたアイコン名を使用
+      setCurrentIcon(result.iconName ?? null);
       toast.success('アイコンを更新しました');
       router.refresh();
     } else {
