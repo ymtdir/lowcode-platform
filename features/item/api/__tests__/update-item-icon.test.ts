@@ -124,6 +124,46 @@ describe('updateItemIcon', () => {
     expect(prisma.item.update).not.toHaveBeenCalled();
   });
 
+  it('空文字列のアイコン名の場合はエラーを返す', async () => {
+    const itemId = 'folder-1';
+    const emptyIconName = '';
+
+    const result = await updateItemIcon(itemId, emptyIconName);
+
+    expect(result).toEqual({ error: '無効なアイコン名です' });
+    expect(prisma.item.update).not.toHaveBeenCalled();
+  });
+
+  it('ケバブケースの無効なアイコン名の場合はエラーを返す', async () => {
+    const itemId = 'folder-1';
+    const invalidKebabCase = 'invalid-icon-name';
+
+    const result = await updateItemIcon(itemId, invalidKebabCase);
+
+    expect(result).toEqual({ error: '無効なアイコン名です' });
+    expect(prisma.item.update).not.toHaveBeenCalled();
+  });
+
+  it('特殊文字を含むアイコン名の場合はエラーを返す', async () => {
+    const itemId = 'folder-1';
+    const specialCharsIcon = 'icon@#$%';
+
+    const result = await updateItemIcon(itemId, specialCharsIcon);
+
+    expect(result).toEqual({ error: '無効なアイコン名です' });
+    expect(prisma.item.update).not.toHaveBeenCalled();
+  });
+
+  it('極端に長い文字列のアイコン名の場合はエラーを返す', async () => {
+    const itemId = 'folder-1';
+    const longIconName = 'a'.repeat(1000);
+
+    const result = await updateItemIcon(itemId, longIconName);
+
+    expect(result).toEqual({ error: '無効なアイコン名です' });
+    expect(prisma.item.update).not.toHaveBeenCalled();
+  });
+
   it('アイテムが見つからない場合はエラーを返す', async () => {
     const itemId = 'non-existent';
     const iconName = 'Users';
