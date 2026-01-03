@@ -18,6 +18,7 @@ import { AccessContent } from './access-content';
 type TableEditLayoutProps = {
   itemId: string;
   itemName: string;
+  itemIcon?: string | null;
   columns: Column[];
   tables: Item[];
   initialPermissions: PermissionWithRelations[];
@@ -31,6 +32,7 @@ type TableEditLayoutProps = {
 export function TableEditLayout({
   itemId,
   itemName,
+  itemIcon,
   columns,
   tables,
   initialPermissions,
@@ -68,7 +70,11 @@ export function TableEditLayout({
           </TabsList>
         </div>
         <TabsContent value="settings" className="flex-1 mt-6">
-          <SettingsContent itemId={itemId} itemName={itemName} />
+          <SettingsContent
+            itemId={itemId}
+            itemName={itemName}
+            itemIcon={itemIcon}
+          />
         </TabsContent>
         <TabsContent value="columns" className="flex-1 mt-6">
           <ColumnsContent itemId={itemId} columns={columns} tables={tables} />
