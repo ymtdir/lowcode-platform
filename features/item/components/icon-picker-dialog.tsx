@@ -46,6 +46,15 @@ export function IconPickerDialog({
     convertToKebabCase(currentIcon)
   );
 
+  // ダイアログが開かれたときに状態をリセット
+  const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
+      // ダイアログを開くときにcurrentIconで状態をリセット
+      setSelectedIcon(convertToKebabCase(currentIcon));
+    }
+    onOpenChange?.(newOpen);
+  };
+
   const handleConfirm = () => {
     onSelect?.(selectedIcon);
     onOpenChange?.(false);
@@ -58,7 +67,7 @@ export function IconPickerDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>アイコンを選択</DialogTitle>
