@@ -1,5 +1,11 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# public/uploads
+public/uploads/icons/
+!public/uploads/icons/.gitkeep
+public/uploads/favicons/
+!public/uploads/favicons/.gitkeep
+
 # dependencies
 /node_modules
 /.pnp

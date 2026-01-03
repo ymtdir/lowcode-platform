@@ -261,16 +261,18 @@ export function AccessContent({
       )}
 
       {/* 保存・キャンセルボタン */}
-      {hasChanges && (
-        <div className="flex justify-end gap-2 mt-4">
-          <Button variant="outline" onClick={handleCancel} disabled={isSaving}>
-            キャンセル
-          </Button>
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? '保存中...' : '変更を保存'}
-          </Button>
-        </div>
-      )}
+      <div className="flex justify-end gap-2 mt-4">
+        <Button
+          variant="outline"
+          onClick={handleCancel}
+          disabled={!hasChanges || isSaving}
+        >
+          キャンセル
+        </Button>
+        <Button onClick={handleSave} disabled={!hasChanges || isSaving}>
+          {isSaving ? '保存中...' : '変更を保存'}
+        </Button>
+      </div>
     </div>
   );
 }

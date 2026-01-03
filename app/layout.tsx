@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { ThemeProvider } from '@/features/theme/providers/theme-provider';
 import { ColorProvider } from '@/features/theme/providers/color-provider';
 import { Toaster } from '@/components/ui/sonner';
+import { getSettings } from '@/features/setting/api';
 import './globals.css';
 
 const geistSans = Geist({
@@ -15,10 +16,30 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-export const metadata: Metadata = {
-  title: 'Lowcode Platform',
-  description: 'Lowcode Platform',
-};
+export const dynamic = 'force-dynamic';
+
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const settings = await getSettings();
+
+    return {
+      title: settings.appName,
+      description: settings.appName,
+      icons: {
+        icon: settings.appFavicon,
+      },
+    };
+  } catch {
+    // ビルド時などDBに接続できない場合はデフォルト値を返す
+    return {
+      title: 'Lowcode Platform',
+      description: 'Lowcode Platform',
+      icons: {
+        icon: '/system/favicon.ico',
+      },
+    };
+  }
+}
 
 /**
  * ルートレイアウトコンポーネント

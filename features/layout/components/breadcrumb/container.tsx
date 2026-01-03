@@ -16,6 +16,7 @@ const PAGE_NAMES: Record<string, string> = {
   '/users': 'ユーザー管理',
   '/workspace': 'ワークスペース',
   '/groups': 'グループ管理',
+  '/settings': 'アプリケーション設定',
 };
 
 /**
