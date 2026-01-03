@@ -16,6 +16,7 @@ import { CreateItemButton } from './create-item-button';
 import { EditItemButton } from './edit-item-button';
 import type { Item as ItemType } from '@/features/item/types';
 import { ITEM_CONFIGS } from '@/features/item/constants';
+import { getItemIcon } from '@/features/item/utils';
 import { canManageStructure } from '@/lib/permissions';
 
 /**
@@ -51,8 +52,8 @@ export function Item({
   userRole,
 }: ItemProps) {
   const [isOpen, setIsOpen] = useState(true);
+  const Icon = getItemIcon(item);
   const config = ITEM_CONFIGS[item.type];
-  const Icon = config.icon;
   const hasChildren =
     config.canHaveChildren && item.children && item.children.length > 0;
   const isOver = overId === item.id;
