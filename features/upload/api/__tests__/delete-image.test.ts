@@ -1,10 +1,8 @@
 import { deleteImage } from '../delete-image';
 import { unlink } from 'fs/promises';
-import { existsSync } from 'fs';
 
-// fs/promisesとfsをモック化
+// fs/promisesをモック化
 jest.mock('fs/promises');
-jest.mock('fs');
 
 describe('deleteImage', () => {
   beforeEach(() => {
@@ -12,7 +10,6 @@ describe('deleteImage', () => {
   });
 
   it('画像を削除できる', async () => {
-    (existsSync as jest.Mock).mockReturnValue(true);
     (unlink as jest.Mock).mockResolvedValue(undefined);
 
     const result = await deleteImage('/uploads/icons/test.png');
@@ -32,17 +29,18 @@ describe('deleteImage', () => {
   });
 
   it('ファイルが存在しない場合はエラーを返す', async () => {
-    (existsSync as jest.Mock).mockReturnValue(false);
+    const enoentError = Object.assign(new Error('ENOENT: no such file or directory'), {
+      code: 'ENOENT',
+    });
+    (unlink as jest.Mock).mockRejectedValue(enoentError);
 
     const result = await deleteImage('/uploads/icons/nonexistent.png');
 
     expect(result.success).toBe(false);
     expect(result.error).toBe('ファイルが見つかりません');
-    expect(unlink).not.toHaveBeenCalled();
   });
 
   it('削除に失敗した場合はエラーを返す', async () => {
-    (existsSync as jest.Mock).mockReturnValue(true);
     (unlink as jest.Mock).mockRejectedValue(new Error('Delete failed'));
 
     const consoleErrorSpy = jest
@@ -62,7 +60,6 @@ describe('deleteImage', () => {
   });
 
   it('faviconsディレクトリの画像を削除できる', async () => {
-    (existsSync as jest.Mock).mockReturnValue(true);
     (unlink as jest.Mock).mockResolvedValue(undefined);
 
     const result = await deleteImage('/uploads/favicons/favicon.ico');
@@ -74,7 +71,6 @@ describe('deleteImage', () => {
   });
 
   it('サブディレクトリのない画像を削除できる', async () => {
-    (existsSync as jest.Mock).mockReturnValue(true);
     (unlink as jest.Mock).mockResolvedValue(undefined);
 
     const result = await deleteImage('/uploads/image.png');

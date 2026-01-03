@@ -2,7 +2,6 @@
 
 import { unlink } from 'fs/promises';
 import { join } from 'path';
-import { existsSync } from 'fs';
 
 /**
  * アップロード済み画像を削除するServer Action
@@ -27,16 +26,16 @@ export async function deleteImage(
     // ファイルパスを構築
     const filePath = join(process.cwd(), 'public', decodedPath);
 
-    // ファイルが存在するか確認
-    if (!existsSync(filePath)) {
-      return { success: false, error: 'ファイルが見つかりません' };
-    }
-
-    // ファイルを削除
+    // ファイルを削除（TOCTOU競合状態を避けるため、直接削除してエラーハンドリング）
     await unlink(filePath);
 
     return { success: true };
   } catch (error) {
+    // ENOENTエラー（ファイルが存在しない）の場合は専用メッセージ
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return { success: false, error: 'ファイルが見つかりません' };
+    }
+
     console.error('Failed to delete image:', error);
     return {
       success: false,
