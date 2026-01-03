@@ -60,7 +60,7 @@ describe('updateItemIcon', () => {
 
     const result = await updateItemIcon(itemId, iconName);
 
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ success: true, iconName: 'Users' });
     expect(prisma.item.update).toHaveBeenCalledWith({
       where: { id: itemId },
       data: { icon: iconName },
@@ -81,7 +81,7 @@ describe('updateItemIcon', () => {
 
     const result = await updateItemIcon(itemId, null);
 
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ success: true, iconName: null });
     expect(prisma.item.update).toHaveBeenCalledWith({
       where: { id: itemId },
       data: { icon: null },
@@ -168,6 +168,6 @@ describe('updateItemIcon', () => {
 
     const result = await updateItemIcon(itemId, iconName);
 
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ success: true, iconName: 'Folder' });
   });
 });
