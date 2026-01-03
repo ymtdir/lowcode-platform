@@ -201,14 +201,21 @@ export function FolderLayout({ item }: FolderLayoutProps) {
 
       // フォルダへのドロップ
       if (targetId === overId) {
+        const previousChildren = sortedChildren;
         setSortedChildren((prev) =>
           prev.filter((child) => child.id !== activeId)
         );
-        await reorderItems({
+
+        const result = await reorderItems({
           itemId: activeId,
           newParentId: targetId,
           reorderedSiblings: [{ id: activeId, order: 0 }],
         });
+
+        if (!result.success) {
+          // エラー時はロールバック
+          setSortedChildren(previousChildren);
+        }
         return;
       }
 
@@ -217,10 +224,11 @@ export function FolderLayout({ item }: FolderLayoutProps) {
       const newIndex = sortedChildren.findIndex((c) => c.id === overId);
       if (oldIndex === -1 || newIndex === -1) return;
 
+      const previousChildren = sortedChildren;
       const newChildren = arrayMove(sortedChildren, oldIndex, newIndex);
       setSortedChildren(newChildren);
 
-      await reorderItems({
+      const result = await reorderItems({
         itemId: activeId,
         newParentId: item.id,
         reorderedSiblings: newChildren.map((child, index) => ({
@@ -228,6 +236,11 @@ export function FolderLayout({ item }: FolderLayoutProps) {
           order: index,
         })),
       });
+
+      if (!result.success) {
+        // エラー時はロールバック
+        setSortedChildren(previousChildren);
+      }
     },
     [sortedChildren, dropTargetId, item.id, clearDropState]
   );
