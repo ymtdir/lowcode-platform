@@ -29,9 +29,12 @@ describe('deleteImage', () => {
   });
 
   it('ファイルが存在しない場合はエラーを返す', async () => {
-    const enoentError = Object.assign(new Error('ENOENT: no such file or directory'), {
-      code: 'ENOENT',
-    });
+    const enoentError = Object.assign(
+      new Error('ENOENT: no such file or directory'),
+      {
+        code: 'ENOENT',
+      }
+    );
     (unlink as jest.Mock).mockRejectedValue(enoentError);
 
     const result = await deleteImage('/uploads/icons/nonexistent.png');

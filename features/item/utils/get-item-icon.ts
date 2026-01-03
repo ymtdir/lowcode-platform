@@ -22,7 +22,10 @@ export function getItemIcon(item: Item): LucideIcons.LucideIcon {
   if (item.icon && item.icon.trim() !== '') {
     const CustomIcon = LucideIcons[item.icon as keyof typeof LucideIcons];
     // 有効なLucideアイコンかチェック（objectまたはfunctionの場合はReactコンポーネント）
-    if (CustomIcon && (typeof CustomIcon === 'object' || typeof CustomIcon === 'function')) {
+    if (
+      CustomIcon &&
+      (typeof CustomIcon === 'object' || typeof CustomIcon === 'function')
+    ) {
       return CustomIcon as LucideIcons.LucideIcon;
     }
   }
