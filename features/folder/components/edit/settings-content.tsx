@@ -99,7 +99,7 @@ export function SettingsContent({
         {/* アイコン設定セクション */}
         <section>
           <div className="space-y-2">
-            <Label htmlFor="icon">フォルダアイコン</Label>
+            <Label>フォルダアイコン</Label>
             <button
               type="button"
               onClick={() => setIconDialogOpen(true)}
