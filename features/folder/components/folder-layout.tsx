@@ -206,10 +206,23 @@ export function FolderLayout({ item }: FolderLayoutProps) {
           prev.filter((child) => child.id !== activeId)
         );
 
+        // 移動先フォルダの既存の子アイテムを取得
+        const targetFolder = sortedChildren.find((c) => c.id === targetId);
+        const targetChildren = targetFolder?.children || [];
+
+        // 移動するアイテムを先頭に配置し、既存アイテムの順序を1ずつずらす
+        const reorderedSiblings = [
+          { id: activeId, order: 0 },
+          ...targetChildren.map((child, index) => ({
+            id: child.id,
+            order: index + 1,
+          })),
+        ];
+
         const result = await reorderItems({
           itemId: activeId,
           newParentId: targetId,
-          reorderedSiblings: [{ id: activeId, order: 0 }],
+          reorderedSiblings,
         });
 
         if (!result.success) {

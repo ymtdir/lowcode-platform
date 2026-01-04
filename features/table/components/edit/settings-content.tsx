@@ -61,16 +61,23 @@ export function SettingsContent({
   };
 
   // アイコン選択ハンドラ
-  const handleIconSelect = async (iconName: string | null) => {
-    const result = await updateItemIcon(itemId, iconName);
-    if (result.success) {
-      // サーバーから返された正規化されたアイコン名を使用
-      setCurrentIcon(result.iconName ?? null);
-      toast.success('アイコンを更新しました');
-      router.refresh();
-    } else {
-      toast.error(result.error || 'アイコンの更新に失敗しました');
-    }
+  const handleIconSelect = (iconName: string | null) => {
+    startTransition(async () => {
+      try {
+        const result = await updateItemIcon(itemId, iconName);
+        if (result.success) {
+          // サーバーから返された正規化されたアイコン名を使用
+          setCurrentIcon(result.iconName ?? null);
+          toast.success('アイコンを更新しました');
+          router.refresh();
+        } else {
+          toast.error(result.error || 'アイコンの更新に失敗しました');
+        }
+      } catch (error) {
+        console.error('アイコン選択エラー:', error);
+        toast.error('予期しないエラーが発生しました');
+      }
+    });
   };
 
   return (
@@ -88,7 +95,11 @@ export function SettingsContent({
                   defaultValue={itemName}
                   placeholder="テーブル名を入力"
                 />
-                <Button type="submit" disabled={isPending}>
+                <Button
+                  type="submit"
+                  className="cursor-pointer"
+                  disabled={isPending}
+                >
                   {isPending ? '保存中...' : '保存'}
                 </Button>
               </div>
@@ -103,7 +114,8 @@ export function SettingsContent({
             <button
               type="button"
               onClick={() => setIconDialogOpen(true)}
-              className="flex items-center gap-2 py-2 hover:opacity-70 transition-opacity cursor-pointer"
+              disabled={isPending}
+              className="flex items-center gap-2 py-2 hover:opacity-70 transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               aria-label="テーブルアイコンを変更"
               aria-haspopup="dialog"
             >
