@@ -103,7 +103,9 @@ export function SettingsContent({
             <button
               type="button"
               onClick={() => setIconDialogOpen(true)}
-              className="flex items-center gap-2 py-2 hover:opacity-70 transition-opacity"
+              className="flex items-center gap-2 py-2 hover:opacity-70 transition-opacity cursor-pointer"
+              aria-label="テーブルアイコンを変更"
+              aria-haspopup="dialog"
             >
               <div className="rounded-md border p-2 hover:bg-accent">
                 {createElement(IconComponent, { className: 'size-8' })}

@@ -74,15 +74,22 @@ export function IconPickerDialog({
         </DialogHeader>
 
         <IconPicker
+          className="cursor-pointer"
           value={(selectedIcon ?? undefined) as IconName | undefined}
           onValueChange={(value) => setSelectedIcon(value ?? null)}
         />
 
         <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={handleClear}>
+          <Button
+            variant="outline"
+            className="cursor-pointer"
+            onClick={handleClear}
+          >
             リセット
           </Button>
-          <Button onClick={handleConfirm}>決定</Button>
+          <Button className="cursor-pointer" onClick={handleConfirm}>
+            決定
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
