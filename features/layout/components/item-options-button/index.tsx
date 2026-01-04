@@ -1,17 +1,38 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { Ellipsis, FileOutput, FileInput } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import {
+  Ellipsis,
+  FileOutput,
+  FileInput,
+  Settings,
+  Trash2,
+  AlertCircle,
+} from 'lucide-react';
+import Link from 'next/link';
 import type { PageType } from './container';
 import type { ExportColumnFilter } from '@/features/table/types/export';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { deleteItem } from '@/features/item/api';
 import { exportTableAction } from '@/features/table/actions/export-table';
 import { exportUsersAction } from '@/features/user/actions/export-users';
 import { exportGroupsAction } from '@/features/group/actions/export-groups';
@@ -38,24 +59,27 @@ export function ItemOptionsButton({
   pageType,
   itemId,
 }: ItemOptionsButtonProps) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [importDialogOpen, setImportDialogOpen] = useState(false);
-  const [tableName, setTableName] = useState<string>('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [itemName, setItemName] = useState<string>('');
 
   // エクスポート可能なページタイプ
   const exportableTypes: PageType[] = ['TABLE', 'USERS', 'GROUPS'];
 
-  // テーブル名を取得（TABLE用）
+  // アイテム名を取得（TABLE/FOLDER用）
   useEffect(() => {
-    if (pageType !== 'TABLE' || !itemId) return;
+    if ((pageType !== 'TABLE' && pageType !== 'FOLDER') || !itemId) return;
 
-    const fetchTableName = async () => {
+    const fetchItemName = async () => {
       const item = await getItemById(itemId);
       if (item) {
-        setTableName(item.name);
+        setItemName(item.name);
       }
     };
-    fetchTableName();
+    fetchItemName();
   }, [pageType, itemId]);
 
   // インポート実行関数
@@ -73,7 +97,32 @@ export function ItemOptionsButton({
     [pageType, itemId]
   );
 
-  if (!exportableTypes.includes(pageType)) {
+  // 削除ハンドラー
+  const handleDelete = async () => {
+    if (!itemId) return;
+
+    setIsDeleting(true);
+
+    const result = await deleteItem(itemId);
+
+    setDeleteDialogOpen(false);
+    setIsDeleting(false);
+
+    if (result.error) {
+      toast.error('削除に失敗しました', {
+        description: result.error,
+      });
+    } else {
+      const itemLabel = pageType === 'TABLE' ? 'テーブル' : 'フォルダ';
+      toast.success(`${itemLabel}を削除しました`, {
+        description: `${itemName}を削除しました`,
+      });
+      router.push('/workspace');
+    }
+  };
+
+  // 表示条件: エクスポート可能 または FOLDER
+  if (!exportableTypes.includes(pageType) && pageType !== 'FOLDER') {
     return null;
   }
 
@@ -127,21 +176,103 @@ export function ItemOptionsButton({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onSelect={() => setImportDialogOpen(true)}>
-            <FileInput />
-            インポート
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={handleExport}>
-            <FileOutput />
-            エクスポート
-          </DropdownMenuItem>
+          {pageType === 'TABLE' && itemId && (
+            <>
+              <DropdownMenuItem asChild>
+                <Link href={`/${itemId}/edit`} className="cursor-pointer">
+                  <Settings />
+                  テーブル管理
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-destructive hover:text-destructive focus:text-destructive"
+                onSelect={(e) => {
+                  e.preventDefault();
+                  setDeleteDialogOpen(true);
+                }}
+              >
+                <Trash2 className="text-destructive" />
+                削除
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          )}
+          {pageType === 'FOLDER' && itemId && (
+            <>
+              <DropdownMenuItem asChild>
+                <Link href={`/${itemId}/edit`} className="cursor-pointer">
+                  <Settings />
+                  フォルダ管理
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-destructive hover:text-destructive focus:text-destructive"
+                onSelect={(e) => {
+                  e.preventDefault();
+                  setDeleteDialogOpen(true);
+                }}
+              >
+                <Trash2 className="text-destructive" />
+                削除
+              </DropdownMenuItem>
+            </>
+          )}
+          {exportableTypes.includes(pageType) && (
+            <>
+              <DropdownMenuItem onSelect={() => setImportDialogOpen(true)}>
+                <FileInput />
+                インポート
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={handleExport}>
+                <FileOutput />
+                エクスポート
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* 削除確認ダイアログ */}
+      {(pageType === 'TABLE' || pageType === 'FOLDER') && itemId && (
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <div className="flex items-center space-x-2">
+                <AlertCircle className="text-destructive" />
+                <AlertDialogTitle className="text-destructive">
+                  {itemName}を削除
+                </AlertDialogTitle>
+              </div>
+              <AlertDialogDescription>
+                削除した{pageType === 'TABLE' ? 'テーブル' : 'フォルダ'}
+                は復元できません。
+                <br />
+                {pageType === 'TABLE' ? 'テーブル' : 'フォルダ'}
+                内のすべてのデータが完全に削除されます。
+                <br />
+                本当に削除しますか？
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isDeleting}>
+                キャンセル
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60"
+              >
+                {isDeleting ? '削除中...' : '削除'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
 
       {/* インポートダイアログ */}
       {pageType === 'TABLE' && itemId && (
         <ImportDialog
-          title={`${tableName} - データインポート`}
+          title={`${itemName} - データインポート`}
           description="CSVファイルからレコードデータを一括インポートします"
           previewMessage={(count) => `${count}件のレコードをインポートします`}
           noticeMessage="レコードIDが存在する場合は既存レコードを更新、存在しない場合は新規作成します"
