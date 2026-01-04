@@ -54,6 +54,7 @@ model Item {
   id          String   @id @default(uuid())
   type        ItemType @default(FOLDER)
   name        String
+  icon        String?
   parentId    String?
   order       Int      @default(0)
   meta        Json?

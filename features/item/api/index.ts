@@ -7,3 +7,4 @@ export * from './get-breadcrumb';
 export * from './delete-item';
 export * from './rename-item';
 export * from './reorder-items';
+export * from './update-item-icon';

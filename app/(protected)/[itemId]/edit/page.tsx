@@ -60,6 +60,7 @@ export default async function ItemEditPage({ params }: ItemEditPageProps) {
       <TableEditLayout
         itemId={itemId}
         itemName={item.name}
+        itemIcon={item.icon}
         columns={columns}
         tables={tables}
         initialPermissions={permissions}

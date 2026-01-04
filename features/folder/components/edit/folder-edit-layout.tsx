@@ -53,7 +53,11 @@ export function FolderEditLayout({
           </TabsList>
         </div>
         <TabsContent value="settings" className="flex-1 mt-6">
-          <SettingsContent folderId={folder.id} folderName={folder.name} />
+          <SettingsContent
+            folderId={folder.id}
+            folderName={folder.name}
+            folderIcon={folder.icon}
+          />
         </TabsContent>
         <TabsContent value="access" className="flex-1 mt-6">
           <AccessContent
