@@ -21,7 +21,7 @@ import { createTable } from '@/features/item/api/create-table';
  * テーブル作成オプションのProps型
  */
 type CreateTableOptionProps = {
-  parentId: string;
+  parentId?: string;
   onOpenChange: (open: boolean) => void;
 };
 
@@ -29,7 +29,7 @@ type CreateTableOptionProps = {
  * テーブル作成コンテンツのProps型
  */
 type CreateTableContentProps = {
-  parentId: string;
+  parentId?: string;
   onClose: () => void;
 };
 
@@ -53,7 +53,7 @@ function CreateTableContent({ parentId, onClose }: CreateTableContentProps) {
 
   return (
     <form action={formAction}>
-      <input type="hidden" name="parentId" value={parentId} />
+      {parentId && <input type="hidden" name="parentId" value={parentId} />}
 
       <div className="grid gap-4 py-4">
         <div className="grid gap-2">

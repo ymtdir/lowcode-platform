@@ -1,15 +1,13 @@
 'use client';
 
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Settings2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getItemIcon } from '@/features/item/utils';
 import { ITEM_CONFIGS } from '@/features/item/constants';
 import { reorderItems } from '@/features/item/api';
+import { CreateItemButton } from '@/features/item/components';
 import type { Item } from '@/features/item/types';
 import {
   DndContext,
@@ -265,14 +263,12 @@ export function FolderLayout({ item }: FolderLayoutProps) {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6">
         <h1 className="text-2xl font-bold">{item.name}</h1>
-        <Link href={`/${item.id}/edit`}>
-          <Button variant="outline">
-            <Settings2 className="size-4" />
-            フォルダ管理
-          </Button>
-        </Link>
+      </div>
+
+      <div className="mb-6 flex items-center justify-end">
+        <CreateItemButton parentId={item.id} />
       </div>
 
       {sortedChildren.length > 0 ? (

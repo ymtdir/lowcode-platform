@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getItemIcon } from '@/features/item/utils';
 import { ITEM_CONFIGS } from '@/features/item/constants';
+import { CreateItemButton } from '@/features/item/components';
 import type { Item } from '@/features/item/types';
 
 type WorkspaceLayoutProps = {
@@ -44,6 +45,10 @@ export function WorkspaceLayout({ items }: WorkspaceLayoutProps) {
     <div className="container mx-auto p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">ワークスペース</h1>
+      </div>
+
+      <div className="mb-6 flex items-center justify-end">
+        <CreateItemButton />
       </div>
 
       {items.length > 0 ? (

@@ -69,10 +69,17 @@ function CreateFolderContent({ parentId, onClose }: CreateFolderContentProps) {
       </div>
 
       <DialogFooter>
-        <Button type="button" variant="outline" onClick={onClose}>
+        <Button
+          type="button"
+          variant="outline"
+          className="cursor-pointer"
+          onClick={onClose}
+        >
           キャンセル
         </Button>
-        <Button type="submit">作成</Button>
+        <Button type="submit" className="cursor-pointer">
+          作成
+        </Button>
       </DialogFooter>
     </form>
   );
