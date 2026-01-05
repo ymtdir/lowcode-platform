@@ -1,5 +1,7 @@
 'use client';
 
+import { useMemo, createElement } from 'react';
+
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +16,7 @@ type WorkspaceLayoutProps = {
 
 function GridItem({ item }: { item: Item }) {
   const router = useRouter();
-  const Icon = getItemIcon(item);
+  const icon = useMemo(() => getItemIcon(item), [item]);
   const DefaultIcon = ITEM_CONFIGS[item.type].icon;
 
   const handleClick = () => {
@@ -30,7 +32,7 @@ function GridItem({ item }: { item: Item }) {
           </Badge>
         </div>
         <div className="flex-1 flex items-center justify-center">
-          <Icon className="size-12 text-primary" />
+          {createElement(icon, { className: 'size-12 text-primary' })}
         </div>
         <div className="text-center mt-2">
           <h2 className="font-semibold text-lg line-clamp-2">{item.name}</h2>
