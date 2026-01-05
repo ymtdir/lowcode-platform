@@ -311,9 +311,9 @@ export function FolderLayout({ item }: FolderLayoutProps) {
         </DndContext>
       ) : (
         <div className="rounded-lg border p-8 text-center">
-          <p className="text-muted-foreground">このフォルダは空です</p>
+          <p className="text-muted-foreground">アイテムがありません</p>
           <p className="text-sm text-muted-foreground mt-2">
-            サイドバーの「ワークスペース」から新しいアイテムを作成できます
+            「新規作成」ボタンから新しいアイテムを作成できます
           </p>
         </div>
       )}
