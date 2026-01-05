@@ -1,15 +1,13 @@
 'use client';
 
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Settings2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getItemIcon } from '@/features/item/utils';
 import { ITEM_CONFIGS } from '@/features/item/constants';
 import { reorderItems } from '@/features/item/api';
+import { CreateItemButton } from '@/features/item/components';
 import type { Item } from '@/features/item/types';
 import {
   DndContext,
@@ -84,16 +82,23 @@ function SortableGridItem({
   };
 
   return (
-    <div
+    <button
       ref={setNodeRef}
       style={style}
       {...attributes}
       {...listeners}
-      className="touch-none cursor-pointer"
+      className="touch-none cursor-pointer w-full text-left"
       onClick={handleClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick(e as unknown as React.MouseEvent);
+        }
+      }}
+      type="button"
     >
       <Card
-        className={`flex flex-col h-full p-4 ${isDropTarget ? 'bg-primary/10' : ''}`}
+        className={`flex flex-col h-full p-4 ${isDropTarget ? 'bg-primary/10' : ''} hover:bg-accent/50 transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none`}
       >
         <div className="flex justify-end mb-2">
           <Badge variant="secondary" className="flex items-center">
@@ -107,7 +112,7 @@ function SortableGridItem({
           <h2 className="font-semibold text-lg line-clamp-2">{child.name}</h2>
         </div>
       </Card>
-    </div>
+    </button>
   );
 }
 
@@ -265,14 +270,12 @@ export function FolderLayout({ item }: FolderLayoutProps) {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6">
         <h1 className="text-2xl font-bold">{item.name}</h1>
-        <Link href={`/${item.id}/edit`}>
-          <Button variant="outline">
-            <Settings2 className="size-4" />
-            フォルダ管理
-          </Button>
-        </Link>
+      </div>
+
+      <div className="mb-6 flex items-center justify-end">
+        <CreateItemButton parentId={item.id} />
       </div>
 
       {sortedChildren.length > 0 ? (
@@ -308,9 +311,9 @@ export function FolderLayout({ item }: FolderLayoutProps) {
         </DndContext>
       ) : (
         <div className="rounded-lg border p-8 text-center">
-          <p className="text-muted-foreground">このフォルダは空です</p>
+          <p className="text-muted-foreground">アイテムがありません</p>
           <p className="text-sm text-muted-foreground mt-2">
-            サイドバーの「ワークスペース」から新しいアイテムを作成できます
+            「新規作成」ボタンから新しいアイテムを作成できます
           </p>
         </div>
       )}

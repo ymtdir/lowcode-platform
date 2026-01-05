@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useActionState, useEffect } from 'react';
-import { Table } from 'lucide-react';
+import { Folder } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -15,53 +15,53 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { createTable } from '@/features/item/api/create-table';
+import { createFolder } from '@/features/item/api/create-folder';
 
 /**
- * テーブル作成オプションのProps型
+ * フォルダ作成オプションのProps型
  */
-type CreateTableOptionProps = {
-  parentId: string;
+type CreateFolderOptionProps = {
+  parentId?: string;
   onOpenChange: (open: boolean) => void;
 };
 
 /**
- * テーブル作成コンテンツのProps型
+ * フォルダ作成コンテンツのProps型
  */
-type CreateTableContentProps = {
-  parentId: string;
+type CreateFolderContentProps = {
+  parentId?: string;
   onClose: () => void;
 };
 
 /**
- * テーブル作成コンテンツコンポーネント
+ * フォルダ作成コンテンツコンポーネント
  */
-function CreateTableContent({ parentId, onClose }: CreateTableContentProps) {
-  const [state, formAction] = useActionState(createTable, {});
+function CreateFolderContent({ parentId, onClose }: CreateFolderContentProps) {
+  const [state, formAction] = useActionState(createFolder, {});
 
   // 成功・エラー時の処理
   useEffect(() => {
     if (state.error) {
-      toast.error('テーブルの作成に失敗しました', {
+      toast.error('フォルダの作成に失敗しました', {
         description: state.error,
       });
     } else if (state.success) {
-      toast.success('テーブルを作成しました');
+      toast.success('フォルダを作成しました');
       onClose();
     }
   }, [state, onClose]);
 
   return (
     <form action={formAction}>
-      <input type="hidden" name="parentId" value={parentId} />
+      {parentId && <input type="hidden" name="parentId" value={parentId} />}
 
       <div className="grid gap-4 py-4">
         <div className="grid gap-2">
-          <Label htmlFor="name">テーブル名</Label>
+          <Label htmlFor="name">フォルダ名</Label>
           <Input
             id="name"
             name="name"
-            placeholder="テーブル名を入力"
+            placeholder="フォルダ名を入力"
             autoFocus
             required
           />
@@ -86,12 +86,12 @@ function CreateTableContent({ parentId, onClose }: CreateTableContentProps) {
 }
 
 /**
- * テーブル作成オプションコンポーネント
+ * フォルダ作成オプションコンポーネント
  */
-export function CreateTableOption({
+export function CreateFolderOption({
   parentId,
   onOpenChange: onDropdownOpenChange,
-}: CreateTableOptionProps) {
+}: CreateFolderOptionProps) {
   const [open, setOpen] = useState(false);
   const [resetKey, setResetKey] = useState(0);
 
@@ -115,17 +115,17 @@ export function CreateTableOption({
           setOpen(true);
         }}
       >
-        <Table />
-        テーブルを追加
+        <Folder />
+        フォルダを追加
       </DropdownMenuItem>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>テーブルを作成</DialogTitle>
-            <DialogDescription>新しいテーブルを作成します</DialogDescription>
+            <DialogTitle>フォルダを作成</DialogTitle>
+            <DialogDescription>新しいフォルダを作成します</DialogDescription>
           </DialogHeader>
-          <CreateTableContent
+          <CreateFolderContent
             key={resetKey}
             parentId={parentId}
             onClose={handleClose}
