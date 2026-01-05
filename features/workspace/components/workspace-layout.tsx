@@ -24,8 +24,18 @@ function GridItem({ item }: { item: Item }) {
   };
 
   return (
-    <div className="cursor-pointer" onClick={handleClick}>
-      <Card className="flex flex-col h-full p-4 hover:bg-accent/50 transition-colors">
+    <button
+      type="button"
+      className="cursor-pointer w-full text-left"
+      onClick={handleClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
+        }
+      }}
+    >
+      <Card className="flex flex-col h-full p-4 hover:bg-accent/50 transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
         <div className="flex justify-end mb-2">
           <Badge variant="secondary" className="flex items-center">
             <DefaultIcon className="size-5!" />
@@ -38,7 +48,7 @@ function GridItem({ item }: { item: Item }) {
           <h2 className="font-semibold text-lg line-clamp-2">{item.name}</h2>
         </div>
       </Card>
-    </div>
+    </button>
   );
 }
 

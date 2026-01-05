@@ -82,16 +82,23 @@ function SortableGridItem({
   };
 
   return (
-    <div
+    <button
       ref={setNodeRef}
       style={style}
       {...attributes}
       {...listeners}
-      className="touch-none cursor-pointer"
+      className="touch-none cursor-pointer w-full text-left"
       onClick={handleClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick(e as unknown as React.MouseEvent);
+        }
+      }}
+      type="button"
     >
       <Card
-        className={`flex flex-col h-full p-4 ${isDropTarget ? 'bg-primary/10' : ''}`}
+        className={`flex flex-col h-full p-4 ${isDropTarget ? 'bg-primary/10' : ''} hover:bg-accent/50 transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none`}
       >
         <div className="flex justify-end mb-2">
           <Badge variant="secondary" className="flex items-center">
@@ -105,7 +112,7 @@ function SortableGridItem({
           <h2 className="font-semibold text-lg line-clamp-2">{child.name}</h2>
         </div>
       </Card>
-    </div>
+    </button>
   );
 }
 
