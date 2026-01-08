@@ -84,57 +84,11 @@ npm test
 npm run test:coverage
 ```
 
-## プロジェクト構成
+## ドキュメント
 
-```
-lowcode-platform/
-├── app/                    # Next.js App Router
-├── components/             # 共通UIコンポーネント（shadcn/ui）
-├── features/               # 機能別モジュール
-│   ├── auth/              # 認証機能
-│   ├── user/              # ユーザー管理
-│   ├── group/             # グループ管理
-│   ├── item/              # アイテム（フォルダ・テーブル）管理
-│   ├── column/            # テーブルカラム管理
-│   ├── record/            # レコード管理
-│   └── layout/            # レイアウトコンポーネント
-├── lib/                    # ユーティリティ・設定
-├── prisma/                 # Prismaスキーマ
-└── .github/workflows/      # GitHub Actions設定
-```
+詳細なドキュメントは [.docs/README.md](.docs/README.md) に集約されています。
 
-## アーキテクチャ方針
-
-### Server-First Architecture
-
-Next.jsのベストプラクティスに従い、基本的にサーバーサイドで処理を行う設計。
-
-- デフォルトでServer Componentsを使用
-- データ更新はServer Actionsを活用
-- クライアント側の処理が必要な場合のみ`'use client'`を使用
-
-詳細は[CLAUDE.md](./CLAUDE.md)を参照。
-
-## テスト
-
-Jestを使用したユニットテストを実装。カバレッジ目標は90%。
-
-```bash
-# テスト実行
-npm test
-
-# カバレッジ付きテスト
-npm run test:coverage
-```
-
-## CI/CD
-
-GitHub Actionsを使用したCI環境を構築。
-
-- **Lint**: ESLintによるコードチェック
-- **Type Check**: TypeScriptの型チェック
-- **Test**: Jestによるテスト実行
-- **Coverage**: Codecovへのカバレッジアップロード
-- **Build**: 本番ビルドの検証
-
-詳細は[.github/workflows/ci.yml](.github/workflows/ci.yml)を参照。
+- **アーキテクチャ**: [overview.md](.docs/architecture/overview.md)
+- **ディレクトリ構成**: [directory-structure.md](.docs/architecture/directory-structure.md)
+- **開発ガイド**: [development/](.docs/development/)
+- **機能仕様**: [features/](.docs/features/)

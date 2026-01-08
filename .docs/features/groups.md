@@ -15,7 +15,7 @@
 
 ## ディレクトリ構成
 
-```
+```text
 features/group/
 ├── components/
 │   ├── bulk-delete-button.tsx

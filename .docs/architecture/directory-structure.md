@@ -4,7 +4,7 @@
 
 ## 全体構成
 
-```
+```text
 lowcode-platform/
 ├── app/                          # Next.js App Router
 │   ├── (public)/                 # 認証不要（将来的にLP等を配置）
@@ -43,7 +43,7 @@ lowcode-platform/
 
 ## app/ ディレクトリ詳細
 
-```
+```text
 app/
 ├── (public)/                 # 認証不要
 │   └── layout.tsx
@@ -81,7 +81,7 @@ app/
 
 各機能は以下の構成で統一:
 
-```
+```text
 features/table/
 ├── components/           # UIコンポーネント
 │   ├── TableList.tsx

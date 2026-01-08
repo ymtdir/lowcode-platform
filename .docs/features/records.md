@@ -61,32 +61,32 @@ type ColumnValue =
 
 ### 完了した機能
 
-- ✅ レコードの作成（`create-record.ts`）
-- ✅ レコードの一覧取得（`get-records.ts`）
-- ✅ レコードの更新（`update-record.ts`）
-- ✅ レコードの削除（`delete-record.ts`）
-- ✅ データバリデーション（型・必須チェック）
-- ✅ リレーションデータの取得・表示
-- ✅ Grid Viewでの表示・編集
+- [x] レコードの作成（`create-record.ts`）
+- [x] レコードの一覧取得（`get-records.ts`）
+- [x] レコードの更新（`update-record.ts`）
+- [x] レコードの削除（`delete-record.ts`）
+- [x] データバリデーション（型・必須チェック）
+- [x] リレーションデータの取得・表示
+- [x] Grid Viewでの表示・編集
 
 ### 未実装の機能
 
-- ⬜ レコードの検索・フィルタ
-- ⬜ レコードのソート
-- ⬜ レコードの一括編集
-- ⬜ レコードの一括削除
-- ⬜ レコードの複製
-- ⬜ レコードの履歴管理
-- ⬜ レコードのエクスポート（CSV/Excel）
-- ⬜ レコードのインポート（CSV/Excel）
-- ⬜ ページネーション
-- ⬜ 仮想スクロール
+- [ ] レコードの検索・フィルタ
+- [ ] レコードのソート
+- [ ] レコードの一括編集
+- [x] レコードの一括削除
+- [ ] レコードの複製
+- [ ] レコードの履歴管理
+- [ ] レコードのエクスポート（CSV/Excel）
+- [ ] レコードのインポート（CSV/Excel）
+- [ ] ページネーション
+- [ ] 仮想スクロール
 
 ## 主要なファイル
 
 ### API（Server Actions）
 
-```
+```text
 features/record/api/
 ├── __tests__/
 │   ├── create-record.test.ts    # 9テスト
@@ -102,7 +102,7 @@ features/record/api/
 
 ### UIコンポーネント
 
-```
+```text
 features/table/components/
 ├── data-table.tsx               # TanStack Tableベースのグリッド
 ├── columns.tsx                  # カラム定義
@@ -118,7 +118,7 @@ features/table/components/
 
 ### 型定義
 
-```
+```text
 features/record/
 ├── types/
 │   ├── record.ts

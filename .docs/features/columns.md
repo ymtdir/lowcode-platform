@@ -92,27 +92,27 @@ type RelationConfig = {
 
 ### 完了した機能
 
-- ✅ カラムの追加（`add-column.ts`）
-- ✅ カラムの更新（`update-column.ts`）
-- ✅ カラムの削除（`remove-column.ts`）
-- ✅ カラムの並び替え（`reorder-columns.ts`）
-- ✅ 全カラム型のサポート
-- ✅ 型ごとの設定エディタ
-- ✅ 型ごとのセルコンポーネント
+- [x] カラムの追加（`add-column.ts`）
+- [x] カラムの更新（`update-column.ts`）
+- [x] カラムの削除（`remove-column.ts`）
+- [x] カラムの並び替え（`reorder-columns.ts`）
+- [x] 全カラム型のサポート
+- [x] 型ごとの設定エディタ
+- [x] 型ごとのセルコンポーネント
 
 ### 未実装の機能
 
-- ⬜ カラムの複製機能
-- ⬜ カラムの履歴管理
-- ⬜ 計算フィールド（Formula型）
-- ⬜ ファイル添付フィールド
-- ⬜ カラムの一括編集
+- [ ] カラムの複製機能
+- [ ] カラムの履歴管理
+- [ ] 計算フィールド（Formula型）
+- [ ] ファイル添付フィールド
+- [ ] カラムの一括編集
 
 ## 主要なファイル
 
 ### API（Server Actions）
 
-```
+```text
 features/column/api/
 ├── __tests__/
 │   ├── add-column.test.ts       # 12テスト
@@ -128,7 +128,7 @@ features/column/api/
 
 ### UIコンポーネント
 
-```
+```text
 features/column/components/
 ├── config/                        # 型ごとの設定エディタ
 │   ├── date-config-editor.tsx
@@ -141,7 +141,7 @@ features/column/components/
 
 ### セルコンポーネント
 
-```
+```text
 features/table/components/cells/
 ├── date-cell.tsx
 ├── number-cell.tsx
@@ -154,7 +154,7 @@ features/table/components/cells/
 
 ### 型定義・定数
 
-```
+```text
 features/column/
 ├── types/
 │   ├── column.ts         # カラム型定義

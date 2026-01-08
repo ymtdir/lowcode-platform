@@ -46,8 +46,6 @@
 
 ```
 <type>: <subject>
-
-<body>
 ```
 
 ### type
@@ -64,8 +62,4 @@
 
 ```
 feat: グループメンバー追加機能を実装
-
-- add-members.ts を追加
-- GroupMemberモデルとの連携
-- バリデーションとエラーハンドリング
 ```

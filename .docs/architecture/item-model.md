@@ -180,7 +180,7 @@ export function Item({ item }: { item: Item }) {
 
 ## ディレクトリ構成
 
-```
+```text
 features/item/
 ├── api/
 │   ├── __tests__/
