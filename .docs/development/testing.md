@@ -30,7 +30,7 @@
 
 ## ディレクトリ構成
 
-```
+```text
 features/
 ├── group/
 │   ├── api/

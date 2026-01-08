@@ -86,7 +86,7 @@ type ColumnValue =
 
 ### API（Server Actions）
 
-```
+```text
 features/record/api/
 ├── __tests__/
 │   ├── create-record.test.ts    # 9テスト
@@ -102,7 +102,7 @@ features/record/api/
 
 ### UIコンポーネント
 
-```
+```text
 features/table/components/
 ├── data-table.tsx               # TanStack Tableベースのグリッド
 ├── columns.tsx                  # カラム定義
@@ -118,7 +118,7 @@ features/table/components/
 
 ### 型定義
 
-```
+```text
 features/record/
 ├── types/
 │   ├── record.ts

@@ -17,7 +17,7 @@ Supabase Authを使用したメール/パスワード認証を実装。
 
 ## ディレクトリ構成
 
-```
+```text
 features/auth/
 ├── components/
 │   ├── login-form.tsx

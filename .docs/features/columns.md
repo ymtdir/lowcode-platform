@@ -112,7 +112,7 @@ type RelationConfig = {
 
 ### API（Server Actions）
 
-```
+```text
 features/column/api/
 ├── __tests__/
 │   ├── add-column.test.ts       # 12テスト
@@ -128,7 +128,7 @@ features/column/api/
 
 ### UIコンポーネント
 
-```
+```text
 features/column/components/
 ├── config/                        # 型ごとの設定エディタ
 │   ├── date-config-editor.tsx
@@ -141,7 +141,7 @@ features/column/components/
 
 ### セルコンポーネント
 
-```
+```text
 features/table/components/cells/
 ├── date-cell.tsx
 ├── number-cell.tsx
@@ -154,7 +154,7 @@ features/table/components/cells/
 
 ### 型定義・定数
 
-```
+```text
 features/column/
 ├── types/
 │   ├── column.ts         # カラム型定義

@@ -80,7 +80,7 @@ npm run lint             # ESLintチェック
 
 ## ドキュメント一覧
 
-```
+```text
 .docs/
 ├── README.md                    # ドキュメント全体のインデックス
 ├── architecture/

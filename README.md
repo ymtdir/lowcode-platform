@@ -86,7 +86,7 @@ npm run test:coverage
 
 ## プロジェクト構成
 
-```
+```text
 lowcode-platform/
 ├── app/                    # Next.js App Router
 ├── components/             # 共通UIコンポーネント（shadcn/ui）
