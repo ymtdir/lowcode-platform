@@ -181,24 +181,17 @@ describe('reorderItems', () => {
     });
   });
 
-  /* TODO: テスト環境（Jest/Prisma）の相性問題でハングアップするため一時的に無効化
   it('兄弟要素の指定がない場合、移動先の末尾に追加される', async () => {
-    jest.useRealTimers();
     const input = {
-      itemId: 'item-1',
-      newParentId: 'folder-new',
+      itemId: 'folder-1',
+      newParentId: 'folder-target',
       reorderedSiblings: [],
     };
 
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'developer-id',
-      role: 'DEVELOPER',
-    });
-
     (prisma.item.findUnique as jest.Mock).mockResolvedValue({
-      id: 'item-1',
+      id: 'folder-1',
       name: 'アイテム1',
-      parentId: 'folder-old',
+      parentId: null,
       children: [],
     });
 
@@ -206,25 +199,21 @@ describe('reorderItems', () => {
       _max: { order: 5 },
     });
 
-    (prisma.item.update as jest.Mock).mockResolvedValue({
-      id: 'item-1',
-      order: 6,
-    });
+    (prisma.item.update as jest.Mock).mockResolvedValue({});
 
     const result = await reorderItems(input);
 
     expect(result).toEqual({ success: true });
     expect(prisma.item.aggregate).toHaveBeenCalledWith({
-      where: { parentId: 'folder-new' },
+      where: { parentId: 'folder-target' },
       _max: { order: true },
     });
     expect(prisma.item.update).toHaveBeenCalledWith({
-      where: { id: 'item-1' },
+      where: { id: 'folder-1' },
       data: {
-        parentId: 'folder-new',
+        parentId: 'folder-target',
         order: 6,
       },
     });
   });
-  */
 });
