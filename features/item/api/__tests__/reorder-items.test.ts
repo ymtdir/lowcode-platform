@@ -181,13 +181,19 @@ describe('reorderItems', () => {
     });
   });
 
-  /*
+  /* TODO: テスト環境（Jest/Prisma）の相性問題でハングアップするため一時的に無効化
   it('兄弟要素の指定がない場合、移動先の末尾に追加される', async () => {
+    jest.useRealTimers();
     const input = {
       itemId: 'item-1',
       newParentId: 'folder-new',
       reorderedSiblings: [],
     };
+
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'developer-id',
+      role: 'DEVELOPER',
+    });
 
     (prisma.item.findUnique as jest.Mock).mockResolvedValue({
       id: 'item-1',
@@ -196,11 +202,14 @@ describe('reorderItems', () => {
       children: [],
     });
 
-    (prisma.item.aggregate as jest.Mock).mockImplementation(() =>
-      Promise.resolve({
-        _max: { order: 5 },
-      })
-    );
+    (prisma.item.aggregate as jest.Mock).mockResolvedValue({
+      _max: { order: 5 },
+    });
+
+    (prisma.item.update as jest.Mock).mockResolvedValue({
+      id: 'item-1',
+      order: 6,
+    });
 
     const result = await reorderItems(input);
 
@@ -217,5 +226,5 @@ describe('reorderItems', () => {
       },
     });
   });
-*/
+  */
 });
