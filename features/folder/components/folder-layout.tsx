@@ -1,121 +1,61 @@
 'use client';
 
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { getItemIcon } from '@/features/item/utils';
 import { ITEM_CONFIGS } from '@/features/item/constants';
 import { reorderItems } from '@/features/item/api';
-import { CreateItemButton } from '@/features/item/components';
-import type { Item } from '@/features/item/types';
+import { SortableItemCard, ItemCardContent } from '@/features/item/components';
 import {
   DndContext,
-  DragEndEvent,
-  DragOverEvent,
   PointerSensor,
   useSensor,
   useSensors,
-  pointerWithin,
-  rectIntersection,
+  DragEndEvent,
+  DragOverEvent,
   CollisionDetection,
+  pointerWithin,
+  MeasuringStrategy,
+  DragOverlay,
+  defaultDropAnimationSideEffects,
+  DropAnimation,
+  DragStartEvent,
 } from '@dnd-kit/core';
 import {
   SortableContext,
-  useSortable,
-  rectSortingStrategy,
   arrayMove,
+  rectSortingStrategy,
 } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import type { Item } from '@/features/item/types';
+import { CreateItemButton } from '@/features/item/components';
 
-const DROP_DELAY_MS = 800;
+const DROP_DELAY_MS = 400;
 const CLICK_DELAY_MS = 300;
 const DRAG_ACTIVATION_DISTANCE = 8;
+
+const dropAnimation: DropAnimation = {
+  sideEffects: defaultDropAnimationSideEffects({
+    styles: {
+      active: {
+        opacity: '0.3',
+      },
+    },
+  }),
+};
 
 type FolderLayoutProps = {
   item: Item & { type: 'FOLDER' };
 };
 
 const customCollisionDetection: CollisionDetection = (args) => {
-  const pointerCollisions = pointerWithin(args);
-  return pointerCollisions.length > 0
-    ? pointerCollisions
-    : rectIntersection(args);
+  // ポインタがアイテムの上に確実にある場合のみ反応させる（誤検知防止）
+  return pointerWithin(args);
 };
 
-function SortableGridItem({
-  child,
-  Icon,
-  DefaultIcon,
-  preventClick,
-  isDropTarget,
-}: {
-  child: Item;
-  Icon: React.ComponentType<{ className?: string }>;
-  DefaultIcon: React.ComponentType<{ className?: string }>;
-  preventClick: boolean;
-  isDropTarget: boolean;
-}) {
-  const router = useRouter();
-
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: child.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!preventClick && !isDragging) {
-      router.push(`/${child.id}`);
-    }
-  };
-
-  return (
-    <button
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      className="touch-none cursor-pointer w-full text-left"
-      onClick={handleClick}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          handleClick(e as unknown as React.MouseEvent);
-        }
-      }}
-      type="button"
-    >
-      <Card
-        className={`flex flex-col h-full p-4 ${isDropTarget ? 'bg-primary/10' : ''} hover:bg-accent/50 transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none`}
-      >
-        <div className="flex justify-end mb-2">
-          <Badge variant="secondary" className="flex items-center">
-            <DefaultIcon className="size-5!" />
-          </Badge>
-        </div>
-        <div className="flex-1 flex items-center justify-center">
-          <Icon className="size-12 text-primary" />
-        </div>
-        <div className="text-center mt-2">
-          <h2 className="font-semibold text-lg line-clamp-2">{child.name}</h2>
-        </div>
-      </Card>
-    </button>
-  );
-}
-
+/**
+ * フォルダレイアウトコンポーネント
+ *
+ * 特定のフォルダ内のアイテム（フォルダ、テーブル）をグリッド表示し、
+ * ドラッグ&ドロップによる並び替えやフォルダへの移動機能を提供します。
+ */
 export function FolderLayout({ item }: FolderLayoutProps) {
   // item.childrenをソート済み配列としてメモ化
   const serverChildren = useMemo(
@@ -127,6 +67,12 @@ export function FolderLayout({ item }: FolderLayoutProps) {
   const [sortedChildren, setSortedChildren] = useState(serverChildren);
   const [preventClick, setPreventClick] = useState(false);
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  const activeItem = useMemo(
+    () => sortedChildren.find((item) => item.id === activeId),
+    [sortedChildren, activeId]
+  );
 
   const dropTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const currentOverIdRef = useRef<string | null>(null);
@@ -160,7 +106,8 @@ export function FolderLayout({ item }: FolderLayoutProps) {
     setDropTargetId(null);
   }, []);
 
-  const handleDragStart = useCallback(() => {
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
     setPreventClick(true);
   }, []);
 
@@ -197,15 +144,13 @@ export function FolderLayout({ item }: FolderLayoutProps) {
       const targetId = dropTargetId;
 
       clearDropState();
+      setActiveId(null);
       setTimeout(() => setPreventClick(false), CLICK_DELAY_MS);
 
-      if (!over || active.id === over.id) return;
-
       const activeId = active.id as string;
-      const overId = over.id as string;
 
       // フォルダへのドロップ
-      if (targetId === overId) {
+      if (targetId && targetId !== activeId) {
         const previousChildren = sortedChildren;
         setSortedChildren((prev) =>
           prev.filter((child) => child.id !== activeId)
@@ -237,6 +182,10 @@ export function FolderLayout({ item }: FolderLayoutProps) {
         return;
       }
 
+      if (!over || active.id === over.id) return;
+
+      const overId = over.id as string;
+
       // 並び替え
       const oldIndex = sortedChildren.findIndex((c) => c.id === activeId);
       const newIndex = sortedChildren.findIndex((c) => c.id === overId);
@@ -265,6 +214,7 @@ export function FolderLayout({ item }: FolderLayoutProps) {
 
   const handleDragCancel = useCallback(() => {
     clearDropState();
+    setActiveId(null);
     setTimeout(() => setPreventClick(false), CLICK_DELAY_MS);
   }, [clearDropState]);
 
@@ -282,6 +232,11 @@ export function FolderLayout({ item }: FolderLayoutProps) {
         <DndContext
           sensors={sensors}
           collisionDetection={customCollisionDetection}
+          measuring={{
+            droppable: {
+              strategy: MeasuringStrategy.Always,
+            },
+          }}
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
@@ -292,22 +247,21 @@ export function FolderLayout({ item }: FolderLayoutProps) {
             strategy={rectSortingStrategy}
           >
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {sortedChildren.map((child) => {
-                const Icon = getItemIcon(child);
-                const DefaultIcon = ITEM_CONFIGS[child.type].icon;
-                return (
-                  <SortableGridItem
-                    key={child.id}
-                    child={child}
-                    Icon={Icon}
-                    DefaultIcon={DefaultIcon}
-                    preventClick={preventClick}
-                    isDropTarget={dropTargetId === child.id}
-                  />
-                );
-              })}
+              {sortedChildren.map((child) => (
+                <SortableItemCard
+                  key={child.id}
+                  item={child}
+                  isDropTarget={dropTargetId === child.id}
+                  preventClick={preventClick}
+                />
+              ))}
             </div>
           </SortableContext>
+          <DragOverlay dropAnimation={dropAnimation}>
+            {activeItem ? (
+              <ItemCardContent item={activeItem} isOverlay />
+            ) : null}
+          </DragOverlay>
         </DndContext>
       ) : (
         <div className="rounded-lg border p-8 text-center">
