@@ -66,20 +66,37 @@ export async function reorderItems(input: ReorderItemsInput) {
       }
     }
 
-    // フロントエンドから受け取った順序をそのまま適用（並列実行）
-    await prisma.$transaction(async (tx) => {
-      await Promise.all(
-        reorderedSiblings.map((sibling) =>
-          tx.item.update({
-            where: { id: sibling.id },
-            data: {
-              parentId: sibling.id === itemId ? newParentId : undefined,
-              order: sibling.order,
-            },
-          })
-        )
-      );
-    });
+    // フロントエンドから受け取った順序をそのまま適用
+    if (reorderedSiblings.length > 0) {
+      await prisma.$transaction(async (tx) => {
+        await Promise.all(
+          reorderedSiblings.map((sibling) =>
+            tx.item.update({
+              where: { id: sibling.id },
+              data: {
+                parentId: sibling.id === itemId ? newParentId : undefined,
+                order: sibling.order,
+              },
+            })
+          )
+        );
+      });
+    } else {
+      // 兄弟要素の指定がない場合は、移動先の末尾に追加
+      const maxOrderAgg = await prisma.item.aggregate({
+        where: { parentId: newParentId },
+        _max: { order: true },
+      });
+      const nextOrder = (maxOrderAgg._max.order ?? -1) + 1;
+
+      await prisma.item.update({
+        where: { id: itemId },
+        data: {
+          parentId: newParentId,
+          order: nextOrder,
+        },
+      });
+    }
 
     revalidatePath('/');
     return { success: true };
