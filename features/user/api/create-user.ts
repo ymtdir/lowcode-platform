@@ -43,6 +43,7 @@ export async function createUser(
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
   const confirmPassword = formData.get('confirmPassword') as string;
+  const role = formData.get('role') as string;
 
   if (!name || name.trim() === '') {
     return { error: '名前を入力してください' };
@@ -50,6 +51,11 @@ export async function createUser(
 
   if (password !== confirmPassword) {
     return { error: 'パスワードが一致しません' };
+  }
+
+  // ロールのバリデーション
+  if (role && !['ADMIN', 'DEVELOPER', 'MEMBER'].includes(role)) {
+    return { error: '無効なロールが指定されました' };
   }
 
   try {
@@ -74,7 +80,7 @@ export async function createUser(
           id: authData.user.id,
           name,
           email: authData.user.email!,
-          role: 'MEMBER',
+          role: (role as 'ADMIN' | 'DEVELOPER' | 'MEMBER') || 'MEMBER',
         },
       });
     }

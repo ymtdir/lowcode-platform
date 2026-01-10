@@ -12,6 +12,13 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { createUser } from '../api/create-user';
@@ -70,6 +77,19 @@ function CreateUserContent({ onClose }: CreateUserContentProps) {
             type="password"
             required
           />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="role">ロール</Label>
+          <Select name="role" defaultValue="MEMBER">
+            <SelectTrigger id="role">
+              <SelectValue placeholder="ロールを選択" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ADMIN">管理者</SelectItem>
+              <SelectItem value="DEVELOPER">開発者</SelectItem>
+              <SelectItem value="MEMBER">メンバー</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
       <DialogFooter>
