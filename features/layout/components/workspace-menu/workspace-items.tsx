@@ -17,6 +17,7 @@ import {
 import {
   SortableContext,
   verticalListSortingStrategy,
+  arrayMove,
 } from '@dnd-kit/sortable';
 import Link from 'next/link';
 import { SidebarGroupLabel, SidebarMenu } from '@/components/ui/sidebar';
@@ -229,19 +230,22 @@ export function WorkspaceItemsWrapper({
         depth,
       };
 
-      // 配列を並び替え
-      const sortedItems = [...clonedItems];
-      const [removed] = sortedItems.splice(activeIndex, 1);
-      sortedItems.splice(overIndex, 0, removed);
+      // 配列を並び替え（arrayMoveでindex計算を正確に）
+      const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
 
       // 新しい親の兄弟アイテムを取得してorder計算
       const newSiblings = sortedItems.filter(
         (item) => item.parentId === newParentId
       );
-      const reorderedSiblings = newSiblings.map((s, index) => ({
-        id: s.id,
-        order: index,
-      }));
+
+      // 移動先フォルダが閉じている等で兄弟が揃っていない場合は、
+      // backendのフォールバック（末尾追加）を使う
+      const siblingsAreFullyVisible =
+        newParentId === null || expandedIds.includes(newParentId);
+
+      const reorderedSiblings = siblingsAreFullyVisible
+        ? newSiblings.map((s, index) => ({ id: s.id, order: index }))
+        : [];
 
       const result = await reorderItems({
         itemId: activeIdStr,
