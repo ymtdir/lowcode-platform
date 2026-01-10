@@ -1,5 +1,9 @@
+import { config } from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import { createClient } from '@supabase/supabase-js';
+
+// .env.localから環境変数を読み込む
+config({ path: '.env.local' });
 
 const prisma = new PrismaClient();
 
@@ -27,6 +31,28 @@ async function createAdminUser() {
 
   console.log(`管理者ユーザーを作成中: ${email}`);
 
+  // 既存のSupabase Authユーザーを削除
+  const { data: existingUsers } = await supabase.auth.admin.listUsers();
+  const existingAuthUser = existingUsers?.users.find((u) => u.email === email);
+
+  if (existingAuthUser) {
+    console.log('既存の管理者ユーザーをSupabase Authから削除中');
+    await supabase.auth.admin.deleteUser(existingAuthUser.id);
+    console.log('既存の管理者ユーザー（Supabase Auth）を削除しました');
+  }
+
+  // Prisma DBの既存ユーザーを削除
+  const existingPrismaUser = await prisma.user.findUnique({
+    where: { email },
+  });
+  if (existingPrismaUser) {
+    console.log('既存の管理者ユーザーをPrisma DBから削除中');
+    await prisma.user.delete({
+      where: { id: existingPrismaUser.id },
+    });
+    console.log('既存の管理者ユーザー（Prisma DB）を削除しました');
+  }
+
   // Supabase Authにユーザーを作成
   const { data: authData, error: authError } =
     await supabase.auth.admin.createUser({
@@ -36,50 +62,6 @@ async function createAdminUser() {
     });
 
   if (authError) {
-    // ユーザーが既に存在する場合は削除してから再作成
-    const errorCode = 'code' in authError ? authError.code : null;
-    if (
-      authError.message.includes('already registered') ||
-      errorCode === 'email_exists'
-    ) {
-      console.log('既存の管理者ユーザーをSupabase Authから削除中');
-      // 既存ユーザーのIDを取得
-      const { data: existingUsers } = await supabase.auth.admin.listUsers();
-      const existingUser = existingUsers?.users.find((u) => u.email === email);
-      if (existingUser) {
-        await supabase.auth.admin.deleteUser(existingUser.id);
-        console.log('既存の管理者ユーザーを削除しました');
-
-        // 再度ユーザーを作成
-        const { data: newAuthData, error: newAuthError } =
-          await supabase.auth.admin.createUser({
-            email,
-            password,
-            email_confirm: true,
-          });
-
-        if (newAuthError) {
-          throw newAuthError;
-        }
-
-        console.log(
-          `Supabase Authに管理者ユーザーを作成しました: ${newAuthData.user.id}`
-        );
-
-        // Prismaにユーザー情報を保存
-        const user = await prisma.user.create({
-          data: {
-            id: newAuthData.user.id,
-            name,
-            email,
-            role: 'ADMIN',
-          },
-        });
-
-        console.log(`データベースに管理者ユーザーを作成しました: ${user.id}`);
-        return user.id;
-      }
-    }
     throw authError;
   }
 
@@ -88,14 +70,8 @@ async function createAdminUser() {
   );
 
   // Prismaにユーザー情報を保存
-  const user = await prisma.user.upsert({
-    where: { id: authData.user.id },
-    update: {
-      name,
-      email,
-      role: 'ADMIN',
-    },
-    create: {
+  const user = await prisma.user.create({
+    data: {
       id: authData.user.id,
       name,
       email,
