@@ -20,6 +20,7 @@ export async function updateUserProfile(
 ): Promise<FormState> {
   const name = formData.get('name') as string;
   const email = formData.get('email') as string;
+  const role = formData.get('role') as string;
 
   if (!name || name.trim() === '') {
     return { error: '名前を入力してください' };
@@ -27,6 +28,11 @@ export async function updateUserProfile(
 
   if (!email || !email.includes('@')) {
     return { error: '有効なメールアドレスを入力してください' };
+  }
+
+  // ロールのバリデーション
+  if (role && !['ADMIN', 'DEVELOPER', 'MEMBER'].includes(role)) {
+    return { error: '無効なロールが指定されました' };
   }
 
   try {
@@ -44,7 +50,11 @@ export async function updateUserProfile(
 
     await prisma.user.update({
       where: { id: userId },
-      data: { name, email },
+      data: {
+        name,
+        email,
+        ...(role && { role: role as 'ADMIN' | 'DEVELOPER' | 'MEMBER' }),
+      },
     });
 
     revalidatePath('/users');
