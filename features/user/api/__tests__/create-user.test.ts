@@ -57,6 +57,7 @@ describe('createUser', () => {
     formData.append('email', 'test@example.com');
     formData.append('password', 'password123');
     formData.append('confirmPassword', 'password123');
+    formData.append('role', 'DEVELOPER');
 
     mockCreateUserFn.mockResolvedValue({
       data: {
@@ -72,7 +73,7 @@ describe('createUser', () => {
       id: 'user-1',
       name: 'テストユーザー',
       email: 'test@example.com',
-      role: 'MEMBER',
+      role: 'DEVELOPER',
     });
 
     const result = await createUser({}, formData);
@@ -88,7 +89,7 @@ describe('createUser', () => {
         id: 'user-1',
         name: 'テストユーザー',
         email: 'test@example.com',
-        role: 'MEMBER',
+        role: 'DEVELOPER',
       },
     });
   });
@@ -155,6 +156,22 @@ describe('createUser', () => {
 
     expect(result).toEqual({
       error: 'パスワードが一致しません',
+    });
+    expect(mockCreateUserFn).not.toHaveBeenCalled();
+  });
+
+  it('無効なロールが指定された場合はエラーを返す', async () => {
+    const formData = new FormData();
+    formData.append('name', 'テストユーザー');
+    formData.append('email', 'test@example.com');
+    formData.append('password', 'password123');
+    formData.append('confirmPassword', 'password123');
+    formData.append('role', 'INVALID_ROLE');
+
+    const result = await createUser({}, formData);
+
+    expect(result).toEqual({
+      error: '無効なロールが指定されました',
     });
     expect(mockCreateUserFn).not.toHaveBeenCalled();
   });
