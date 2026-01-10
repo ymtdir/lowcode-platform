@@ -2,6 +2,16 @@ import { updateUserProfile } from '../update-user';
 
 // モック関数を定義
 const mockUpdateUserById = jest.fn();
+const mockGetUser = jest.fn();
+
+// Supabase Server Clientをモック化
+jest.mock('@/lib/supabase/server', () => ({
+  createClient: jest.fn(() => ({
+    auth: {
+      getUser: mockGetUser,
+    },
+  })),
+}));
 
 // Supabase Admin Clientをモック化
 jest.mock('@/lib/supabase/admin', () => ({
@@ -19,6 +29,7 @@ jest.mock('@/lib/prisma', () => ({
   prisma: {
     user: {
       update: jest.fn(),
+      findUnique: jest.fn(),
     },
   },
 }));
@@ -28,6 +39,10 @@ import { prisma } from '@/lib/prisma';
 describe('updateUserProfile', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // デフォルトで別のユーザーとして認証
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: 'current-user-id' } },
+    });
   });
 
   it('ユーザー情報を更新できる', async () => {
@@ -100,6 +115,31 @@ describe('updateUserProfile', () => {
 
     expect(result).toEqual({
       error: '無効なロールが指定されました',
+    });
+    expect(mockUpdateUserById).not.toHaveBeenCalled();
+  });
+
+  it('自分自身のロールは変更できない', async () => {
+    const userId = 'current-user-id';
+    const formData = new FormData();
+    formData.append('name', 'テストユーザー');
+    formData.append('email', 'test@example.com');
+    formData.append('role', 'MEMBER');
+
+    // 現在のユーザーとして認証
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: userId } },
+    });
+
+    // 現在のロールをADMINとして設定
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      role: 'ADMIN',
+    });
+
+    const result = await updateUserProfile(userId, {}, formData);
+
+    expect(result).toEqual({
+      error: '自分自身のロールは変更できません',
     });
     expect(mockUpdateUserById).not.toHaveBeenCalled();
   });

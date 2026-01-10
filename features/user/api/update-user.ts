@@ -36,6 +36,28 @@ export async function updateUserProfile(
   }
 
   try {
+    // 現在のユーザーを取得
+    const currentUserClient = await createClient();
+    const {
+      data: { user: currentUser },
+    } = await currentUserClient.auth.getUser();
+
+    if (!currentUser) {
+      return { error: '認証エラーが発生しました' };
+    }
+
+    // 自分自身のロールは変更できない
+    if (currentUser.id === userId && role) {
+      const currentUserData = await prisma.user.findUnique({
+        where: { id: currentUser.id },
+        select: { role: true },
+      });
+
+      if (currentUserData && currentUserData.role !== role) {
+        return { error: '自分自身のロールは変更できません' };
+      }
+    }
+
     const supabase = createAdminClient();
 
     const { error: authError } = await supabase.auth.admin.updateUserById(
