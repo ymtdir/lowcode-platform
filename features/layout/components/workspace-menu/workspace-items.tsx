@@ -220,11 +220,7 @@ export function WorkspaceItemsWrapper({
       // 配列を並び替え
       const sortedItems = [...clonedItems];
       const [removed] = sortedItems.splice(activeIndex, 1);
-      sortedItems.splice(
-        overIndex > activeIndex ? overIndex : overIndex,
-        0,
-        removed
-      );
+      sortedItems.splice(overIndex, 0, removed);
 
       // 新しい親の兄弟アイテムを取得してorder計算
       const newSiblings = sortedItems.filter(

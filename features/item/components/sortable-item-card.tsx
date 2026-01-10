@@ -30,7 +30,7 @@ export function ItemCardContent({
 
   return (
     <Card
-      className={`flex flex-col h-full p-4 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
+      className={`group flex flex-col h-full p-4 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
         isDropTarget
           ? 'bg-primary/10 scale-105'
           : isOverlay
