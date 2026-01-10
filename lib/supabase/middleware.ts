@@ -42,7 +42,7 @@ export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 認証ページのパス
-  const authPaths = ['/login', '/signup', '/logout', '/callback', '/confirm'];
+  const authPaths = ['/login', '/logout', '/callback', '/confirm'];
   const isAuthPage = authPaths.some((path) => pathname.startsWith(path));
 
   // 未認証ユーザーが保護されたページ（認証ページ以外のすべて）にアクセスした場合
