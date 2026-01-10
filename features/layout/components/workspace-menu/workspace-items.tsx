@@ -93,10 +93,22 @@ export function WorkspaceItemsWrapper({
   // ツリーをフラット化
   const flattenedItems = useMemo(() => {
     const flattened = flattenTree(items);
-    // 展開されていないフォルダの子は非表示
-    return flattened.filter(
-      (item) => item.parentId === null || expandedIds.includes(item.parentId)
-    );
+
+    const expandedSet = new Set(expandedIds);
+    const visibleParentIds = new Set<string | null>([null]); // ルートは常に可視
+    const visible: typeof flattened = [];
+
+    for (const item of flattened) {
+      if (!visibleParentIds.has(item.parentId)) continue;
+      visible.push(item);
+
+      // 子を表示できる親として登録（フォルダ & 展開中のみ）
+      if (ITEM_CONFIGS[item.type].canHaveChildren && expandedSet.has(item.id)) {
+        visibleParentIds.add(item.id);
+      }
+    }
+
+    return visible;
   }, [items, expandedIds]);
 
   // ソート用のIDリスト
