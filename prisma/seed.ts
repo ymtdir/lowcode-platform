@@ -5,21 +5,32 @@ import { createClient } from '@supabase/supabase-js';
 // .env.localから環境変数を読み込む
 config({ path: '.env.local' });
 
+// 必須環境変数のバリデーション
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseServiceRoleKey) {
+  console.error('エラー: 必須の環境変数が設定されていません');
+  if (!supabaseUrl) {
+    console.error('- NEXT_PUBLIC_SUPABASE_URL');
+  }
+  if (!supabaseServiceRoleKey) {
+    console.error('- SUPABASE_SERVICE_ROLE_KEY');
+  }
+  process.exit(1);
+}
+
 const prisma = new PrismaClient();
 
 /**
  * Supabaseクライアントの作成
  */
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  }
-);
+const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
+});
 
 /**
  * 管理者ユーザーを作成
