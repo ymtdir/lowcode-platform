@@ -1,58 +1,227 @@
 'use client';
 
-import { useMemo, createElement } from 'react';
-
-import { useRouter } from 'next/navigation';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { getItemIcon } from '@/features/item/utils';
-import { ITEM_CONFIGS } from '@/features/item/constants';
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { CreateItemButton } from '@/features/item/components';
+import { SortableItemCard, ItemCardContent } from '@/features/item/components';
 import type { Item } from '@/features/item/types';
+import { ITEM_CONFIGS } from '@/features/item/constants';
+import { reorderItems } from '@/features/item/api';
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  pointerWithin,
+  MeasuringStrategy,
+  DragOverlay,
+  defaultDropAnimationSideEffects,
+  DropAnimation,
+  DragStartEvent,
+  CollisionDetection,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  rectSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable';
+
+const DROP_DELAY_MS = 400;
+const CLICK_DELAY_MS = 300;
+const DRAG_ACTIVATION_DISTANCE = 8;
+
+const dropAnimation: DropAnimation = {
+  sideEffects: defaultDropAnimationSideEffects({
+    styles: {
+      active: {
+        opacity: '0.3',
+      },
+    },
+  }),
+};
 
 type WorkspaceLayoutProps = {
   items: Item[];
+  canEdit?: boolean;
 };
 
-function GridItem({ item }: { item: Item }) {
-  const router = useRouter();
-  const icon = useMemo(() => getItemIcon(item), [item]);
-  const DefaultIcon = ITEM_CONFIGS[item.type].icon;
+const customCollisionDetection: CollisionDetection = (args) => {
+  // ポインタがアイテムの上に確実にある場合のみ反応させる（誤検知防止）
+  return pointerWithin(args);
+};
 
-  const handleClick = () => {
-    router.push(`/${item.id}`);
-  };
-
-  return (
-    <button
-      type="button"
-      className="cursor-pointer w-full text-left"
-      onClick={handleClick}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          handleClick();
-        }
-      }}
-    >
-      <Card className="flex flex-col h-full p-4 hover:bg-accent/50 transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
-        <div className="flex justify-end mb-2">
-          <Badge variant="secondary" className="flex items-center">
-            <DefaultIcon className="size-5!" />
-          </Badge>
-        </div>
-        <div className="flex-1 flex items-center justify-center">
-          {createElement(icon, { className: 'size-12 text-primary' })}
-        </div>
-        <div className="text-center mt-2">
-          <h2 className="font-semibold text-lg line-clamp-2">{item.name}</h2>
-        </div>
-      </Card>
-    </button>
+/**
+ * ワークスペースレイアウトコンポーネント
+ *
+ * ワークスペースのルート階層にあるアイテム（フォルダ、テーブル）をグリッド表示し、
+ * ドラッグ&ドロップによる並び替えやフォルダへの移動機能を提供します。
+ */
+export function WorkspaceLayout({
+  items,
+  canEdit = true,
+}: WorkspaceLayoutProps) {
+  // サーバーからのアイテムをOrder順にソート（念のため）してメモ化
+  const serverItems = useMemo(
+    () => [...items].sort((a, b) => a.order - b.order),
+    [items]
   );
-}
 
-export function WorkspaceLayout({ items }: WorkspaceLayoutProps) {
+  const [sortedItems, setSortedItems] = useState(serverItems);
+  const [preventClick, setPreventClick] = useState(false);
+  const [dropTargetId, setDropTargetId] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  const activeItem = useMemo(
+    () => sortedItems.find((item) => item.id === activeId),
+    [sortedItems, activeId]
+  );
+
+  const dropTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const currentOverIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    setSortedItems(serverItems);
+  }, [serverItems]);
+
+  useEffect(() => {
+    return () => {
+      if (dropTimeoutRef.current) {
+        clearTimeout(dropTimeoutRef.current);
+      }
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: DRAG_ACTIVATION_DISTANCE },
+    })
+  );
+
+  const clearDropState = useCallback(() => {
+    if (dropTimeoutRef.current) {
+      clearTimeout(dropTimeoutRef.current);
+      dropTimeoutRef.current = null;
+    }
+    currentOverIdRef.current = null;
+    setDropTargetId(null);
+  }, []);
+
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      if (!canEdit) return;
+      setActiveId(event.active.id as string);
+      setPreventClick(true);
+    },
+    [canEdit]
+  );
+
+  const handleDragOver = useCallback(
+    (event: DragOverEvent) => {
+      const { active, over } = event;
+
+      if (!over || active.id === over.id) {
+        clearDropState();
+        return;
+      }
+
+      const overItem = sortedItems.find((item) => item.id === over.id);
+      if (!overItem || !ITEM_CONFIGS[overItem.type].droppable) {
+        clearDropState();
+        return;
+      }
+
+      const overId = over.id as string;
+      if (currentOverIdRef.current === overId) return;
+
+      clearDropState();
+      currentOverIdRef.current = overId;
+      dropTimeoutRef.current = setTimeout(() => {
+        setDropTargetId(overId);
+      }, DROP_DELAY_MS);
+    },
+    [sortedItems, clearDropState]
+  );
+
+  const handleDragEnd = useCallback(
+    async (event: DragEndEvent) => {
+      const { active, over } = event;
+      const targetId = dropTargetId;
+
+      clearDropState();
+      setActiveId(null);
+      clickTimeoutRef.current = setTimeout(
+        () => setPreventClick(false),
+        CLICK_DELAY_MS
+      );
+
+      const activeId = active.id as string;
+
+      // フォルダへのドロップ
+      if (targetId && targetId !== activeId) {
+        const previousItems = sortedItems;
+        const remainingItems = sortedItems.filter(
+          (item) => item.id !== activeId
+        );
+        setSortedItems(remainingItems);
+
+        // 移動元（ルート）の残り兄弟のorderを再計算
+        const reorderedSiblings = remainingItems.map((item, index) => ({
+          id: item.id,
+          order: index,
+        }));
+
+        const result = await reorderItems({
+          itemId: activeId,
+          newParentId: targetId,
+          reorderedSiblings,
+        });
+
+        if (!result.success) {
+          setSortedItems(previousItems);
+        }
+        return;
+      }
+
+      if (!over || active.id === over.id) return;
+
+      const overId = over.id as string;
+
+      // 並び替え（ルートレベル）
+      const oldIndex = sortedItems.findIndex((c) => c.id === activeId);
+      const newIndex = sortedItems.findIndex((c) => c.id === overId);
+      if (oldIndex === -1 || newIndex === -1) return;
+
+      const previousItems = sortedItems;
+      const newItems = arrayMove(sortedItems, oldIndex, newIndex);
+      setSortedItems(newItems);
+
+      const result = await reorderItems({
+        itemId: activeId,
+        newParentId: null, // ルートなのでnull
+        reorderedSiblings: newItems.map((item, index) => ({
+          id: item.id,
+          order: index,
+        })),
+      });
+
+      if (!result.success) {
+        setSortedItems(previousItems);
+      }
+    },
+    [sortedItems, dropTargetId, clearDropState]
+  );
+
+  const handleDragCancel = useCallback(() => {
+    clearDropState();
+    setActiveId(null);
+    setTimeout(() => setPreventClick(false), CLICK_DELAY_MS);
+  }, [clearDropState]);
+
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6">
@@ -60,15 +229,45 @@ export function WorkspaceLayout({ items }: WorkspaceLayoutProps) {
       </div>
 
       <div className="mb-6 flex items-center justify-end">
-        <CreateItemButton />
+        <CreateItemButton parentId="" />
       </div>
 
-      {items.length > 0 ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {items.map((item) => (
-            <GridItem key={item.id} item={item} />
-          ))}
-        </div>
+      {sortedItems.length > 0 ? (
+        <DndContext
+          sensors={canEdit ? sensors : []}
+          collisionDetection={customCollisionDetection}
+          measuring={{
+            droppable: {
+              strategy: MeasuringStrategy.Always,
+            },
+          }}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
+        >
+          <SortableContext
+            items={sortedItems.map((item) => item.id)}
+            strategy={rectSortingStrategy}
+          >
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {sortedItems.map((item) => (
+                <SortableItemCard
+                  key={item.id}
+                  item={item}
+                  isDropTarget={dropTargetId === item.id}
+                  preventClick={preventClick}
+                  canEdit={canEdit}
+                />
+              ))}
+            </div>
+          </SortableContext>
+          <DragOverlay dropAnimation={dropAnimation}>
+            {activeItem ? (
+              <ItemCardContent item={activeItem} isOverlay />
+            ) : null}
+          </DragOverlay>
+        </DndContext>
       ) : (
         <div className="rounded-lg border p-8 text-center">
           <p className="text-muted-foreground">アイテムがありません</p>

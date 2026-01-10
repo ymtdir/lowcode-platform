@@ -20,6 +20,7 @@ jest.mock('@/lib/prisma', () => ({
     item: {
       findUnique: jest.fn(),
       update: jest.fn(),
+      aggregate: jest.fn(),
     },
     $transaction: jest.fn(),
   },
@@ -177,6 +178,42 @@ describe('reorderItems', () => {
 
     expect(result).toEqual({
       error: 'アイテムの並び替えに失敗しました',
+    });
+  });
+
+  it('兄弟要素の指定がない場合、移動先の末尾に追加される', async () => {
+    const input = {
+      itemId: 'folder-1',
+      newParentId: 'folder-target',
+      reorderedSiblings: [],
+    };
+
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({
+      id: 'folder-1',
+      name: 'アイテム1',
+      parentId: null,
+      children: [],
+    });
+
+    (prisma.item.aggregate as jest.Mock).mockResolvedValue({
+      _max: { order: 5 },
+    });
+
+    (prisma.item.update as jest.Mock).mockResolvedValue({});
+
+    const result = await reorderItems(input);
+
+    expect(result).toEqual({ success: true });
+    expect(prisma.item.aggregate).toHaveBeenCalledWith({
+      where: { parentId: 'folder-target' },
+      _max: { order: true },
+    });
+    expect(prisma.item.update).toHaveBeenCalledWith({
+      where: { id: 'folder-1' },
+      data: {
+        parentId: 'folder-target',
+        order: 6,
+      },
     });
   });
 });

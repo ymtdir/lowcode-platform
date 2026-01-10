@@ -106,7 +106,14 @@ export default async function ItemPage({
 
   // FOLDER型の場合
   if (item.type === 'FOLDER') {
-    return <FolderLayout item={item} />;
+    return (
+      <FolderLayout
+        item={item}
+        canEdit={
+          currentUser.role === 'ADMIN' || currentUser.role === 'DEVELOPER'
+        }
+      />
+    );
   }
 
   // 未対応の型
