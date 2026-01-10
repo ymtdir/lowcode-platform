@@ -1,11 +1,10 @@
 'use client';
 
-import Link from 'next/link';
+import Image from 'next/image';
 import { useActionState } from 'react';
 import { login } from '@/features/auth/api';
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -17,61 +16,72 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 /**
+ * ログインフォームコンポーネントのProps型
+ */
+type LoginFormProps = {
+  appIcon: string;
+  appName: string;
+};
+
+/**
  * ログインフォームコンポーネント
  */
-export function LoginForm() {
+export function LoginForm({ appIcon, appName }: LoginFormProps) {
   const [state, formAction] = useActionState(login, {});
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader>
-        <CardTitle>アカウントにログイン</CardTitle>
-        <CardDescription>
-          メールアドレスを入力してログインしてください
-        </CardDescription>
-        <CardAction>
-          <Link href="/signup">
-            <Button variant="link">新規登録</Button>
-          </Link>
-        </CardAction>
-      </CardHeader>
-      <CardContent>
-        <form action={formAction}>
-          <div className="flex flex-col gap-6">
-            {state.error && (
-              <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
-                {state.error}
+    <div className="flex w-full max-w-sm flex-col items-center gap-6">
+      <div className="flex items-center gap-2">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg overflow-hidden shrink-0">
+          <Image
+            src={appIcon}
+            alt="App Icon"
+            width={40}
+            height={40}
+            className="object-cover"
+          />
+        </div>
+        <span className="text-2xl font-semibold">{appName}</span>
+      </div>
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>アカウントにログイン</CardTitle>
+          <CardDescription>
+            メールアドレスを入力してログインしてください
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form action={formAction}>
+            <div className="flex flex-col gap-6">
+              {state.error && (
+                <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
+                  {state.error}
+                </div>
+              )}
+              <div className="grid gap-2">
+                <Label htmlFor="email">メールアドレス</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="example@mail.com"
+                  required
+                />
               </div>
-            )}
-            <div className="grid gap-2">
-              <Label htmlFor="email">メールアドレス</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="example@mail.com"
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">パスワード</Label>
-                <a
-                  href="#"
-                  className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                >
-                  パスワードをお忘れですか？
-                </a>
+              <div className="grid gap-2">
+                <div className="flex items-center">
+                  <Label htmlFor="password">パスワード</Label>
+                </div>
+                <Input id="password" name="password" type="password" required />
               </div>
-              <Input id="password" name="password" type="password" required />
+              <Button type="submit" className="w-full">
+                ログイン
+              </Button>
             </div>
-            <Button type="submit" className="w-full">
-              ログイン
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-      <CardFooter className="flex-col gap-2"></CardFooter>
-    </Card>
+          </form>
+        </CardContent>
+        <CardFooter className="flex-col gap-2"></CardFooter>
+      </Card>
+    </div>
   );
 }
