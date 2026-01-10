@@ -182,7 +182,7 @@ export function WorkspaceItemsWrapper({
       const overIdStr = over.id as string;
 
       // 移動処理
-      const clonedItems = flattenTree(items);
+      const clonedItems = [...flattenedItems];
       const overIndex = clonedItems.findIndex((item) => item.id === overIdStr);
       const activeIndex = clonedItems.findIndex(
         (item) => item.id === activeIdStr
@@ -250,7 +250,7 @@ export function WorkspaceItemsWrapper({
         }
       }
     },
-    [items, projected, expandedIds, setExpandedIds]
+    [projected, expandedIds, setExpandedIds, flattenedItems]
   );
 
   const handleDragCancel = useCallback(() => {
