@@ -164,12 +164,21 @@ export function WorkspaceLayout({
       // フォルダへのドロップ
       if (targetId && targetId !== activeId) {
         const previousItems = sortedItems;
-        setSortedItems((prev) => prev.filter((item) => item.id !== activeId));
+        const remainingItems = sortedItems.filter(
+          (item) => item.id !== activeId
+        );
+        setSortedItems(remainingItems);
+
+        // 移動元（ルート）の残り兄弟のorderを再計算
+        const reorderedSiblings = remainingItems.map((item, index) => ({
+          id: item.id,
+          order: index,
+        }));
 
         const result = await reorderItems({
           itemId: activeId,
           newParentId: targetId,
-          reorderedSiblings: [],
+          reorderedSiblings,
         });
 
         if (!result.success) {
