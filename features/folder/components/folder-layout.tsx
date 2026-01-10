@@ -76,6 +76,7 @@ export function FolderLayout({ item, canEdit = true }: FolderLayoutProps) {
   );
 
   const dropTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const currentOverIdRef = useRef<string | null>(null);
 
   // サーバーからの更新を検出してローカル状態に反映
@@ -88,6 +89,9 @@ export function FolderLayout({ item, canEdit = true }: FolderLayoutProps) {
     return () => {
       if (dropTimeoutRef.current) {
         clearTimeout(dropTimeoutRef.current);
+      }
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
       }
     };
   }, []);
@@ -150,7 +154,10 @@ export function FolderLayout({ item, canEdit = true }: FolderLayoutProps) {
 
       clearDropState();
       setActiveId(null);
-      setTimeout(() => setPreventClick(false), CLICK_DELAY_MS);
+      clickTimeoutRef.current = setTimeout(
+        () => setPreventClick(false),
+        CLICK_DELAY_MS
+      );
 
       const activeId = active.id as string;
 

@@ -78,6 +78,7 @@ export function WorkspaceLayout({
   );
 
   const dropTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const currentOverIdRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -88,6 +89,9 @@ export function WorkspaceLayout({
     return () => {
       if (dropTimeoutRef.current) {
         clearTimeout(dropTimeoutRef.current);
+      }
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
       }
     };
   }, []);
@@ -150,7 +154,10 @@ export function WorkspaceLayout({
 
       clearDropState();
       setActiveId(null);
-      setTimeout(() => setPreventClick(false), CLICK_DELAY_MS);
+      clickTimeoutRef.current = setTimeout(
+        () => setPreventClick(false),
+        CLICK_DELAY_MS
+      );
 
       const activeId = active.id as string;
 
