@@ -36,14 +36,48 @@ async function createAdminUser() {
     });
 
   if (authError) {
-    // ユーザーが既に存在する場合はスキップ
-    if (authError.message.includes('already registered')) {
-      console.log('管理者ユーザーは既にSupabase Authに存在します');
+    // ユーザーが既に存在する場合は削除してから再作成
+    const errorCode = 'code' in authError ? authError.code : null;
+    if (
+      authError.message.includes('already registered') ||
+      errorCode === 'email_exists'
+    ) {
+      console.log('既存の管理者ユーザーをSupabase Authから削除中');
       // 既存ユーザーのIDを取得
       const { data: existingUsers } = await supabase.auth.admin.listUsers();
       const existingUser = existingUsers?.users.find((u) => u.email === email);
       if (existingUser) {
-        return existingUser.id;
+        await supabase.auth.admin.deleteUser(existingUser.id);
+        console.log('既存の管理者ユーザーを削除しました');
+
+        // 再度ユーザーを作成
+        const { data: newAuthData, error: newAuthError } =
+          await supabase.auth.admin.createUser({
+            email,
+            password,
+            email_confirm: true,
+          });
+
+        if (newAuthError) {
+          throw newAuthError;
+        }
+
+        console.log(
+          `Supabase Authに管理者ユーザーを作成しました: ${newAuthData.user.id}`
+        );
+
+        // Prismaにユーザー情報を保存
+        const user = await prisma.user.create({
+          data: {
+            id: newAuthData.user.id,
+            name,
+            email,
+            role: 'ADMIN',
+          },
+        });
+
+        console.log(`データベースに管理者ユーザーを作成しました: ${user.id}`);
+        return user.id;
       }
     }
     throw authError;
