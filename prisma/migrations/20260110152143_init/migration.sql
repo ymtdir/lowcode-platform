@@ -4,6 +4,9 @@ CREATE TYPE "UserRole" AS ENUM ('ADMIN', 'DEVELOPER', 'MEMBER');
 -- CreateEnum
 CREATE TYPE "ItemType" AS ENUM ('FOLDER', 'TABLE');
 
+-- CreateEnum
+CREATE TYPE "Permission" AS ENUM ('NONE', 'READ', 'WRITE');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
@@ -43,6 +46,7 @@ CREATE TABLE "Item" (
     "id" TEXT NOT NULL,
     "type" "ItemType" NOT NULL DEFAULT 'FOLDER',
     "name" TEXT NOT NULL,
+    "icon" TEXT,
     "parentId" TEXT,
     "order" INTEGER NOT NULL DEFAULT 0,
     "meta" JSONB,
@@ -63,6 +67,32 @@ CREATE TABLE "Record" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Record_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ItemPermission" (
+    "id" TEXT NOT NULL,
+    "itemId" TEXT NOT NULL,
+    "userId" TEXT,
+    "groupId" TEXT,
+    "level" "Permission" NOT NULL DEFAULT 'READ',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "ItemPermission_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Setting" (
+    "id" TEXT NOT NULL,
+    "appName" TEXT,
+    "appIcon" TEXT,
+    "appFavicon" TEXT,
+    "hideAppName" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Setting_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -98,6 +128,21 @@ CREATE INDEX "Record_tableId_idx" ON "Record"("tableId");
 -- CreateIndex
 CREATE INDEX "Record_createdById_idx" ON "Record"("createdById");
 
+-- CreateIndex
+CREATE INDEX "ItemPermission_itemId_idx" ON "ItemPermission"("itemId");
+
+-- CreateIndex
+CREATE INDEX "ItemPermission_userId_idx" ON "ItemPermission"("userId");
+
+-- CreateIndex
+CREATE INDEX "ItemPermission_groupId_idx" ON "ItemPermission"("groupId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ItemPermission_itemId_userId_key" ON "ItemPermission"("itemId", "userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ItemPermission_itemId_groupId_key" ON "ItemPermission"("itemId", "groupId");
+
 -- AddForeignKey
 ALTER TABLE "Group" ADD CONSTRAINT "Group_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Group"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -113,3 +158,11 @@ ALTER TABLE "Item" ADD CONSTRAINT "Item_parentId_fkey" FOREIGN KEY ("parentId") 
 -- AddForeignKey
 ALTER TABLE "Record" ADD CONSTRAINT "Record_tableId_fkey" FOREIGN KEY ("tableId") REFERENCES "Item"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
+-- AddForeignKey
+ALTER TABLE "ItemPermission" ADD CONSTRAINT "ItemPermission_itemId_fkey" FOREIGN KEY ("itemId") REFERENCES "Item"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ItemPermission" ADD CONSTRAINT "ItemPermission_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ItemPermission" ADD CONSTRAINT "ItemPermission_groupId_fkey" FOREIGN KEY ("groupId") REFERENCES "Group"("id") ON DELETE CASCADE ON UPDATE CASCADE;
