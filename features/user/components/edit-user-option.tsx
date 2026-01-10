@@ -22,6 +22,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { updateUserProfile, updateUserPassword } from '../api/update-user';
 import type { User } from '../types';
 
@@ -118,6 +125,19 @@ function EditUserContent({ user, onClose }: EditUserContentProps) {
                   placeholder="user@example.com"
                   required
                 />
+              </div>
+              <div className="grid gap-3">
+                <Label htmlFor="role">ロール</Label>
+                <Select name="role" defaultValue={user.role}>
+                  <SelectTrigger id="role">
+                    <SelectValue placeholder="ロールを選択" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ADMIN">管理者</SelectItem>
+                    <SelectItem value="DEVELOPER">開発者</SelectItem>
+                    <SelectItem value="MEMBER">メンバー</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
             <CardFooter className="flex justify-between">
