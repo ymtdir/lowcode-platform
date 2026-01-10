@@ -43,6 +43,7 @@ const dropAnimation: DropAnimation = {
 
 type WorkspaceLayoutProps = {
   items: Item[];
+  canEdit?: boolean;
 };
 
 const customCollisionDetection: CollisionDetection = (args) => {
@@ -56,7 +57,10 @@ const customCollisionDetection: CollisionDetection = (args) => {
  * ワークスペースのルート階層にあるアイテム（フォルダ、テーブル）をグリッド表示し、
  * ドラッグ&ドロップによる並び替えやフォルダへの移動機能を提供します。
  */
-export function WorkspaceLayout({ items }: WorkspaceLayoutProps) {
+export function WorkspaceLayout({
+  items,
+  canEdit = true,
+}: WorkspaceLayoutProps) {
   // サーバーからのアイテムをOrder順にソート（念のため）してメモ化
   const serverItems = useMemo(
     () => [...items].sort((a, b) => a.order - b.order),
@@ -103,10 +107,14 @@ export function WorkspaceLayout({ items }: WorkspaceLayoutProps) {
     setDropTargetId(null);
   }, []);
 
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
-    setPreventClick(true);
-  }, []);
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      if (!canEdit) return;
+      setActiveId(event.active.id as string);
+      setPreventClick(true);
+    },
+    [canEdit]
+  );
 
   const handleDragOver = useCallback(
     (event: DragOverEvent) => {
@@ -210,7 +218,7 @@ export function WorkspaceLayout({ items }: WorkspaceLayoutProps) {
 
       {sortedItems.length > 0 ? (
         <DndContext
-          sensors={sensors}
+          sensors={canEdit ? sensors : []}
           collisionDetection={customCollisionDetection}
           measuring={{
             droppable: {
@@ -233,6 +241,7 @@ export function WorkspaceLayout({ items }: WorkspaceLayoutProps) {
                   item={item}
                   isDropTarget={dropTargetId === item.id}
                   preventClick={preventClick}
+                  canEdit={canEdit}
                 />
               ))}
             </div>

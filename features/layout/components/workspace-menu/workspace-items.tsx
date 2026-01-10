@@ -144,6 +144,7 @@ export function WorkspaceItemsWrapper({
 
   const handleDragStart = useCallback(
     ({ active }: DragStartEvent) => {
+      if (!canEdit) return;
       const activeIdStr = active.id as string;
       setActiveId(activeIdStr);
       setOverId(activeIdStr);
@@ -154,7 +155,7 @@ export function WorkspaceItemsWrapper({
         prev.filter((id) => id !== activeIdStr && !childrenIds.includes(id))
       );
     },
-    [flattenedItems, setExpandedIds]
+    [canEdit, flattenedItems, setExpandedIds]
   );
 
   const handleDragMove = useCallback(({ delta }: DragMoveEvent) => {
@@ -198,6 +199,15 @@ export function WorkspaceItemsWrapper({
       if (newParentId && childrenIds.includes(newParentId)) {
         toast.error('子孫フォルダには移動できません');
         return;
+      }
+
+      // テーブルの子にはなれない
+      if (newParentId) {
+        const parentItem = clonedItems.find((item) => item.id === newParentId);
+        if (parentItem && !ITEM_CONFIGS[parentItem.type].droppable) {
+          toast.error('テーブルにはアイテムを移動できません');
+          return;
+        }
       }
 
       // アイテムの親と深さを更新
@@ -273,7 +283,7 @@ export function WorkspaceItemsWrapper({
 
   return (
     <DndContext
-      sensors={sensors}
+      sensors={canEdit ? sensors : []}
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
       onDragMove={handleDragMove}

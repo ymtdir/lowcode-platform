@@ -60,6 +60,7 @@ type SortableItemCardProps = {
   item: Item;
   isDropTarget?: boolean;
   preventClick?: boolean;
+  canEdit?: boolean;
 };
 
 /**
@@ -73,6 +74,7 @@ export function SortableItemCard({
   item,
   isDropTarget = false,
   preventClick = false,
+  canEdit = true,
 }: SortableItemCardProps) {
   const router = useRouter();
 
@@ -83,7 +85,7 @@ export function SortableItemCard({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: item.id });
+  } = useSortable({ id: item.id, disabled: !canEdit });
 
   const style = {
     transform: CSS.Transform.toString(transform),

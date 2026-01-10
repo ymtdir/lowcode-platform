@@ -43,6 +43,7 @@ const dropAnimation: DropAnimation = {
 
 type FolderLayoutProps = {
   item: Item & { type: 'FOLDER' };
+  canEdit?: boolean;
 };
 
 const customCollisionDetection: CollisionDetection = (args) => {
@@ -56,7 +57,7 @@ const customCollisionDetection: CollisionDetection = (args) => {
  * 特定のフォルダ内のアイテム（フォルダ、テーブル）をグリッド表示し、
  * ドラッグ&ドロップによる並び替えやフォルダへの移動機能を提供します。
  */
-export function FolderLayout({ item }: FolderLayoutProps) {
+export function FolderLayout({ item, canEdit = true }: FolderLayoutProps) {
   // item.childrenをソート済み配列としてメモ化
   const serverChildren = useMemo(
     () =>
@@ -106,10 +107,14 @@ export function FolderLayout({ item }: FolderLayoutProps) {
     setDropTargetId(null);
   }, []);
 
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
-    setPreventClick(true);
-  }, []);
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      if (!canEdit) return;
+      setActiveId(event.active.id as string);
+      setPreventClick(true);
+    },
+    [canEdit]
+  );
 
   const handleDragOver = useCallback(
     (event: DragOverEvent) => {
@@ -230,7 +235,7 @@ export function FolderLayout({ item }: FolderLayoutProps) {
 
       {sortedChildren.length > 0 ? (
         <DndContext
-          sensors={sensors}
+          sensors={canEdit ? sensors : []}
           collisionDetection={customCollisionDetection}
           measuring={{
             droppable: {
@@ -253,6 +258,7 @@ export function FolderLayout({ item }: FolderLayoutProps) {
                   item={child}
                   isDropTarget={dropTargetId === child.id}
                   preventClick={preventClick}
+                  canEdit={canEdit}
                 />
               ))}
             </div>
