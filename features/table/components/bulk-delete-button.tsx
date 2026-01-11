@@ -78,7 +78,7 @@ export function BulkDeleteButton({
         <AlertDialogHeader>
           <div className="flex items-center space-x-2">
             <AlertCircle className="text-destructive" />
-            <AlertDialogTitle className="text-destructive cursor-pointer">
+            <AlertDialogTitle className="text-destructive">
               {selectedRecordIds.length}件のレコードを削除
             </AlertDialogTitle>
           </div>
