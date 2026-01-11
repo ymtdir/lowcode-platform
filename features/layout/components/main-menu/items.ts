@@ -1,4 +1,4 @@
-import { Home, Users, Building, Calendar, Settings } from 'lucide-react';
+import { Home, Users, Building, Settings } from 'lucide-react';
 
 import type { MainMenuItem } from '../../types';
 
