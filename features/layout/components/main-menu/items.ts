@@ -11,11 +11,11 @@ export const mainMenuItems: MainMenuItem[] = [
     url: '/',
     icon: Home,
   },
-  {
-    title: 'カレンダー',
-    url: '#',
-    icon: Calendar,
-  },
+  // {
+  //   title: 'カレンダー',
+  //   url: '#',
+  //   icon: Calendar,
+  // },
   {
     title: 'ユーザー',
     url: '/users',
