@@ -69,7 +69,7 @@ export function BulkDeleteButton({
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="sm" className="ml-2">
+        <Button variant="destructive" size="sm" className="ml-2 cursor-pointer">
           <Trash2 />
           一括削除
         </Button>
@@ -78,7 +78,7 @@ export function BulkDeleteButton({
         <AlertDialogHeader>
           <div className="flex items-center space-x-2">
             <AlertCircle className="text-destructive" />
-            <AlertDialogTitle className="text-destructive">
+            <AlertDialogTitle className="text-destructive cursor-pointer">
               {selectedRecordIds.length}件のレコードを削除
             </AlertDialogTitle>
           </div>
@@ -89,13 +89,13 @@ export function BulkDeleteButton({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>
+          <AlertDialogCancel disabled={isDeleting} className="cursor-pointer">
             キャンセル
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={handleBulkDelete}
             disabled={isDeleting}
-            className="bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60"
+            className="bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60 cursor-pointer"
           >
             {isDeleting ? '削除中...' : '削除'}
           </AlertDialogAction>

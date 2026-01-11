@@ -140,8 +140,10 @@ function EditUserContent({ user, onClose }: EditUserContentProps) {
                 </Select>
               </div>
             </CardContent>
-            <CardFooter className="flex justify-between">
-              <Button type="submit">保存</Button>
+            <CardFooter className="flex justify-end">
+              <Button type="submit" className="cursor-pointer">
+                保存
+              </Button>
             </CardFooter>
           </Card>
         </form>
@@ -177,8 +179,10 @@ function EditUserContent({ user, onClose }: EditUserContentProps) {
                 />
               </div>
             </CardContent>
-            <CardFooter className="flex justify-between">
-              <Button type="submit">保存</Button>
+            <CardFooter className="flex justify-end">
+              <Button type="submit" className="cursor-pointer">
+                保存
+              </Button>
             </CardFooter>
           </Card>
         </form>
