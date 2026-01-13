@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -10,8 +10,29 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import type { ColumnTypeConfig } from '../../types/column';
+import type { ColumnTypeConfig, SystemTable } from '../../types/column';
 import type { Item } from '@/features/item/types';
+
+/**
+ * システムテーブルの定義
+ */
+const SYSTEM_TABLES: SystemTable[] = [
+  {
+    id: 'users',
+    name: 'ユーザー',
+    type: 'SYSTEM',
+    fields: [
+      { id: 'name', name: '名前', type: 'text' },
+      { id: 'email', name: 'メールアドレス', type: 'text' },
+    ],
+  },
+  {
+    id: 'groups',
+    name: 'グループ',
+    type: 'SYSTEM',
+    fields: [{ id: 'name', name: 'グループ名', type: 'text' }],
+  },
+];
 
 /**
  * RelationConfigEditorのProps
@@ -43,26 +64,44 @@ export function RelationConfigEditor({
     setLocalConfig(config);
   }, [config]);
 
+  // 参照可能なテーブル一覧（システムテーブル + 通常のテーブル）
+  const selectableTables = useMemo(
+    () => [
+      ...SYSTEM_TABLES,
+      ...tables
+        .filter(
+          (table) => table.type === 'TABLE' && table.id !== currentTableId
+        )
+        .map((table) => ({
+          id: table.id,
+          name: table.name,
+          type: 'TABLE' as const,
+          fields:
+            (
+              table.meta as {
+                schema?: { columns?: Array<{ id: string; name: string }> };
+              }
+            )?.schema?.columns || [],
+        })),
+    ],
+    [tables, currentTableId]
+  );
+
   // 参照先テーブルが選択されたら、そのテーブルのカラム一覧を取得
   useEffect(() => {
     if (localConfig.referencedTableId) {
-      const selectedTable = tables.find(
+      const selectedTable = selectableTables.find(
         (t) => t.id === localConfig.referencedTableId
       );
-      if (selectedTable && selectedTable.type === 'TABLE') {
-        // メタデータからカラム一覧を取得
-        const tableMeta = selectedTable.meta as {
-          schema?: { columns?: Array<{ id: string; name: string }> };
-        };
-        const columns = tableMeta?.schema?.columns || [];
-        setAvailableFields(columns);
+      if (selectedTable) {
+        setAvailableFields(selectedTable.fields);
       } else {
         setAvailableFields([]);
       }
     } else {
       setAvailableFields([]);
     }
-  }, [localConfig.referencedTableId, tables]);
+  }, [localConfig.referencedTableId, tables, selectableTables]);
 
   // 参照先テーブル変更
   const handleTableChange = (tableId: string) => {
@@ -88,11 +127,6 @@ export function RelationConfigEditor({
     setLocalConfig(newConfig);
     onChange(newConfig);
   };
-
-  // 参照可能なテーブル一覧（自己参照を除外）
-  const selectableTables = tables.filter(
-    (table) => table.type === 'TABLE' && table.id !== currentTableId
-  );
 
   return (
     <div className="space-y-4">
