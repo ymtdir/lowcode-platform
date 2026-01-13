@@ -10,7 +10,18 @@ jest.mock('@/lib/prisma', () => ({
   },
 }));
 
+// システムテーブルAPIをモック化
+jest.mock('@/features/user/api/get-users', () => ({
+  getUsers: jest.fn(),
+}));
+
+jest.mock('@/features/group/api/get-groups', () => ({
+  getGroups: jest.fn(),
+}));
+
 import { prisma } from '@/lib/prisma';
+import { getUsers } from '@/features/user/api/get-users';
+import { getGroups } from '@/features/group/api/get-groups';
 
 describe('getRelationRecords', () => {
   beforeEach(() => {
@@ -385,5 +396,366 @@ describe('getRelationRecords', () => {
         orderBy: { createdAt: 'desc' },
       })
     );
+  });
+
+  describe('システムテーブル: users', () => {
+    it('usersテーブルを参照できる', async () => {
+      const columns: Column[] = [
+        {
+          id: 'col-1',
+          name: '担当者',
+          type: 'RELATION',
+          order: 0,
+          config: {
+            referencedTableId: 'users',
+            displayField: 'name',
+            allowMultiple: false,
+          },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      const mockUsers = [
+        {
+          id: 'user-1',
+          email: 'user1@example.com',
+          name: '山田太郎',
+          role: 'ADMIN',
+          createdAt: new Date('2024-01-01'),
+          updatedAt: new Date('2024-01-01'),
+        },
+        {
+          id: 'user-2',
+          email: 'user2@example.com',
+          name: '佐藤花子',
+          role: 'USER',
+          createdAt: new Date('2024-01-02'),
+          updatedAt: new Date('2024-01-02'),
+        },
+      ];
+
+      (getUsers as jest.Mock).mockResolvedValue(mockUsers);
+
+      const result = await getRelationRecords(columns);
+
+      expect(result.size).toBe(1);
+      expect(result.get('col-1')).toEqual([
+        { id: 'user-1', displayValue: '山田太郎', exists: true },
+        { id: 'user-2', displayValue: '佐藤花子', exists: true },
+      ]);
+      expect(getUsers).toHaveBeenCalledTimes(1);
+      expect(prisma.record.findMany).not.toHaveBeenCalled();
+    });
+
+    it('users: displayFieldにemailを指定できる', async () => {
+      const columns: Column[] = [
+        {
+          id: 'col-1',
+          name: '担当者',
+          type: 'RELATION',
+          order: 0,
+          config: {
+            referencedTableId: 'users',
+            displayField: 'email',
+            allowMultiple: false,
+          },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      const mockUsers = [
+        {
+          id: 'user-1',
+          email: 'user1@example.com',
+          name: '山田太郎',
+          role: 'ADMIN',
+          createdAt: new Date('2024-01-01'),
+          updatedAt: new Date('2024-01-01'),
+        },
+      ];
+
+      (getUsers as jest.Mock).mockResolvedValue(mockUsers);
+
+      const result = await getRelationRecords(columns);
+
+      expect(result.get('col-1')).toEqual([
+        { id: 'user-1', displayValue: 'user1@example.com', exists: true },
+      ]);
+    });
+
+    it('users: displayFieldが空の場合はnameまたはemailを使用する', async () => {
+      const columns: Column[] = [
+        {
+          id: 'col-1',
+          name: '担当者',
+          type: 'RELATION',
+          order: 0,
+          config: {
+            referencedTableId: 'users',
+            displayField: '',
+            allowMultiple: false,
+          },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      const mockUsers = [
+        {
+          id: 'user-1',
+          email: 'user1@example.com',
+          name: '山田太郎',
+          role: 'ADMIN',
+          createdAt: new Date('2024-01-01'),
+          updatedAt: new Date('2024-01-01'),
+        },
+      ];
+
+      (getUsers as jest.Mock).mockResolvedValue(mockUsers);
+
+      const result = await getRelationRecords(columns);
+
+      expect(result.get('col-1')).toEqual([
+        { id: 'user-1', displayValue: '山田太郎', exists: true },
+      ]);
+    });
+
+    it('users: nameが空の場合はemailをフォールバックする', async () => {
+      const columns: Column[] = [
+        {
+          id: 'col-1',
+          name: '担当者',
+          type: 'RELATION',
+          order: 0,
+          config: {
+            referencedTableId: 'users',
+            displayField: 'name',
+            allowMultiple: false,
+          },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      const mockUsers = [
+        {
+          id: 'user-1',
+          email: 'user1@example.com',
+          name: '',
+          role: 'ADMIN',
+          createdAt: new Date('2024-01-01'),
+          updatedAt: new Date('2024-01-01'),
+        },
+      ];
+
+      (getUsers as jest.Mock).mockResolvedValue(mockUsers);
+
+      const result = await getRelationRecords(columns);
+
+      expect(result.get('col-1')).toEqual([
+        { id: 'user-1', displayValue: 'user1@example.com', exists: true },
+      ]);
+    });
+  });
+
+  describe('システムテーブル: groups', () => {
+    it('groupsテーブルを参照できる', async () => {
+      const columns: Column[] = [
+        {
+          id: 'col-1',
+          name: '所属グループ',
+          type: 'RELATION',
+          order: 0,
+          config: {
+            referencedTableId: 'groups',
+            displayField: 'name',
+            allowMultiple: false,
+          },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      const mockGroups = [
+        {
+          id: 'group-1',
+          name: '営業部',
+          description: '営業活動を行う部門',
+          parentId: null,
+          parent: null,
+          members: [],
+          _count: { members: 0 },
+          createdAt: new Date('2024-01-01'),
+          updatedAt: new Date('2024-01-01'),
+        },
+        {
+          id: 'group-2',
+          name: '開発部',
+          description: '開発を行う部門',
+          parentId: null,
+          parent: null,
+          members: [],
+          _count: { members: 0 },
+          createdAt: new Date('2024-01-02'),
+          updatedAt: new Date('2024-01-02'),
+        },
+      ];
+
+      (getGroups as jest.Mock).mockResolvedValue(mockGroups);
+
+      const result = await getRelationRecords(columns);
+
+      expect(result.size).toBe(1);
+      expect(result.get('col-1')).toEqual([
+        { id: 'group-1', displayValue: '営業部', exists: true },
+        { id: 'group-2', displayValue: '開発部', exists: true },
+      ]);
+      expect(getGroups).toHaveBeenCalledTimes(1);
+      expect(prisma.record.findMany).not.toHaveBeenCalled();
+    });
+
+    it('groups: displayFieldが空の場合はnameを使用する', async () => {
+      const columns: Column[] = [
+        {
+          id: 'col-1',
+          name: '所属グループ',
+          type: 'RELATION',
+          order: 0,
+          config: {
+            referencedTableId: 'groups',
+            displayField: '',
+            allowMultiple: false,
+          },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      const mockGroups = [
+        {
+          id: 'group-1',
+          name: '営業部',
+          description: '営業活動を行う部門',
+          parentId: null,
+          parent: null,
+          members: [],
+          _count: { members: 0 },
+          createdAt: new Date('2024-01-01'),
+          updatedAt: new Date('2024-01-01'),
+        },
+      ];
+
+      (getGroups as jest.Mock).mockResolvedValue(mockGroups);
+
+      const result = await getRelationRecords(columns);
+
+      expect(result.get('col-1')).toEqual([
+        { id: 'group-1', displayValue: '営業部', exists: true },
+      ]);
+    });
+  });
+
+  describe('システムテーブルと通常テーブルの混在', () => {
+    it('usersとgroupsと通常テーブルを同時に参照できる', async () => {
+      const columns: Column[] = [
+        {
+          id: 'col-1',
+          name: '担当者',
+          type: 'RELATION',
+          order: 0,
+          config: {
+            referencedTableId: 'users',
+            displayField: 'name',
+            allowMultiple: false,
+          },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 'col-2',
+          name: 'グループ',
+          type: 'RELATION',
+          order: 1,
+          config: {
+            referencedTableId: 'groups',
+            displayField: 'name',
+            allowMultiple: false,
+          },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 'col-3',
+          name: '顧客',
+          type: 'RELATION',
+          order: 2,
+          config: {
+            referencedTableId: 'table-1',
+            displayField: 'companyName',
+            allowMultiple: false,
+          },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      const mockUsers = [
+        {
+          id: 'user-1',
+          email: 'user1@example.com',
+          name: '山田太郎',
+          role: 'ADMIN',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      const mockGroups = [
+        {
+          id: 'group-1',
+          name: '営業部',
+          description: null,
+          parentId: null,
+          parent: null,
+          members: [],
+          _count: { members: 0 },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      const mockRecords = [
+        {
+          id: 'record-1',
+          tableId: 'table-1',
+          data: { companyName: 'A社' },
+          createdById: 'user-1',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      (getUsers as jest.Mock).mockResolvedValue(mockUsers);
+      (getGroups as jest.Mock).mockResolvedValue(mockGroups);
+      (prisma.record.findMany as jest.Mock).mockResolvedValue(mockRecords);
+
+      const result = await getRelationRecords(columns);
+
+      expect(result.size).toBe(3);
+      expect(result.get('col-1')).toEqual([
+        { id: 'user-1', displayValue: '山田太郎', exists: true },
+      ]);
+      expect(result.get('col-2')).toEqual([
+        { id: 'group-1', displayValue: '営業部', exists: true },
+      ]);
+      expect(result.get('col-3')).toEqual([
+        { id: 'record-1', displayValue: 'A社', exists: true },
+      ]);
+      expect(getUsers).toHaveBeenCalledTimes(1);
+      expect(getGroups).toHaveBeenCalledTimes(1);
+      expect(prisma.record.findMany).toHaveBeenCalledTimes(1);
+    });
   });
 });

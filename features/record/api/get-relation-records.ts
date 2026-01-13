@@ -1,6 +1,8 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
+import { getUsers } from '@/features/user/api/get-users';
+import { getGroups } from '@/features/group/api/get-groups';
 import type {
   Column,
   RelationColumn,
@@ -29,7 +31,35 @@ export async function getRelationRecords(
     relationColumns.map(async (col) => {
       const { referencedTableId, displayField } = col.config;
 
-      // レコードを取得
+      // システムテーブル: users
+      if (referencedTableId === 'users') {
+        const users = await getUsers();
+        const relationRecords: RelationRecord[] = users.map((user) => ({
+          id: user.id,
+          displayValue:
+            (user[displayField as keyof typeof user] as string) ||
+            user.name ||
+            user.email,
+          exists: true,
+        }));
+        relationRecordsMap.set(col.id, relationRecords);
+        return;
+      }
+
+      // システムテーブル: groups
+      if (referencedTableId === 'groups') {
+        const groups = await getGroups();
+        const relationRecords: RelationRecord[] = groups.map((group) => ({
+          id: group.id,
+          displayValue:
+            (group[displayField as keyof typeof group] as string) || group.name,
+          exists: true,
+        }));
+        relationRecordsMap.set(col.id, relationRecords);
+        return;
+      }
+
+      // 通常のテーブル
       const records = await prisma.record.findMany({
         where: { tableId: referencedTableId },
         orderBy: { createdAt: 'desc' },

@@ -32,6 +32,25 @@ export type RelationRecord = {
 };
 
 /**
+ * システムテーブルのタイプ
+ */
+export type SystemTableType = 'users' | 'groups';
+
+/**
+ * システムテーブルの型
+ */
+export type SystemTable = {
+  id: SystemTableType;
+  name: string;
+  type: 'SYSTEM';
+  fields: {
+    id: string;
+    name: string;
+    type: string;
+  }[];
+};
+
+/**
  * 日付精度の型
  */
 export type DatePrecision = 'year' | 'month' | 'day' | 'day_weekday';
