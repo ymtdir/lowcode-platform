@@ -2,6 +2,8 @@ import { prisma } from '@/lib/prisma';
 import { getUsers } from '@/features/user/api/get-users';
 import { getGroups } from '@/features/group/api/get-groups';
 import type { Record as PrismaRecord } from '@prisma/client';
+import type { User } from '@/features/user/types';
+import type { Group } from '@/features/group/types';
 import type {
   Column,
   RelationColumn,
@@ -57,22 +59,37 @@ export async function enrichWithRelations(
     return records;
   }
 
-  // テーブルごとに参照先データを取得してMapを作成
-  const dataMap = new Map<string, RelationRecord>();
+  // カラムごとに参照先データを取得してMapを作成
+  // Map<カラムID, Map<レコードID, RelationRecord>>
+  const columnDataMap = new Map<string, Map<string, RelationRecord>>();
 
-  for (const [tableId, ids] of tableReferencedIds.entries()) {
+  // テーブルごとに生データをキャッシュ（重複取得を防ぐ）
+  const tableDataCache = new Map<
+    string,
+    Map<string, unknown> | Array<unknown>
+  >();
+
+  // カラムごとにデータを取得
+  for (const col of relationColumns) {
+    const { referencedTableId, displayField } = col.config;
+    const ids = tableReferencedIds.get(referencedTableId);
+    if (!ids || ids.size === 0) continue;
+
     const idsArray = Array.from(ids);
+    const dataMap = new Map<string, RelationRecord>();
 
     // システムテーブル: users
-    if (tableId === 'users') {
-      const users = await getUsers();
-      const userMap = new Map(users.map((u) => [u.id, u]));
+    if (referencedTableId === 'users') {
+      // キャッシュがなければ取得
+      if (!tableDataCache.has('users')) {
+        const users = await getUsers();
+        tableDataCache.set('users', new Map(users.map((u) => [u.id, u])));
+      }
+      const userMap = tableDataCache.get('users') as Map<string, User>;
+
       idsArray.forEach((id) => {
         const user = userMap.get(id);
         if (user) {
-          const displayField = relationColumns.find(
-            (c) => c.config.referencedTableId === 'users'
-          )?.config.displayField;
           dataMap.set(id, {
             id: user.id,
             displayValue:
@@ -87,19 +104,19 @@ export async function enrichWithRelations(
           dataMap.set(id, { id, displayValue: id, exists: false });
         }
       });
-      continue;
     }
-
     // システムテーブル: groups
-    if (tableId === 'groups') {
-      const groups = await getGroups();
-      const groupMap = new Map(groups.map((g) => [g.id, g]));
+    else if (referencedTableId === 'groups') {
+      // キャッシュがなければ取得
+      if (!tableDataCache.has('groups')) {
+        const groups = await getGroups();
+        tableDataCache.set('groups', new Map(groups.map((g) => [g.id, g])));
+      }
+      const groupMap = tableDataCache.get('groups') as Map<string, Group>;
+
       idsArray.forEach((id) => {
         const group = groupMap.get(id);
         if (group) {
-          const displayField = relationColumns.find(
-            (c) => c.config.referencedTableId === 'groups'
-          )?.config.displayField;
           dataMap.set(id, {
             id: group.id,
             displayValue:
@@ -112,39 +129,50 @@ export async function enrichWithRelations(
           dataMap.set(id, { id, displayValue: id, exists: false });
         }
       });
-      continue;
+    }
+    // 通常のテーブル
+    else {
+      // キャッシュがなければ取得
+      if (!tableDataCache.has(referencedTableId)) {
+        const tableIds = tableReferencedIds.get(referencedTableId);
+        if (tableIds) {
+          const referencedRecords = await prisma.record.findMany({
+            where: {
+              id: { in: Array.from(tableIds) },
+            },
+          });
+          tableDataCache.set(
+            referencedTableId,
+            new Map(referencedRecords.map((r) => [r.id, r]))
+          );
+        }
+      }
+      const recordMap = tableDataCache.get(referencedTableId) as Map<
+        string,
+        PrismaRecord
+      >;
+
+      idsArray.forEach((id) => {
+        const refRecord = recordMap?.get(id);
+        if (refRecord) {
+          const displayFieldValue = displayField
+            ? (refRecord.data as Record<string, unknown>)[displayField]
+            : null;
+
+          dataMap.set(refRecord.id, {
+            id: refRecord.id,
+            displayValue: displayFieldValue
+              ? String(displayFieldValue)
+              : refRecord.id,
+            exists: true,
+          });
+        } else {
+          dataMap.set(id, { id, displayValue: id, exists: false });
+        }
+      });
     }
 
-    // 通常のテーブル
-    const referencedRecords = await prisma.record.findMany({
-      where: {
-        id: { in: idsArray },
-      },
-    });
-
-    referencedRecords.forEach((refRecord) => {
-      const displayField = relationColumns.find(
-        (c) => c.config.referencedTableId === tableId
-      )?.config.displayField;
-      const displayFieldValue = displayField
-        ? (refRecord.data as Record<string, unknown>)[displayField]
-        : null;
-
-      dataMap.set(refRecord.id, {
-        id: refRecord.id,
-        displayValue: displayFieldValue
-          ? String(displayFieldValue)
-          : refRecord.id,
-        exists: true,
-      });
-    });
-
-    // 存在しないIDの処理
-    idsArray.forEach((id) => {
-      if (!dataMap.has(id)) {
-        dataMap.set(id, { id, displayValue: id, exists: false });
-      }
-    });
+    columnDataMap.set(col.id, dataMap);
   }
 
   // 各レコードに参照先データを付与
@@ -157,11 +185,14 @@ export async function enrichWithRelations(
     relationColumns.forEach((col) => {
       const value = (record.data as Record<string, unknown>)[col.id];
       if (value) {
+        const colDataMap = columnDataMap.get(col.id);
+        if (!colDataMap) return;
+
         const ids = Array.isArray(value) ? value : [value];
         const referencedData = ids
           .map((id) => {
             if (typeof id !== 'string') return null;
-            return dataMap.get(id) || null;
+            return colDataMap.get(id) || null;
           })
           .filter((d) => d !== null);
 
