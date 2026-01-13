@@ -219,7 +219,7 @@ export function ManageMembersOption({
                     <Button
                       onClick={handleAddMembers}
                       disabled={selectedUserIds.size === 0 || isAdding}
-                      className="w-full "
+                      className="w-full cursor-pointer"
                     >
                       <UserPlus />
                       {isAdding
@@ -288,7 +288,7 @@ export function ManageMembersOption({
                       onClick={handleRemoveMembers}
                       disabled={selectedMemberIds.size === 0 || isRemoving}
                       variant="destructive"
-                      className="w-full "
+                      className="w-full cursor-pointer"
                     >
                       <UserMinus />
                       {isRemoving

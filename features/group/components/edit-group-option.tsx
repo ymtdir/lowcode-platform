@@ -6,18 +6,11 @@ import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -108,57 +101,61 @@ function EditGroupContent({
 
   return (
     <form action={formAction}>
-      <Card>
-        <CardHeader>
-          <CardTitle>グループ情報</CardTitle>
-          <CardDescription>グループの情報を編集します。</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-6">
-          <div className="grid gap-3">
-            <Label htmlFor="name">グループ名</Label>
-            <Input
-              id="name"
-              name="name"
-              defaultValue={group.name}
-              placeholder="営業部"
-              required
-            />
-          </div>
-          <div className="grid gap-3">
-            <Label htmlFor="description">説明</Label>
-            <Input
-              id="description"
-              name="description"
-              defaultValue={group.description || ''}
-              placeholder="営業活動を行う部門"
-            />
-          </div>
-          <div className="grid gap-3">
-            <Label htmlFor="parentId">親グループ</Label>
-            <Select value={parentId} onValueChange={setParentId}>
-              <SelectTrigger>
-                <SelectValue placeholder="なし" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NONE_VALUE}>なし</SelectItem>
-                {availableGroups.map((g) => (
-                  <SelectItem key={g.id} value={g.id}>
-                    {g.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <input
-              type="hidden"
-              name="parentId"
-              value={parentId === NONE_VALUE ? '' : parentId}
-            />
-          </div>
-        </CardContent>
-        <CardFooter className="border-t px-6 py-4">
-          <Button type="submit">保存</Button>
-        </CardFooter>
-      </Card>
+      <div className="grid gap-4 py-4">
+        <div className="grid gap-2">
+          <Label htmlFor="name">グループ名</Label>
+          <Input
+            id="name"
+            name="name"
+            defaultValue={group.name}
+            placeholder="営業部"
+            required
+          />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="description">説明</Label>
+          <Input
+            id="description"
+            name="description"
+            defaultValue={group.description || ''}
+            placeholder="営業活動を行う部門"
+          />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="parentId">親グループ</Label>
+          <Select value={parentId} onValueChange={setParentId}>
+            <SelectTrigger>
+              <SelectValue placeholder="なし" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={NONE_VALUE}>なし</SelectItem>
+              {availableGroups.map((g) => (
+                <SelectItem key={g.id} value={g.id}>
+                  {g.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <input
+            type="hidden"
+            name="parentId"
+            value={parentId === NONE_VALUE ? '' : parentId}
+          />
+        </div>
+      </div>
+      <DialogFooter>
+        <Button
+          type="button"
+          variant="outline"
+          className="cursor-pointer"
+          onClick={onClose}
+        >
+          キャンセル
+        </Button>
+        <Button type="submit" className="cursor-pointer">
+          保存
+        </Button>
+      </DialogFooter>
     </form>
   );
 }

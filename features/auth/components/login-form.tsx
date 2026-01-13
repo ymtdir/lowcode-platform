@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useActionState } from 'react';
-import { login } from '@/features/auth/api';
+import { login, guestLogin } from '@/features/auth/api';
 import {
   Card,
   CardContent,
@@ -21,12 +21,17 @@ import { Label } from '@/components/ui/label';
 type LoginFormProps = {
   appIcon: string;
   appName: string;
+  isGuestLoginEnabled: boolean;
 };
 
 /**
  * ログインフォームコンポーネント
  */
-export function LoginForm({ appIcon, appName }: LoginFormProps) {
+export function LoginForm({
+  appIcon,
+  appName,
+  isGuestLoginEnabled,
+}: LoginFormProps) {
   const [state, formAction] = useActionState(login, {});
 
   return (
@@ -74,7 +79,7 @@ export function LoginForm({ appIcon, appName }: LoginFormProps) {
                 </div>
                 <Input id="password" name="password" type="password" required />
               </div>
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full cursor-pointer">
                 ログイン
               </Button>
             </div>
@@ -82,6 +87,17 @@ export function LoginForm({ appIcon, appName }: LoginFormProps) {
         </CardContent>
         <CardFooter className="flex-col gap-2"></CardFooter>
       </Card>
+      {isGuestLoginEnabled && (
+        <form action={guestLogin}>
+          <Button
+            type="submit"
+            variant="link"
+            className="text-sm cursor-pointer"
+          >
+            ゲストとしてログイン
+          </Button>
+        </form>
+      )}
     </div>
   );
 }
