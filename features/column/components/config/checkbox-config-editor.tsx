@@ -98,7 +98,7 @@ export function CheckboxConfigEditor({
           onCheckedChange={(checked) =>
             onChange({
               ...config,
-              defaultValue: checked === true ? true : undefined,
+              defaultValue: checked === true,
             })
           }
         />
