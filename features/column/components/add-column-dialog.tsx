@@ -212,7 +212,7 @@ export function AddColumnDialog({
         name: columnName,
         type: columnType,
         order: nextOrder,
-        validation: isRequired ? { required: true } : undefined,
+        validation: { required: isRequired },
         config: config as never,
       });
 

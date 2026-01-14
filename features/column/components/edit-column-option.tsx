@@ -245,7 +245,7 @@ export function EditColumnOption({
 
       const result = await updateColumn(itemId, column.id, {
         name: columnName,
-        validation: isRequired ? { required: true } : undefined,
+        validation: { required: isRequired },
         config: config as never,
       });
 
