@@ -65,7 +65,7 @@ export function TextareaCell({
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         rows={3}
-        className="min-h-[60px] w-full border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-primary resize-none"
+        className="min-h-[60px] w-full border-0 bg-transparent focus-visible:ring-0 shadow-none resize-none"
       />
     );
   }

@@ -64,7 +64,7 @@ export function TextCell({
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className="h-8 w-full border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-primary"
+        className="h-8 w-full border-0 bg-transparent focus-visible:ring-0 shadow-none"
       />
     );
   }
