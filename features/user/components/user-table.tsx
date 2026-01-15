@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   ColumnFiltersState,
   flexRender,
@@ -11,6 +12,7 @@ import {
   SortingState,
   useReactTable,
   VisibilityState,
+  PaginationState,
 } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
 import { useLocalStorage } from '@/hooks/use-local-storage';
@@ -98,6 +100,22 @@ export function UserTable({
   const columns = createColumns();
   const [rowSelection, setRowSelection] = React.useState({});
 
+  // URLパラメータとルーターの取得
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // URLからページ番号を取得（1-indexed → 0-indexed変換）
+  const initialPageIndex = React.useMemo(() => {
+    const page = searchParams.get('page');
+    return Math.max(0, Number(page || '1') - 1);
+  }, [searchParams]);
+
+  // ページネーション状態を制御
+  const [pagination, setPagination] = React.useState<PaginationState>({
+    pageIndex: initialPageIndex,
+    pageSize: 10,
+  });
+
   // localStorageに保存するテーブル状態
   const [columnVisibility, setColumnVisibility] =
     useLocalStorage<VisibilityState>('user-table-column-visibility', {});
@@ -119,14 +137,29 @@ export function UserTable({
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    onPaginationChange: setPagination,
     enableSortingRemoval: true,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
+      pagination,
     },
   });
+
+  // ページ変更時にURLを更新
+  React.useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    const urlPage = params.get('page');
+    const expectedPage = String(pagination.pageIndex + 1); // 0-indexed → 1-indexed
+
+    // URLと現在のページが異なる場合のみ更新
+    if (urlPage !== expectedPage) {
+      params.set('page', expectedPage);
+      router.push(`?${params.toString()}`, { scroll: false });
+    }
+  }, [pagination.pageIndex, searchParams, router]);
 
   const selectedRows = table.getFilteredSelectedRowModel().rows;
   const selectedUserIds = selectedRows.map((row) => row.original.id);
