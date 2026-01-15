@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import {
   ColumnFiltersState,
   flexRender,
@@ -96,9 +96,8 @@ export function GroupTable({
   const columns = createColumns(groups, users);
   const [rowSelection, setRowSelection] = React.useState({});
 
-  // URLパラメータとルーターの取得
+  // URLパラメータの取得
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   // URLからページ番号を取得（1-indexed → 0-indexed変換）
   const initialPageIndex = React.useMemo(() => {
@@ -135,6 +134,7 @@ export function GroupTable({
     onRowSelectionChange: setRowSelection,
     onPaginationChange: setPagination,
     enableSortingRemoval: true,
+    autoResetPageIndex: false, // データ変更時にページネーションをリセットしない
     state: {
       sorting,
       columnFilters,
@@ -146,16 +146,16 @@ export function GroupTable({
 
   // ページ変更時にURLを更新
   React.useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(window.location.search);
     const urlPage = params.get('page');
     const expectedPage = String(pagination.pageIndex + 1); // 0-indexed → 1-indexed
 
     // URLと現在のページが異なる場合のみ更新
     if (urlPage !== expectedPage) {
       params.set('page', expectedPage);
-      router.push(`?${params.toString()}`, { scroll: false });
+      window.history.replaceState(null, '', `?${params.toString()}`);
     }
-  }, [pagination.pageIndex, searchParams, router]);
+  }, [pagination.pageIndex]);
 
   const selectedRows = table.getFilteredSelectedRowModel().rows;
   const selectedGroupIds = selectedRows.map((row) => row.original.id);
