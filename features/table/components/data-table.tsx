@@ -8,6 +8,7 @@ import {
   useState,
   useTransition,
 } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   useReactTable,
   getCoreRowModel,
@@ -19,6 +20,7 @@ import {
   type VisibilityState,
   type SortingState,
   type ColumnFiltersState,
+  type PaginationState,
 } from '@tanstack/react-table';
 import { Plus } from 'lucide-react';
 import type { Permission } from '@prisma/client';
@@ -71,6 +73,21 @@ export function DataTable({
   permissionLevel,
   initialFilters = [],
 }: DataTableProps) {
+  // URLパラメータの取得
+  const searchParams = useSearchParams();
+
+  // URLからページ番号を取得（1-indexed → 0-indexed変換）
+  const initialPageIndex = useMemo(() => {
+    const page = searchParams.get('page');
+    return Math.max(0, Number(page || '1') - 1);
+  }, [searchParams]);
+
+  // ページネーション状態を制御
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: initialPageIndex,
+    pageSize: 10,
+  });
+
   // 初期レコードのデータを正規化（SELECT/RELATION型の形式統一）
   const normalizedInitialRecords = useMemo(
     () =>
@@ -104,12 +121,15 @@ export function DataTable({
   }, [initialRecords]);
 
   // 正規化されたレコードをステートに反映
-  // NOTE: サーバー更新中（isPending=true）は上書きしない（編集中のデータ保護）
+  // サーバーから新しいデータが来た場合のみ同期（初期読み込み時など）
+  // 楽観的更新を上書きしないように、initialRecordsの参照が変わった場合のみ同期
+  const prevInitialRecordsRef = useRef(initialRecords);
   useEffect(() => {
-    if (!isPending) {
+    if (prevInitialRecordsRef.current !== initialRecords) {
+      prevInitialRecordsRef.current = initialRecords;
       setRecords(normalizedInitialRecords);
     }
-  }, [normalizedInitialRecords, isPending]);
+  }, [initialRecords, normalizedInitialRecords]);
 
   // カラム構成変更時に古い状態をクリーンアップ
   const validColumnIds = useMemo(
@@ -237,14 +257,30 @@ export function DataTable({
     onColumnVisibilityChange: setColumnVisibility,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    onPaginationChange: setPagination,
     enableSortingRemoval: true,
+    autoResetPageIndex: false, // データ変更時にページネーションをリセットしない
     state: {
       rowSelection,
       columnVisibility,
       sorting,
       columnFilters,
+      pagination,
     },
   });
+
+  // ページ変更時にURLを更新（履歴のみ置換、Next.jsのナビゲーションをトリガーしない）
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlPage = params.get('page');
+    const expectedPage = String(pagination.pageIndex + 1); // 0-indexed → 1-indexed
+
+    // URLと現在のページが異なる場合のみ更新
+    if (urlPage !== expectedPage) {
+      params.set('page', expectedPage);
+      window.history.replaceState(null, '', `?${params.toString()}`);
+    }
+  }, [pagination.pageIndex]);
 
   // 選択されたレコードのID一覧
   const selectedRows = table.getFilteredSelectedRowModel().rows;
