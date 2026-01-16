@@ -8,6 +8,7 @@ import {
   useState,
   useTransition,
 } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   useReactTable,
   getCoreRowModel,
@@ -72,9 +73,18 @@ export function DataTable({
   permissionLevel,
   initialFilters = [],
 }: DataTableProps) {
+  // URLパラメータの取得
+  const searchParams = useSearchParams();
+
+  // URLからページ番号を取得（1-indexed → 0-indexed変換）
+  const initialPageIndex = useMemo(() => {
+    const page = searchParams.get('page');
+    return Math.max(0, Number(page || '1') - 1);
+  }, [searchParams]);
+
   // ページネーション状態を制御
   const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
+    pageIndex: initialPageIndex,
     pageSize: 10,
   });
 
