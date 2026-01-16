@@ -18,8 +18,8 @@ export function DatePickerCalendar({
   minDate,
   maxDate,
 }: DatePickerCalendarProps) {
-  // ドロップダウンの年範囲を設定（2025年〜現在+10年）
-  const startMonth = new Date(2025, 0);
+  // ドロップダウンの年範囲を設定（1900年〜現在+10年）
+  const startMonth = new Date(1900, 0);
   const endMonth = new Date(new Date().getFullYear() + 10, 11);
 
   return (
