@@ -21,6 +21,7 @@ export function TextCell({
 }: TextCellProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
+  const [isComposing, setIsComposing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // 編集開始時にpropsの値をローカルステートにコピー
@@ -45,7 +46,9 @@ export function TextCell({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.nativeEvent.isComposing) return;
+    // Safari対応: compositionstart/compositionendで管理するstate と keyCode 229 をチェック
+    // keyCode 229 は IME が入力を処理中であることを示す
+    if (isComposing || e.keyCode === 229) return;
 
     if (e.key === 'Enter') {
       handleSave();
@@ -63,6 +66,8 @@ export function TextCell({
         onChange={(e) => setEditValue(e.target.value)}
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
+        onCompositionStart={() => setIsComposing(true)}
+        onCompositionEnd={() => setIsComposing(false)}
         placeholder={placeholder}
         className="h-8 w-full border-0 bg-transparent focus-visible:ring-0 shadow-none"
       />
