@@ -100,13 +100,18 @@ function RenameContent({
       <DialogFooter>
         <Button
           type="button"
+          className="cursor-pointer"
           variant="outline"
           onClick={onClose}
           disabled={isSubmitting}
         >
           キャンセル
         </Button>
-        <Button type="submit" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          className="cursor-pointer"
+          disabled={isSubmitting}
+        >
           {isSubmitting ? '変更中...' : '変更'}
         </Button>
       </DialogFooter>

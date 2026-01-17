@@ -105,13 +105,13 @@ export function DeleteItemOption({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>
+          <AlertDialogCancel className="cursor-pointer" disabled={isDeleting}>
             キャンセル
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDelete}
             disabled={isDeleting}
-            className="bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60 "
+            className="cursor-pointer bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60 "
           >
             {isDeleting ? '削除中...' : '削除'}
           </AlertDialogAction>
