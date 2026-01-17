@@ -7,13 +7,12 @@ import type { editor } from 'monaco-editor';
 /**
  * コードエディタのProps型
  */
-type CodeEditorProps = {
+export type CodeEditorProps = {
   value: string;
   onChange: (value: string) => void;
   language: 'css' | 'javascript' | 'typescript' | 'html' | 'json';
   height?: string;
   readOnly?: boolean;
-  placeholder?: string;
 };
 
 /**
