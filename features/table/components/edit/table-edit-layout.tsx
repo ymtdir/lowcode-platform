@@ -11,6 +11,7 @@ import type { PermissionWithRelations } from '@/features/permission/types';
 import { ColumnsContent } from './columns-content';
 import { SettingsContent } from './settings-content';
 import { AccessContent } from './access-content';
+import { StyleContent } from './style-content';
 
 /**
  * TableEditLayoutのProps型
@@ -61,12 +62,7 @@ export function TableEditLayout({
             <TabsTrigger value="settings">基本設定</TabsTrigger>
             <TabsTrigger value="columns">項目</TabsTrigger>
             <TabsTrigger value="access">権限</TabsTrigger>
-
             <TabsTrigger value="style">スタイル</TabsTrigger>
-            <TabsTrigger value="client-script">
-              クライアントスクリプト
-            </TabsTrigger>
-            <TabsTrigger value="server-script">サーバースクリプト</TabsTrigger>
           </TabsList>
         </div>
         <TabsContent value="settings" className="flex-1 mt-6">
@@ -86,6 +82,9 @@ export function TableEditLayout({
             users={users}
             groups={groups}
           />
+        </TabsContent>
+        <TabsContent value="style" className="flex-1 mt-6">
+          <StyleContent itemId={itemId} />
         </TabsContent>
       </Tabs>
     </div>
