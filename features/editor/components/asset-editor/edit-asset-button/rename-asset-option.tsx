@@ -19,7 +19,7 @@ import { Label } from '@/components/ui/label';
  */
 type RenameAssetOptionProps = {
   currentName: string;
-  onRename: (newName: string) => void;
+  onRename: (newName: string) => void | Promise<void>;
   onOpenChange: (open: boolean) => void;
 };
 
@@ -28,7 +28,7 @@ type RenameAssetOptionProps = {
  */
 type RenameContentProps = {
   currentName: string;
-  onRename: (newName: string) => void;
+  onRename: (newName: string) => void | Promise<void>;
   onClose: () => void;
 };
 
@@ -47,7 +47,7 @@ function RenameContent({ currentName, onRename, onClose }: RenameContentProps) {
     }
 
     setIsSubmitting(true);
-    onRename(name.trim());
+    await onRename(name.trim());
     setIsSubmitting(false);
     onClose();
   };

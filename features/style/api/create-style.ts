@@ -1,0 +1,79 @@
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import { createClient } from '@/lib/supabase/server';
+import { prisma } from '@/lib/prisma';
+import { canManageColumns } from '@/lib/permissions';
+import type { Style, CreateStyleInput } from '../types';
+
+type FormState = {
+  error?: string;
+  success?: boolean;
+  style?: Style;
+};
+
+/**
+ * スタイルを作成するServer Action
+ * ADMIN/DEVELOPERロールのみ実行可能
+ */
+export async function createStyle(
+  itemId: string,
+  input: CreateStyleInput
+): Promise<FormState> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: '認証が必要です' };
+  }
+
+  const dbUser = await prisma.user.findUnique({
+    where: { email: user.email! },
+    select: { id: true, role: true },
+  });
+
+  if (!dbUser) {
+    return { error: 'ユーザー情報が取得できませんでした' };
+  }
+
+  if (!canManageColumns(dbUser.role)) {
+    return { error: 'この操作を行う権限がありません' };
+  }
+
+  if (!input.name || input.name.trim() === '') {
+    return { error: 'スタイル名を入力してください' };
+  }
+
+  try {
+    // 現在の最大orderを取得
+    const maxOrder = await prisma.style.aggregate({
+      where: { itemId },
+      _max: { order: true },
+    });
+
+    const newOrder = (maxOrder._max.order ?? -1) + 1;
+
+    const style = await prisma.style.create({
+      data: {
+        itemId,
+        name: input.name.trim(),
+        content: input.content ?? '',
+        order: newOrder,
+      },
+      select: {
+        id: true,
+        name: true,
+        content: true,
+        order: true,
+      },
+    });
+
+    revalidatePath(`/${itemId}/edit`);
+    return { success: true, style };
+  } catch (error) {
+    console.error('スタイル作成エラー:', error);
+    return { error: 'スタイルの作成に失敗しました' };
+  }
+}
