@@ -49,7 +49,7 @@ export function CodeEditor({
         fontSize: 14,
         lineNumbers: 'on',
         scrollBeyondLastLine: false,
-        wordWrap: 'on',
+        wordWrap: 'off',
         automaticLayout: true,
         tabSize: 2,
         insertSpaces: true,
