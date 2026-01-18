@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { CreateAssetButton } from './create-asset-button';
 import {
@@ -81,6 +81,10 @@ export function AssetEditor({
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(
     initialAssets[0]?.id || null
   );
+
+  useEffect(() => {
+    setSavedAssets(initialAssets);
+  }, [initialAssets]);
 
   // dnd-kit センサー
   const sensors = useSensors(
