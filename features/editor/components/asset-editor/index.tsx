@@ -238,74 +238,76 @@ export function AssetEditor({
   );
 
   return (
-    <div className="h-[500px] rounded-lg border">
-      <ResizablePanelGroup
-        orientation="horizontal"
-        id="asset-editor"
-        defaultLayout={{ sidebar: 20, editor: 80 }}
-      >
-        {/* サイドバー: アセット一覧 */}
-        <ResizablePanel id="sidebar" minSize="15%" maxSize="40%">
-          <div className="flex h-full flex-col">
-            {/* ヘッダー */}
-            <div className="flex items-center justify-between border-b px-3 py-2">
-              <span className="text-sm font-medium">{listTitle}</span>
-              <CreateAssetButton
-                assetLabel={assetLabel}
-                onAdd={handleAddAsset}
-              />
-            </div>
-            {/* リスト */}
-            <div className="flex-1 overflow-auto">
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-              >
-                <SortableContext
-                  items={savedAssets.map((a) => a.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  {savedAssets.map((asset) => (
-                    <SortableAssetItem
-                      key={asset.id}
-                      asset={asset}
-                      isSelected={selectedAssetId === asset.id}
-                      hasUnsavedChanges={unsavedAssetIds.has(asset.id)}
-                      onSelect={handleSelectAsset}
-                      onRename={handleRename}
-                      onDelete={handleDelete}
-                    />
-                  ))}
-                </SortableContext>
-              </DndContext>
-            </div>
-          </div>
-        </ResizablePanel>
-
-        <ResizableHandle withHandle />
-
-        {/* メイン: エディター */}
-        <ResizablePanel id="editor">
-          <div className="h-full">
-            {selectedAsset ? (
-              <CodeEditor
-                value={currentContent}
-                onChange={handleContentChange}
-                language={language}
-                height="100%"
-              />
-            ) : (
-              <div className="h-full flex items-center justify-center text-muted-foreground">
-                {assetLabel || 'アセット'}を選択してください
+    <div className="flex flex-col gap-4">
+      <div className="h-[460px] rounded-lg border">
+        <ResizablePanelGroup
+          orientation="horizontal"
+          id="asset-editor"
+          defaultLayout={{ sidebar: 20, editor: 80 }}
+        >
+          {/* サイドバー: アセット一覧 */}
+          <ResizablePanel id="sidebar" minSize="15%" maxSize="40%">
+            <div className="flex h-full flex-col">
+              {/* ヘッダー */}
+              <div className="flex items-center justify-between border-b px-3 py-2">
+                <span className="text-sm font-medium">{listTitle}</span>
+                <CreateAssetButton
+                  assetLabel={assetLabel}
+                  onAdd={handleAddAsset}
+                />
               </div>
-            )}
-          </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+              {/* リスト */}
+              <div className="flex-1 overflow-auto">
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={savedAssets.map((a) => a.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {savedAssets.map((asset) => (
+                      <SortableAssetItem
+                        key={asset.id}
+                        asset={asset}
+                        isSelected={selectedAssetId === asset.id}
+                        hasUnsavedChanges={unsavedAssetIds.has(asset.id)}
+                        onSelect={handleSelectAsset}
+                        onRename={handleRename}
+                        onDelete={handleDelete}
+                      />
+                    ))}
+                  </SortableContext>
+                </DndContext>
+              </div>
+            </div>
+          </ResizablePanel>
+
+          <ResizableHandle withHandle />
+
+          {/* メイン: エディター */}
+          <ResizablePanel id="editor">
+            <div className="h-full">
+              {selectedAsset ? (
+                <CodeEditor
+                  value={currentContent}
+                  onChange={handleContentChange}
+                  language={language}
+                  height="100%"
+                />
+              ) : (
+                <div className="h-full flex items-center justify-center text-muted-foreground">
+                  {assetLabel || 'アセット'}を選択してください
+                </div>
+              )}
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
 
       {/* 保存ボタン */}
-      <div className="flex justify-end mt-4">
+      <div className="flex justify-end">
         <Button
           className="cursor-pointer"
           onClick={handleSave}

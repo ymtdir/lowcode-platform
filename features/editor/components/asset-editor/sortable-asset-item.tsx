@@ -13,8 +13,8 @@ export type SortableAssetItemProps = {
   isSelected: boolean;
   hasUnsavedChanges: boolean;
   onSelect: (id: string) => void;
-  onRename: (id: string, newName: string) => void;
-  onDelete: (id: string) => void;
+  onRename: (id: string, newName: string) => void | Promise<void>;
+  onDelete: (id: string) => void | Promise<void>;
 };
 
 /**
@@ -43,12 +43,12 @@ export function SortableAssetItem({
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const handleRename = (newName: string) => {
-    onRename(asset.id, newName);
+  const handleRename = async (newName: string) => {
+    await onRename(asset.id, newName);
   };
 
-  const handleDelete = () => {
-    onDelete(asset.id);
+  const handleDelete = async () => {
+    await onDelete(asset.id);
   };
 
   return (

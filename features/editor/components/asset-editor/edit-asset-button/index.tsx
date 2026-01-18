@@ -15,8 +15,8 @@ import { DeleteAssetOption } from './delete-asset-option';
  */
 type EditAssetButtonProps = {
   assetName: string;
-  onRename: (newName: string) => void;
-  onDelete: () => void;
+  onRename: (newName: string) => void | Promise<void>;
+  onDelete: () => void | Promise<void>;
 };
 
 /**

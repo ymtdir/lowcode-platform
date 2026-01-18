@@ -8,6 +8,7 @@ import type { Item } from '@/features/item/types';
 import type { User } from '@/features/user/types';
 import type { Group } from '@/features/group/types';
 import type { PermissionWithRelations } from '@/features/permission/types';
+import type { Style } from '@/features/style';
 import { ColumnsContent } from './columns-content';
 import { SettingsContent } from './settings-content';
 import { AccessContent } from './access-content';
@@ -25,6 +26,7 @@ type TableEditLayoutProps = {
   initialPermissions: PermissionWithRelations[];
   users: User[];
   groups: Group[];
+  styles: Style[];
 };
 
 /**
@@ -39,6 +41,7 @@ export function TableEditLayout({
   initialPermissions,
   users,
   groups,
+  styles,
 }: TableEditLayoutProps) {
   return (
     <div className="w-full p-6">
@@ -84,7 +87,7 @@ export function TableEditLayout({
           />
         </TabsContent>
         <TabsContent value="style" className="flex-1 mt-6">
-          <StyleContent itemId={itemId} />
+          <StyleContent itemId={itemId} initialStyles={styles} />
         </TabsContent>
       </Tabs>
     </div>

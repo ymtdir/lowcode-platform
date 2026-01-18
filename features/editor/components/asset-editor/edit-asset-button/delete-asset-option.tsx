@@ -20,7 +20,7 @@ import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
  */
 type DeleteAssetOptionProps = {
   assetName: string;
-  onDelete: () => void;
+  onDelete: () => void | Promise<void>;
   onOpenChange: (open: boolean) => void;
 };
 
@@ -37,7 +37,7 @@ export function DeleteAssetOption({
 
   const handleDelete = async () => {
     setIsDeleting(true);
-    onDelete();
+    await onDelete();
     setOpen(false);
     setIsDeleting(false);
   };

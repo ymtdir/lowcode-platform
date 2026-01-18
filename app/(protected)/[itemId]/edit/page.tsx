@@ -6,6 +6,7 @@ import { getColumnSchema } from '@/features/column/types/schema';
 import { getPermissions } from '@/features/permission/api';
 import { getUsers } from '@/features/user/api';
 import { getGroups } from '@/features/group/api';
+import { getStyles } from '@/features/style';
 import { TableEditLayout } from '@/features/table/components/edit';
 import { FolderEditLayout } from '@/features/folder/components/edit';
 
@@ -43,12 +44,14 @@ export default async function ItemEditPage({ params }: ItemEditPageProps) {
     const columns = columnSchema?.columns || [];
 
     // データを並列取得
-    const [tables, permissionsResult, users, groups] = await Promise.all([
-      getTables(),
-      getPermissions(itemId),
-      getUsers(),
-      getGroups(),
-    ]);
+    const [tables, permissionsResult, users, groups, styles] =
+      await Promise.all([
+        getTables(),
+        getPermissions(itemId),
+        getUsers(),
+        getGroups(),
+        getStyles(itemId),
+      ]);
 
     // 権限データの展開
     const permissions =
@@ -66,6 +69,7 @@ export default async function ItemEditPage({ params }: ItemEditPageProps) {
         initialPermissions={permissions}
         users={users}
         groups={groups}
+        styles={styles}
       />
     );
   }
