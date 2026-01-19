@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Style" ALTER COLUMN "itemId" DROP NOT NULL;
