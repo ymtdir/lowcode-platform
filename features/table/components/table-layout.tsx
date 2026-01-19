@@ -6,7 +6,7 @@ import type { Record } from '@/features/record/types';
 import type { ExportColumnFilter } from '@/features/table/types/export';
 import type { Style } from '@/features/style';
 import { DataTable } from './data-table';
-import { StyleInjector } from './style-injector';
+import { StyleInjector } from '@/components/shared/style-injector';
 
 /**
  * TableLayoutのProps型

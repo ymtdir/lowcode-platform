@@ -13,9 +13,10 @@ type FormState = {
 /**
  * スタイルの並び順を更新するServer Action
  * ADMIN/DEVELOPERロールのみ実行可能
+ * itemId が null の場合はグローバルスタイル
  */
 export async function reorderStyles(
-  itemId: string,
+  itemId: string | null,
   styleIds: string[]
 ): Promise<FormState> {
   const supabase = await createClient();
@@ -51,7 +52,9 @@ export async function reorderStyles(
       )
     );
 
-    revalidatePath(`/${itemId}/edit`);
+    if (itemId) {
+      revalidatePath(`/${itemId}/edit`);
+    }
     return { success: true };
   } catch (error) {
     console.error('スタイル並び替えエラー:', error);

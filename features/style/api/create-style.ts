@@ -15,9 +15,10 @@ type FormState = {
 /**
  * スタイルを作成するServer Action
  * ADMIN/DEVELOPERロールのみ実行可能
+ * itemId が null の場合はグローバルスタイルを作成
  */
 export async function createStyle(
-  itemId: string,
+  itemId: string | null,
   input: CreateStyleInput
 ): Promise<FormState> {
   const supabase = await createClient();
@@ -70,7 +71,9 @@ export async function createStyle(
       },
     });
 
-    revalidatePath(`/${itemId}/edit`);
+    if (itemId) {
+      revalidatePath(`/${itemId}/edit`);
+    }
     return { success: true, style };
   } catch (error) {
     console.error('スタイル作成エラー:', error);
