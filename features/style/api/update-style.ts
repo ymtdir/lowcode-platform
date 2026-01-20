@@ -76,7 +76,11 @@ export async function updateStyle(
       },
     });
 
-    revalidatePath(`/${existingStyle.itemId}/edit`);
+    if (existingStyle.itemId) {
+      revalidatePath(`/${existingStyle.itemId}/edit`);
+    } else {
+      revalidatePath('/', 'layout');
+    }
     return { success: true, style };
   } catch (error) {
     console.error('スタイル更新エラー:', error);

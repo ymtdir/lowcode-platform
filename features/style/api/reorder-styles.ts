@@ -64,6 +64,8 @@ export async function reorderStyles(
 
     if (itemId) {
       revalidatePath(`/${itemId}/edit`);
+    } else {
+      revalidatePath('/', 'layout');
     }
     return { success: true };
   } catch (error) {

@@ -73,6 +73,8 @@ export async function createStyle(
 
     if (itemId) {
       revalidatePath(`/${itemId}/edit`);
+    } else {
+      revalidatePath('/', 'layout');
     }
     return { success: true, style };
   } catch (error) {

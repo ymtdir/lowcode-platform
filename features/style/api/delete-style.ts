@@ -51,7 +51,11 @@ export async function deleteStyle(styleId: string): Promise<FormState> {
       where: { id: styleId },
     });
 
-    revalidatePath(`/${existingStyle.itemId}/edit`);
+    if (existingStyle.itemId) {
+      revalidatePath(`/${existingStyle.itemId}/edit`);
+    } else {
+      revalidatePath('/', 'layout');
+    }
     return { success: true };
   } catch (error) {
     console.error('スタイル削除エラー:', error);
