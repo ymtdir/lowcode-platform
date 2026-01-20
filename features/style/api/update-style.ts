@@ -65,6 +65,10 @@ export async function updateStyle(
       updateData.content = input.content;
     }
 
+    if (Object.keys(updateData).length === 0) {
+      return { error: '更新内容がありません' };
+    }
+
     const style = await prisma.style.update({
       where: { id: styleId },
       data: updateData,
