@@ -16,6 +16,7 @@ jest.mock('@/lib/prisma', () => ({
       aggregate: jest.fn(),
       create: jest.fn(),
     },
+    $transaction: jest.fn((callback) => callback(prisma)),
   },
 }));
 

@@ -48,27 +48,29 @@ export async function createStyle(
   }
 
   try {
-    // 現在の最大orderを取得
-    const maxOrder = await prisma.style.aggregate({
-      where: { itemId },
-      _max: { order: true },
-    });
+    const style = await prisma.$transaction(async (tx) => {
+      // 現在の最大orderを取得
+      const maxOrder = await tx.style.aggregate({
+        where: { itemId },
+        _max: { order: true },
+      });
 
-    const newOrder = (maxOrder._max.order ?? -1) + 1;
+      const newOrder = (maxOrder._max.order ?? -1) + 1;
 
-    const style = await prisma.style.create({
-      data: {
-        itemId,
-        name: input.name.trim(),
-        content: input.content ?? '',
-        order: newOrder,
-      },
-      select: {
-        id: true,
-        name: true,
-        content: true,
-        order: true,
-      },
+      return tx.style.create({
+        data: {
+          itemId,
+          name: input.name.trim(),
+          content: input.content ?? '',
+          order: newOrder,
+        },
+        select: {
+          id: true,
+          name: true,
+          content: true,
+          order: true,
+        },
+      });
     });
 
     if (itemId) {
