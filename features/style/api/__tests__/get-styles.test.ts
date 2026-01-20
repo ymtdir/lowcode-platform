@@ -27,7 +27,7 @@ describe('getStyles', () => {
 
     const result = await getStyles(itemId);
 
-    expect(result).toEqual(mockStyles);
+    expect(result).toEqual({ success: true, styles: mockStyles });
     expect(prisma.style.findMany).toHaveBeenCalledWith({
       where: { itemId },
       orderBy: { order: 'asc' },
@@ -47,7 +47,7 @@ describe('getStyles', () => {
 
     const result = await getStyles(itemId);
 
-    expect(result).toEqual([]);
+    expect(result).toEqual({ success: true, styles: [] });
     expect(prisma.style.findMany).toHaveBeenCalledWith({
       where: { itemId },
       orderBy: { order: 'asc' },
@@ -72,9 +72,34 @@ describe('getStyles', () => {
 
     const result = await getStyles(itemId);
 
-    expect(result).toHaveLength(3);
-    expect(result[0].order).toBe(0);
-    expect(result[1].order).toBe(1);
-    expect(result[2].order).toBe(2);
+    expect('success' in result && result.success).toBe(true);
+    if ('success' in result && result.success) {
+      expect(result.styles).toHaveLength(3);
+      expect(result.styles[0].order).toBe(0);
+      expect(result.styles[1].order).toBe(1);
+      expect(result.styles[2].order).toBe(2);
+    }
+  });
+
+  it('データベースエラー時はエラーオブジェクトを返す', async () => {
+    const itemId = 'item-1';
+    const mockError = new Error('データベース接続エラー');
+
+    (prisma.style.findMany as jest.Mock).mockRejectedValue(mockError);
+
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+
+    const result = await getStyles(itemId);
+
+    expect(result).toEqual({
+      error: 'スタイルの取得に失敗しました',
+      styles: [],
+    });
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'スタイルの取得に失敗しました:',
+      mockError
+    );
+
+    consoleSpy.mockRestore();
   });
 });

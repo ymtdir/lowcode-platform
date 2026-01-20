@@ -1,4 +1,4 @@
-import { getStyles } from '@/features/style';
+import { getStyles, extractStyles } from '@/features/style';
 import { StyleInjector } from './style-injector';
 
 /**
@@ -6,7 +6,8 @@ import { StyleInjector } from './style-injector';
  * アプリケーション全体に適用されるCSSスタイルを注入する
  */
 export async function GlobalStyleInjector() {
-  const styles = await getStyles(null);
+  const stylesResult = await getStyles(null);
+  const styles = extractStyles(stylesResult);
 
   return <StyleInjector styles={styles} />;
 }

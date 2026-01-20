@@ -3,10 +3,10 @@ import { getCurrentUser } from '@/lib/auth';
 import { canManageStructure } from '@/lib/permissions';
 import { getItemById, getTables } from '@/features/item/api';
 import { getColumnSchema } from '@/features/column/types/schema';
-import { getPermissions } from '@/features/permission/api';
+import { getPermissions, extractPermissions } from '@/features/permission/api';
 import { getUsers } from '@/features/user/api';
 import { getGroups } from '@/features/group/api';
-import { getStyles } from '@/features/style';
+import { getStyles, extractStyles } from '@/features/style';
 import { TableEditLayout } from '@/features/table/components/edit';
 import { FolderEditLayout } from '@/features/folder/components/edit';
 
@@ -44,7 +44,7 @@ export default async function ItemEditPage({ params }: ItemEditPageProps) {
     const columns = columnSchema?.columns || [];
 
     // データを並列取得
-    const [tables, permissionsResult, users, groups, styles] =
+    const [tables, permissionsResult, users, groups, stylesResult] =
       await Promise.all([
         getTables(),
         getPermissions(itemId),
@@ -53,11 +53,9 @@ export default async function ItemEditPage({ params }: ItemEditPageProps) {
         getStyles(itemId),
       ]);
 
-    // 権限データの展開
-    const permissions =
-      'success' in permissionsResult && permissionsResult.success
-        ? permissionsResult.permissions
-        : [];
+    // データの展開
+    const permissions = extractPermissions(permissionsResult);
+    const styles = extractStyles(stylesResult);
 
     return (
       <TableEditLayout
@@ -84,10 +82,7 @@ export default async function ItemEditPage({ params }: ItemEditPageProps) {
     ]);
 
     // 権限データの展開
-    const permissions =
-      'success' in permissionsResult && permissionsResult.success
-        ? permissionsResult.permissions
-        : [];
+    const permissions = extractPermissions(permissionsResult);
 
     return (
       <FolderEditLayout
