@@ -42,6 +42,16 @@ export async function reorderStyles(
   }
 
   try {
+    // 更新対象のスタイルがすべて指定itemIdに属するか検証
+    const validStyles = await prisma.style.findMany({
+      where: { id: { in: styleIds }, itemId },
+      select: { id: true },
+    });
+
+    if (validStyles.length !== styleIds.length) {
+      return { error: '無効なスタイルIDが含まれています' };
+    }
+
     // トランザクションで一括更新
     await prisma.$transaction(
       styleIds.map((styleId, index) =>
