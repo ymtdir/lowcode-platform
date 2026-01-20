@@ -37,9 +37,12 @@ export function DeleteAssetOption({
 
   const handleDelete = async () => {
     setIsDeleting(true);
-    await onDelete();
-    setOpen(false);
-    setIsDeleting(false);
+    try {
+      await onDelete();
+      setOpen(false);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleOpenChange = (isOpen: boolean) => {

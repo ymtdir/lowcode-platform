@@ -53,20 +53,22 @@ export function DeleteItemOption({
   const handleDelete = async () => {
     setIsDeleting(true);
 
-    const result = await deleteItem(itemId);
+    try {
+      const result = await deleteItem(itemId);
 
-    setOpen(false);
-    setIsDeleting(false);
-
-    if (result.error) {
-      toast.error('削除に失敗しました', {
-        description: result.error,
-      });
-    } else {
-      toast.success(`${label}を削除しました`, {
-        description: `${itemName}を削除しました`,
-      });
-      router.push('/workspace');
+      if (result.error) {
+        toast.error('削除に失敗しました', {
+          description: result.error,
+        });
+      } else {
+        toast.success(`${label}を削除しました`, {
+          description: `${itemName}を削除しました`,
+        });
+        router.push('/workspace');
+      }
+      setOpen(false);
+    } finally {
+      setIsDeleting(false);
     }
   };
 

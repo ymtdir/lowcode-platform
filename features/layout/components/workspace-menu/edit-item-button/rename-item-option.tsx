@@ -61,21 +61,23 @@ function RenameContent({
     e.preventDefault();
     setIsSubmitting(true);
 
-    const result = await renameItem(itemId, name);
+    try {
+      const result = await renameItem(itemId, name);
 
-    setIsSubmitting(false);
-
-    if (result.error) {
-      toast.error('名前の変更に失敗しました', {
-        description: result.error,
-      });
-    } else {
-      toast.success('名前を変更しました', {
-        description: `${currentName} → ${name}`,
-      });
-      // パンくずリストの強制更新イベントを発火
-      window.dispatchEvent(new CustomEvent('refreshBreadcrumb'));
-      onClose();
+      if (result.error) {
+        toast.error('名前の変更に失敗しました', {
+          description: result.error,
+        });
+      } else {
+        toast.success('名前を変更しました', {
+          description: `${currentName} → ${name}`,
+        });
+        // パンくずリストの強制更新イベントを発火
+        window.dispatchEvent(new CustomEvent('refreshBreadcrumb'));
+        onClose();
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

@@ -47,9 +47,12 @@ function RenameContent({ currentName, onRename, onClose }: RenameContentProps) {
     }
 
     setIsSubmitting(true);
-    await onRename(name.trim());
-    setIsSubmitting(false);
-    onClose();
+    try {
+      await onRename(name.trim());
+      onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
