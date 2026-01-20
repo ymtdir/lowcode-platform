@@ -20,7 +20,7 @@ import { Label } from '@/components/ui/label';
 type CreateAssetButtonProps = {
   /** 作成対象の名称（例: "スタイル", "スクリプト"） */
   assetLabel?: string;
-  onAdd: (name: string) => void;
+  onAdd: (name: string) => Promise<void>;
 };
 
 /**
@@ -28,7 +28,7 @@ type CreateAssetButtonProps = {
  */
 type CreateAssetContentProps = {
   assetLabel: string;
-  onAdd: (name: string) => void;
+  onAdd: (name: string) => Promise<void>;
   onClose: () => void;
 };
 
@@ -48,9 +48,12 @@ function CreateAssetContent({
     if (!name.trim()) return;
 
     setIsSubmitting(true);
-    onAdd(name.trim());
-    setIsSubmitting(false);
-    onClose();
+    try {
+      await onAdd(name.trim());
+      onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
