@@ -16,5 +16,5 @@ export function StyleInjector({ styles = [] }: StyleInjectorProps) {
 
   const combinedCss = styles.map((style) => style.content).join('\n');
 
-  return <style dangerouslySetInnerHTML={{ __html: combinedCss }} />;
+  return <style>{combinedCss}</style>;
 }
