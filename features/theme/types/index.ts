@@ -14,3 +14,8 @@ export type Color =
   | 'blue'
   | 'yellow'
   | 'violet';
+
+/**
+ * エディタテーマの型
+ */
+export type EditorTheme = 'vs' | 'vs-dark' | 'hc-black' | 'hc-light';
