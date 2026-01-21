@@ -1,6 +1,7 @@
 import { getItemById } from '@/features/item/api';
 import { getColumnSchema } from '@/features/column/types/schema';
 import { getRecords, getRelationRecords } from '@/features/record/api';
+import { getStyles, extractStyles } from '@/features/style';
 import { TableLayout } from '@/features/table/components';
 import { FolderLayout } from '@/features/folder/components';
 import { notFound } from 'next/navigation';
@@ -85,11 +86,15 @@ export default async function ItemPage({
       // 不正なパラメータは無視してデフォルト値を使用
     }
 
-    // レコードとリレーション用データを並列取得
-    const [records, relationRecords] = await Promise.all([
+    // レコード、リレーション用データ、スタイルを並列取得
+    const [records, relationRecords, stylesResult] = await Promise.all([
       getRecords(itemId, { filters }),
       getRelationRecords(columns),
+      getStyles(itemId),
     ]);
+
+    // スタイルデータの展開
+    const styles = extractStyles(stylesResult);
 
     return (
       <TableLayout
@@ -100,6 +105,7 @@ export default async function ItemPage({
         relationRecords={relationRecords}
         permissionLevel={level}
         initialFilters={filters}
+        styles={styles}
       />
     );
   }

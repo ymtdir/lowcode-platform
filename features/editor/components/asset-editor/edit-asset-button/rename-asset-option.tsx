@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Pencil } from 'lucide-react';
-import type { ItemType } from '@prisma/client';
 import {
   Dialog,
   DialogContent,
@@ -14,23 +13,13 @@ import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
-import { renameItem } from '@/features/item/api';
-
-/**
- * アイテムタイプに応じたラベルを取得
- */
-const getItemLabel = (itemType: ItemType) => {
-  return itemType === 'TABLE' ? 'テーブル' : 'フォルダ';
-};
 
 /**
  * 名前変更オプションのProps型
  */
-type RenameItemOptionProps = {
-  itemId: string;
-  itemType: ItemType;
+type RenameAssetOptionProps = {
   currentName: string;
+  onRename: (newName: string) => void | Promise<void>;
   onOpenChange: (open: boolean) => void;
 };
 
@@ -38,44 +27,29 @@ type RenameItemOptionProps = {
  * 名前変更コンテンツのProps型
  */
 type RenameContentProps = {
-  itemId: string;
-  itemType: ItemType;
   currentName: string;
+  onRename: (newName: string) => void | Promise<void>;
   onClose: () => void;
 };
 
 /**
  * 名前変更コンテンツコンポーネント
  */
-function RenameContent({
-  itemId,
-  itemType,
-  currentName,
-  onClose,
-}: RenameContentProps) {
+function RenameContent({ currentName, onRename, onClose }: RenameContentProps) {
   const [name, setName] = useState(currentName);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const label = getItemLabel(itemType);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!name.trim() || name === currentName) {
+      onClose();
+      return;
+    }
+
     setIsSubmitting(true);
-
     try {
-      const result = await renameItem(itemId, name);
-
-      if (result.error) {
-        toast.error('名前の変更に失敗しました', {
-          description: result.error,
-        });
-      } else {
-        toast.success('名前を変更しました', {
-          description: `${currentName} → ${name}`,
-        });
-        // パンくずリストの強制更新イベントを発火
-        window.dispatchEvent(new CustomEvent('refreshBreadcrumb'));
-        onClose();
-      }
+      await onRename(name.trim());
+      onClose();
     } finally {
       setIsSubmitting(false);
     }
@@ -85,13 +59,13 @@ function RenameContent({
     <form onSubmit={handleSubmit}>
       <div className="grid gap-4 py-4">
         <div className="grid gap-2">
-          <Label htmlFor="name">{label}名</Label>
+          <Label htmlFor="name">名前</Label>
           <Input
             id="name"
             name="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder={`${label}名を入力`}
+            placeholder="名前を入力"
             autoFocus
             required
             disabled={isSubmitting}
@@ -124,15 +98,13 @@ function RenameContent({
 /**
  * 名前変更オプションコンポーネント
  */
-export function RenameItemOption({
-  itemId,
-  itemType,
+export function RenameAssetOption({
   currentName,
+  onRename,
   onOpenChange: onDropdownOpenChange,
-}: RenameItemOptionProps) {
+}: RenameAssetOptionProps) {
   const [open, setOpen] = useState(false);
   const [resetKey, setResetKey] = useState(0);
-  const label = getItemLabel(itemType);
 
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
@@ -161,13 +133,12 @@ export function RenameItemOption({
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{label}名を変更</DialogTitle>
+            <DialogTitle>名前を変更</DialogTitle>
           </DialogHeader>
           <RenameContent
             key={resetKey}
-            itemId={itemId}
-            itemType={itemType}
             currentName={currentName}
+            onRename={onRename}
             onClose={handleClose}
           />
         </DialogContent>

@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import { canManageSettings } from '@/lib/permissions';
 import { getSettings } from '@/features/setting/api';
+import { getStyles, extractStyles } from '@/features/style';
 import { SettingsForm } from '@/features/setting/components/settings-form';
 
 export const dynamic = 'force-dynamic';
@@ -17,7 +18,13 @@ export default async function SettingsPage() {
     redirect('/');
   }
 
-  const settings = await getSettings();
+  const [settings, globalStylesResult] = await Promise.all([
+    getSettings(),
+    getStyles(null),
+  ]);
+
+  // グローバルスタイルデータの展開
+  const globalStyles = extractStyles(globalStylesResult);
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -25,7 +32,10 @@ export default async function SettingsPage() {
         <h1 className="text-2xl font-bold">アプリケーション設定</h1>
       </div>
 
-      <SettingsForm initialSettings={settings} />
+      <SettingsForm
+        initialSettings={settings}
+        initialGlobalStyles={globalStyles}
+      />
     </div>
   );
 }

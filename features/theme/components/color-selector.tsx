@@ -53,48 +53,6 @@ export function ColorSelector() {
       light: 'oklch(0.505 0.053 259.032)',
       dark: 'oklch(0.412 0.033 257.653)',
     },
-    {
-      value: 'red',
-      label: 'レッド',
-      light: 'oklch(0.573 0.208 29.816)',
-      dark: 'oklch(0.573 0.208 29.816)',
-    },
-    {
-      value: 'rose',
-      label: 'ローズ',
-      light: 'oklch(0.613 0.264 29.351)',
-      dark: 'oklch(0.575 0.224 29.807)',
-    },
-    {
-      value: 'orange',
-      label: 'オレンジ',
-      light: 'oklch(0.697 0.169 64.085)',
-      dark: 'oklch(0.669 0.170 52.887)',
-    },
-    {
-      value: 'green',
-      label: 'グリーン',
-      light: 'oklch(0.609 0.170 142.147)',
-      dark: 'oklch(0.724 0.176 142.164)',
-    },
-    {
-      value: 'blue',
-      label: 'ブルー',
-      light: 'oklch(0.536 0.176 261.267)',
-      dark: 'oklch(0.575 0.178 266.307)',
-    },
-    {
-      value: 'yellow',
-      label: 'イエロー',
-      light: 'oklch(0.852 0.165 89.262)',
-      dark: 'oklch(0.852 0.165 89.262)',
-    },
-    {
-      value: 'violet',
-      label: 'バイオレット',
-      light: 'oklch(0.404 0.177 301.996)',
-      dark: 'oklch(0.354 0.177 301.761)',
-    },
   ] as const;
 
   const getPreviewColor = (colorItem: (typeof colors)[number]) => {

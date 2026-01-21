@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/features/theme/providers/theme-provider';
 import { ColorProvider } from '@/features/theme/providers/color-provider';
 import { Toaster } from '@/components/ui/sonner';
 import { getSettings } from '@/features/setting/api';
+import { GlobalStyleInjector } from '@/components/shared/global-style-injector';
 import './globals.css';
 
 const geistSans = Geist({
@@ -51,6 +52,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja" suppressHydrationWarning>
+      <head>
+        <GlobalStyleInjector />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
