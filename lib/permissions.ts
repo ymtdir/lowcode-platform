@@ -72,6 +72,14 @@ export function canManageColumns(role: UserRole): boolean {
 }
 
 /**
+ * スタイルを管理する権限があるかチェック
+ * ADMIN, DEVELOPERのみ
+ */
+export function canManageStyles(role: UserRole): boolean {
+  return hasRole(role, 'DEVELOPER');
+}
+
+/**
  * レコードを管理する権限があるかチェック
  * 全ロール可能
  */

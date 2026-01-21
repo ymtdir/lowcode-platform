@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
-import { canManageColumns } from '@/lib/permissions';
+import { canManageStyles } from '@/lib/permissions';
 import type { Style, CreateStyleInput } from '../types';
 
 type FormState = {
@@ -39,7 +39,7 @@ export async function createStyle(
     return { error: 'ユーザー情報が取得できませんでした' };
   }
 
-  if (!canManageColumns(dbUser.role)) {
+  if (!canManageStyles(dbUser.role)) {
     return { error: 'この操作を行う権限がありません' };
   }
 
