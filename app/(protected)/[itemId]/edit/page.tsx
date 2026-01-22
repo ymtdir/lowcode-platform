@@ -45,15 +45,21 @@ export default async function ItemEditPage({ params }: ItemEditPageProps) {
     const columns = columnSchema?.columns || [];
 
     // データを並列取得
-    const [tables, permissionsResult, users, groups, stylesResult, scriptsResult] =
-      await Promise.all([
-        getTables(),
-        getPermissions(itemId),
-        getUsers(),
-        getGroups(),
-        getStyles(itemId),
-        getScripts(itemId),
-      ]);
+    const [
+      tables,
+      permissionsResult,
+      users,
+      groups,
+      stylesResult,
+      scriptsResult,
+    ] = await Promise.all([
+      getTables(),
+      getPermissions(itemId),
+      getUsers(),
+      getGroups(),
+      getStyles(itemId),
+      getScripts(itemId),
+    ]);
 
     // データの展開
     const permissions = extractPermissions(permissionsResult);

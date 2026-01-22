@@ -19,11 +19,9 @@ export default async function SettingsPage() {
     redirect('/');
   }
 
-  const [settings, globalStylesResult, globalScriptsResult] = await Promise.all([
-    getSettings(),
-    getStyles(null),
-    getScripts(null),
-  ]);
+  const [settings, globalStylesResult, globalScriptsResult] = await Promise.all(
+    [getSettings(), getStyles(null), getScripts(null)]
+  );
 
   // グローバルスタイル・スクリプトデータの展開
   const globalStyles = extractStyles(globalStylesResult);

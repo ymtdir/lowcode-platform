@@ -9,7 +9,9 @@ import type { Script } from '../types';
  */
 export async function getScripts(
   itemId: string | null
-): Promise<{ success: true; scripts: Script[] } | { error: string; scripts: [] }> {
+): Promise<
+  { success: true; scripts: Script[] } | { error: string; scripts: [] }
+> {
   try {
     const scripts = await prisma.script.findMany({
       where: { itemId },
