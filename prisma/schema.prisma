@@ -141,11 +141,12 @@ enum Permission {
 }
 
 model Setting {
-  id          String   @id
-  appName     String?
-  appIcon     String?
-  appFavicon  String?
-  hideAppName Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id
+  appName      String?
+  appIcon      String?
+  appFavicon   String?
+  hideAppName  Boolean  @default(false)
+  customScript String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
