@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useId } from 'react';
 import { Button } from '@/components/ui/button';
 import { CreateAssetButton } from './create-asset-button';
 import {
@@ -69,6 +69,9 @@ export function AssetEditor({
   onReorder,
   onAdd,
 }: AssetEditorProps) {
+  // 一意のIDを生成（ResizablePanelGroupの状態分離用）
+  const editorId = useId();
+
   // 保存済みのアセット
   const [savedAssets, setSavedAssets] = useState<Asset[]>(initialAssets);
 
@@ -246,7 +249,7 @@ export function AssetEditor({
       <div className="h-[460px] rounded-lg border">
         <ResizablePanelGroup
           orientation="horizontal"
-          id="asset-editor"
+          id={`asset-editor-${editorId}`}
           defaultLayout={{ sidebar: 20, editor: 80 }}
         >
           {/* サイドバー: アセット一覧 */}

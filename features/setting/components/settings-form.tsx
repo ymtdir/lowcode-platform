@@ -12,16 +12,19 @@ import { Switch } from '@/components/ui/switch';
 import { updateSettings } from '@/features/setting/api';
 import { ImagePickerDialog } from './image-picker-dialog';
 import { StyleEditor, type Style } from '@/features/style';
+import { ScriptEditor, type Script } from '@/features/script';
 import type { AppSettings } from '@/features/setting/types';
 
 type SettingsFormProps = {
   initialSettings: AppSettings;
   initialGlobalStyles: Style[];
+  initialGlobalScripts: Script[];
 };
 
 export function SettingsForm({
   initialSettings,
   initialGlobalStyles,
+  initialGlobalScripts,
 }: SettingsFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -225,6 +228,15 @@ export function SettingsForm({
           アプリケーション全体に適用されるCSSスタイルを設定します。
         </p>
         <StyleEditor itemId={null} initialStyles={initialGlobalStyles} />
+      </div>
+
+      {/* カスタムスクリプトセクション */}
+      <div className="border-t pt-8">
+        <h2 className="text-lg font-semibold mb-2">カスタムスクリプト</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          アプリケーション全体で実行されるJavaScriptを設定します。jQueryが利用可能です。
+        </p>
+        <ScriptEditor itemId={null} initialScripts={initialGlobalScripts} />
       </div>
     </div>
   );

@@ -4,22 +4,17 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 import { canManageStyles } from '@/lib/permissions';
-import type { Script, UpdateScriptInput } from '../types';
 
 type FormState = {
   error?: string;
   success?: boolean;
-  script?: Script;
 };
 
 /**
- * スクリプトを更新するServer Action
+ * スクリプトを削除するServer Action
  * ADMIN/DEVELOPERロールのみ実行可能
  */
-export async function updateScript(
-  scriptId: string,
-  input: UpdateScriptInput
-): Promise<FormState> {
+export async function deleteScript(scriptId: string): Promise<FormState> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -49,35 +44,11 @@ export async function updateScript(
     });
 
     if (!existingScript) {
-      return { error: 'スクリプトが見つかりません' };
+      return { error: 'スクリプトが存在しません' };
     }
 
-    const updateData: { name?: string; content?: string } = {};
-
-    if (input.name !== undefined) {
-      if (input.name.trim() === '') {
-        return { error: 'スクリプト名を入力してください' };
-      }
-      updateData.name = input.name.trim();
-    }
-
-    if (input.content !== undefined) {
-      updateData.content = input.content;
-    }
-
-    if (Object.keys(updateData).length === 0) {
-      return { error: '更新内容がありません' };
-    }
-
-    const script = await prisma.script.update({
+    await prisma.script.delete({
       where: { id: scriptId },
-      data: updateData,
-      select: {
-        id: true,
-        name: true,
-        content: true,
-        order: true,
-      },
     });
 
     if (existingScript.itemId) {
@@ -85,9 +56,9 @@ export async function updateScript(
     } else {
       revalidatePath('/', 'layout');
     }
-    return { success: true, script };
+    return { success: true };
   } catch (error) {
-    console.error('スクリプト更新エラー:', error);
-    return { error: 'スクリプトの更新に失敗しました' };
+    console.error('スクリプト削除エラー:', error);
+    return { error: 'スクリプトの削除に失敗しました' };
   }
 }

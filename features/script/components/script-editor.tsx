@@ -1,67 +1,105 @@
 'use client';
 
-import { useState } from 'react';
 import { toast } from 'sonner';
-import { CodeEditor } from '@/components/shared/code-editor';
-import { Button } from '@/components/ui/button';
-import { updateScript, type Script } from '@/features/script';
+import { AssetEditor, type Asset } from '@/features/editor';
+import {
+  createScript,
+  updateScript,
+  deleteScript,
+  reorderScripts,
+  type Script,
+} from '@/features/script';
 
 type ScriptEditorProps = {
-  initialScript: Script;
+  itemId: string | null;
+  initialScripts: Script[];
 };
 
 /**
- * カスタムスクリプト編集コンポーネント
+ * Script を Asset に変換
  */
-export function ScriptEditor({ initialScript }: ScriptEditorProps) {
-  const [content, setContent] = useState(initialScript.content);
-  const [isSaving, setIsSaving] = useState(false);
+function scriptsToAssets(scripts: Script[]): Asset[] {
+  return scripts.map((script) => ({
+    id: script.id,
+    name: script.name,
+    content: script.content,
+  }));
+}
 
-  const hasChanges = content !== initialScript.content;
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      const result = await updateScript(content);
-      if (result.error) {
-        toast.error('スクリプトの保存に失敗しました', {
-          description: result.error,
-        });
-      } else {
-        toast.success('スクリプトを保存しました');
-      }
-    } finally {
-      setIsSaving(false);
+/**
+ * スクリプト編集コンポーネント
+ * API呼び出しとtoast通知を内包したAssetEditorラッパー
+ */
+export function ScriptEditor({ itemId, initialScripts }: ScriptEditorProps) {
+  const handleSave = async (asset: Asset) => {
+    const result = await updateScript(asset.id, { content: asset.content });
+    if (result.error) {
+      toast.error('スクリプトの保存に失敗しました', {
+        description: result.error,
+      });
+    } else {
+      toast.success('スクリプトを保存しました');
     }
   };
 
-  const handleReset = () => {
-    setContent(initialScript.content);
+  const handleRename = async (id: string, newName: string) => {
+    const result = await updateScript(id, { name: newName });
+    if (result.error) {
+      toast.error('スクリプト名の変更に失敗しました', {
+        description: result.error,
+      });
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    const result = await deleteScript(id);
+    if (result.error) {
+      toast.error('スクリプトの削除に失敗しました', {
+        description: result.error,
+      });
+    } else {
+      toast.success('スクリプトを削除しました');
+    }
+  };
+
+  const handleReorder = async (assets: Asset[]) => {
+    const result = await reorderScripts(
+      itemId,
+      assets.map((a) => a.id)
+    );
+    if (result.error) {
+      toast.error('スクリプトの並び替えに失敗しました', {
+        description: result.error,
+      });
+    }
+  };
+
+  const handleAdd = async (asset: Asset) => {
+    const result = await createScript(itemId, {
+      name: asset.name,
+      content: asset.content,
+    });
+    if (result.error) {
+      toast.error('スクリプトの作成に失敗しました', {
+        description: result.error,
+      });
+    } else {
+      toast.success('スクリプトを作成しました');
+    }
   };
 
   return (
-    <div className="space-y-4">
-      <div className="border rounded-lg overflow-hidden">
-        <CodeEditor
-          value={content}
-          onChange={setContent}
-          language="javascript"
-          height="400px"
-        />
-      </div>
-      <div className="flex justify-end gap-3">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleReset}
-          disabled={!hasChanges || isSaving}
-        >
-          キャンセル
-        </Button>
-        <Button onClick={handleSave} disabled={!hasChanges || isSaving}>
-          {isSaving ? '保存中...' : '保存'}
-        </Button>
-      </div>
-    </div>
+    <AssetEditor
+      listTitle="スクリプト一覧"
+      assetLabel="スクリプト"
+      language="javascript"
+      initialAssets={scriptsToAssets(initialScripts)}
+      newAssetContent=""
+      onSave={handleSave}
+      onRename={handleRename}
+      onDelete={handleDelete}
+      onReorder={handleReorder}
+      onAdd={handleAdd}
+    />
   );
 }

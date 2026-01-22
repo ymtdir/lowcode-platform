@@ -9,10 +9,12 @@ import type { User } from '@/features/user/types';
 import type { Group } from '@/features/group/types';
 import type { PermissionWithRelations } from '@/features/permission/types';
 import type { Style } from '@/features/style';
+import type { Script } from '@/features/script';
 import { ColumnsContent } from './columns-content';
 import { SettingsContent } from './settings-content';
 import { AccessContent } from './access-content';
 import { StyleContent } from './style-content';
+import { ScriptContent } from './script-content';
 
 /**
  * TableEditLayoutのProps型
@@ -27,6 +29,7 @@ type TableEditLayoutProps = {
   users: User[];
   groups: Group[];
   styles: Style[];
+  scripts: Script[];
 };
 
 /**
@@ -42,6 +45,7 @@ export function TableEditLayout({
   users,
   groups,
   styles,
+  scripts,
 }: TableEditLayoutProps) {
   return (
     <div className="w-full p-6">
@@ -66,6 +70,7 @@ export function TableEditLayout({
             <TabsTrigger value="columns">項目</TabsTrigger>
             <TabsTrigger value="access">権限</TabsTrigger>
             <TabsTrigger value="style">スタイル</TabsTrigger>
+            <TabsTrigger value="script">スクリプト</TabsTrigger>
           </TabsList>
         </div>
         <TabsContent value="settings" className="flex-1 mt-6">
@@ -88,6 +93,9 @@ export function TableEditLayout({
         </TabsContent>
         <TabsContent value="style" className="flex-1 mt-6">
           <StyleContent itemId={itemId} initialStyles={styles} />
+        </TabsContent>
+        <TabsContent value="script" className="flex-1 mt-6">
+          <ScriptContent itemId={itemId} initialScripts={scripts} />
         </TabsContent>
       </Tabs>
     </div>
