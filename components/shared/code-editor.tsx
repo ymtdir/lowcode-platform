@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 import Editor, { OnMount, OnChange } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
+import { useEditorTheme } from '@/features/theme/providers/editor-theme-provider';
 
 /**
  * コードエディタのProps型
@@ -26,6 +27,7 @@ export function CodeEditor({
   readOnly = false,
 }: CodeEditorProps) {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+  const { editorTheme } = useEditorTheme();
 
   const handleEditorDidMount: OnMount = (editor) => {
     editorRef.current = editor;
@@ -40,7 +42,7 @@ export function CodeEditor({
       height={height}
       language={language}
       value={value}
-      theme="vs-dark"
+      theme={editorTheme}
       onChange={handleChange}
       onMount={handleEditorDidMount}
       options={{

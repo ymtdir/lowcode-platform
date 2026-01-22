@@ -12,6 +12,7 @@ import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import { ThemeSelector } from '@/features/theme/components/theme-selector';
 import { ColorSelector } from '@/features/theme/components/color-selector';
+import { EditorThemeSelector } from '@/features/theme/components/editor-theme-selector';
 
 /**
  * アカウント設定オプションコンポーネント
@@ -38,6 +39,10 @@ export function AccountSettingsOption() {
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium">カラー</h3>
             <ColorSelector />
+          </div>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium">エディタカラー</h3>
+            <EditorThemeSelector />
           </div>
         </div>
       </DialogContent>

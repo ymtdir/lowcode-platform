@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { ThemeProvider } from '@/features/theme/providers/theme-provider';
 import { ColorProvider } from '@/features/theme/providers/color-provider';
+import { EditorThemeProvider } from '@/features/theme/providers/editor-theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import { getSettings } from '@/features/setting/api';
 import { GlobalStyleInjector } from '@/components/shared/global-style-injector';
@@ -64,7 +65,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <ColorProvider>{children}</ColorProvider>
+          <ColorProvider>
+            <EditorThemeProvider>{children}</EditorThemeProvider>
+          </ColorProvider>
           <Toaster position="top-center" />
         </ThemeProvider>
       </body>
