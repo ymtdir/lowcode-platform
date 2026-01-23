@@ -303,4 +303,35 @@ describe('updateScript', () => {
 
     expect(result.success).toBe(true);
   });
+
+  it('グローバルスクリプト（itemId: null）を更新できる', async () => {
+    const scriptId = 'script-1';
+    const input = { name: 'global.js' };
+
+    (prisma.script.findUnique as jest.Mock).mockResolvedValue({
+      itemId: null,
+    });
+
+    (prisma.script.update as jest.Mock).mockResolvedValue({
+      id: scriptId,
+      name: 'global.js',
+      content: '',
+      order: 0,
+    });
+
+    const result = await updateScript(scriptId, input);
+
+    expect(result.success).toBe(true);
+  });
+
+  it('更新内容が空の場合はエラーを返す', async () => {
+    (prisma.script.findUnique as jest.Mock).mockResolvedValue({
+      itemId: 'item-1',
+    });
+
+    const result = await updateScript('script-1', {});
+
+    expect(result).toEqual({ error: '更新内容がありません' });
+    expect(prisma.script.update).not.toHaveBeenCalled();
+  });
 });
