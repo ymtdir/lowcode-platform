@@ -15,6 +15,8 @@ import { SettingsContent } from './settings-content';
 import { AccessContent } from './access-content';
 import { StyleContent } from './style-content';
 import { ScriptContent } from './script-content';
+import { StyleInjector } from '@/components/shared/style-injector';
+import { ScriptInjector } from '@/components/shared/script-injector';
 
 /**
  * TableEditLayoutのProps型
@@ -48,56 +50,60 @@ export function TableEditLayout({
   scripts,
 }: TableEditLayoutProps) {
   return (
-    <div className="w-full p-6">
-      {/* ヘッダー */}
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{itemName} 管理画面</h1>
-      </div>
-
-      {/* タブ */}
-      <Tabs defaultValue="settings">
-        {/* ツールバー */}
-        <div className="flex items-center gap-4 py-4">
-          <Link
-            href={`/${itemId}`}
-            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="size-4" />
-            レコード一覧
-          </Link>
-          <TabsList>
-            <TabsTrigger value="settings">基本設定</TabsTrigger>
-            <TabsTrigger value="columns">項目</TabsTrigger>
-            <TabsTrigger value="access">権限</TabsTrigger>
-            <TabsTrigger value="style">スタイル</TabsTrigger>
-            <TabsTrigger value="script">スクリプト</TabsTrigger>
-          </TabsList>
+    <>
+      <StyleInjector styles={styles} />
+      <ScriptInjector scripts={scripts} />
+      <div className="w-full p-6">
+        {/* ヘッダー */}
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-2xl font-bold">{itemName} 管理画面</h1>
         </div>
-        <TabsContent value="settings" className="flex-1 mt-6">
-          <SettingsContent
-            itemId={itemId}
-            itemName={itemName}
-            itemIcon={itemIcon}
-          />
-        </TabsContent>
-        <TabsContent value="columns" className="flex-1 mt-6">
-          <ColumnsContent itemId={itemId} columns={columns} tables={tables} />
-        </TabsContent>
-        <TabsContent value="access" className="flex-1 mt-6">
-          <AccessContent
-            itemId={itemId}
-            initialPermissions={initialPermissions}
-            users={users}
-            groups={groups}
-          />
-        </TabsContent>
-        <TabsContent value="style" className="flex-1 mt-6">
-          <StyleContent itemId={itemId} initialStyles={styles} />
-        </TabsContent>
-        <TabsContent value="script" className="flex-1 mt-6">
-          <ScriptContent itemId={itemId} initialScripts={scripts} />
-        </TabsContent>
-      </Tabs>
-    </div>
+
+        {/* タブ */}
+        <Tabs defaultValue="settings">
+          {/* ツールバー */}
+          <div className="flex items-center gap-4 py-4">
+            <Link
+              href={`/${itemId}`}
+              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="size-4" />
+              レコード一覧
+            </Link>
+            <TabsList>
+              <TabsTrigger value="settings">基本設定</TabsTrigger>
+              <TabsTrigger value="columns">項目</TabsTrigger>
+              <TabsTrigger value="access">権限</TabsTrigger>
+              <TabsTrigger value="style">スタイル</TabsTrigger>
+              <TabsTrigger value="script">スクリプト</TabsTrigger>
+            </TabsList>
+          </div>
+          <TabsContent value="settings" className="flex-1 mt-6">
+            <SettingsContent
+              itemId={itemId}
+              itemName={itemName}
+              itemIcon={itemIcon}
+            />
+          </TabsContent>
+          <TabsContent value="columns" className="flex-1 mt-6">
+            <ColumnsContent itemId={itemId} columns={columns} tables={tables} />
+          </TabsContent>
+          <TabsContent value="access" className="flex-1 mt-6">
+            <AccessContent
+              itemId={itemId}
+              initialPermissions={initialPermissions}
+              users={users}
+              groups={groups}
+            />
+          </TabsContent>
+          <TabsContent value="style" className="flex-1 mt-6">
+            <StyleContent itemId={itemId} initialStyles={styles} />
+          </TabsContent>
+          <TabsContent value="script" className="flex-1 mt-6">
+            <ScriptContent itemId={itemId} initialScripts={scripts} />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </>
   );
 }

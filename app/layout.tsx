@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { ThemeProvider } from '@/features/theme/providers/theme-provider';
 import { ColorProvider } from '@/features/theme/providers/color-provider';
@@ -6,6 +7,7 @@ import { EditorThemeProvider } from '@/features/theme/providers/editor-theme-pro
 import { Toaster } from '@/components/ui/sonner';
 import { getSettings } from '@/features/setting/api';
 import { GlobalStyleInjector } from '@/components/shared/global-style-injector';
+import { GlobalScriptInjector } from '@/components/shared/global-script-injector';
 import './globals.css';
 
 const geistSans = Geist({
@@ -54,6 +56,10 @@ export default function RootLayout({
   return (
     <html lang="ja" suppressHydrationWarning>
       <head>
+        <Script
+          src="/system/jquery-3.7.1.min.js"
+          strategy="beforeInteractive"
+        />
         <GlobalStyleInjector />
       </head>
       <body
@@ -70,6 +76,7 @@ export default function RootLayout({
           </ColorProvider>
           <Toaster position="top-center" />
         </ThemeProvider>
+        <GlobalScriptInjector />
       </body>
     </html>
   );
