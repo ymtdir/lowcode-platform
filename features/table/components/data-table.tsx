@@ -302,6 +302,7 @@ export function DataTable({
           <ColumnVisibilityButton table={table} />
           {canWrite && (
             <Button
+              className="cursor-pointer"
               onClick={handleCreateRecord}
               disabled={isPending || columns.length === 0}
             >
@@ -389,6 +390,7 @@ export function DataTable({
         )}
         <div className="space-x-2">
           <Button
+            className="cursor-pointer"
             variant="outline"
             size="sm"
             onClick={() => table.previousPage()}
@@ -397,6 +399,7 @@ export function DataTable({
             前へ
           </Button>
           <Button
+            className="cursor-pointer"
             variant="outline"
             size="sm"
             onClick={() => table.nextPage()}

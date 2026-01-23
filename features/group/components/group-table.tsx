@@ -243,6 +243,7 @@ export function GroupTable({
         )}
         <div className="space-x-2">
           <Button
+            className="cursor-pointer"
             variant="outline"
             size="sm"
             onClick={() => table.previousPage()}
@@ -251,6 +252,7 @@ export function GroupTable({
             前へ
           </Button>
           <Button
+            className="cursor-pointer"
             variant="outline"
             size="sm"
             onClick={() => table.nextPage()}
