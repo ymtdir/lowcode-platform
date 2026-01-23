@@ -74,7 +74,7 @@ export function ScriptEditor({ itemId, initialScripts }: ScriptEditorProps) {
     }
   };
 
-  const handleAdd = async (asset: Asset) => {
+  const handleAdd = async (asset: Asset): Promise<string | void> => {
     const result = await createScript(itemId, {
       name: asset.name,
       content: asset.content,
@@ -85,6 +85,7 @@ export function ScriptEditor({ itemId, initialScripts }: ScriptEditorProps) {
       });
     } else {
       toast.success('スクリプトを作成しました');
+      return result.script?.id;
     }
   };
 

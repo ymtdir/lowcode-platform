@@ -49,8 +49,8 @@ export type AssetEditorProps = {
   onDelete?: (id: string) => Promise<void>;
   /** アセット並び替え時のコールバック */
   onReorder?: (assets: Asset[]) => Promise<void>;
-  /** アセット追加時のコールバック */
-  onAdd?: (asset: Asset) => Promise<void>;
+  /** アセット追加時のコールバック（作成されたアセットのIDを返す） */
+  onAdd?: (asset: Asset) => Promise<string | void>;
 };
 
 /**
@@ -227,19 +227,24 @@ export function AssetEditor({
 
   const handleAddAsset = useCallback(
     async (name: string) => {
-      const newId = `new-${Date.now()}`;
+      const tempId = `new-${Date.now()}`;
       const newAsset: Asset = {
-        id: newId,
+        id: tempId,
         name,
         content: newAssetContent,
       };
 
+      let createdId = tempId;
       if (onAdd) {
-        await onAdd(newAsset);
+        const result = await onAdd(newAsset);
+        if (result) {
+          createdId = result;
+          newAsset.id = createdId;
+        }
       }
 
       setSavedAssets((prev) => [...prev, newAsset]);
-      setSelectedAssetId(newId);
+      setSelectedAssetId(createdId);
     },
     [newAssetContent, onAdd]
   );
