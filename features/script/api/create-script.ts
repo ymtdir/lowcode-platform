@@ -4,22 +4,22 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 import { canManageStyles } from '@/lib/permissions';
-import type { Style, CreateStyleInput } from '../types';
+import type { Script, CreateScriptInput } from '../types';
 
 type FormState = {
   error?: string;
   success?: boolean;
-  style?: Style;
+  script?: Script;
 };
 
 /**
- * スタイルを作成するServer Action
+ * スクリプトを作成するServer Action
  * ADMIN/DEVELOPERロールのみ実行可能
- * itemId が null の場合はグローバルスタイルを作成
+ * itemId が null の場合はグローバルスクリプトを作成
  */
-export async function createStyle(
+export async function createScript(
   itemId: string | null,
-  input: CreateStyleInput
+  input: CreateScriptInput
 ): Promise<FormState> {
   const supabase = await createClient();
   const {
@@ -44,20 +44,20 @@ export async function createStyle(
   }
 
   if (!input.name || input.name.trim() === '') {
-    return { error: 'スタイル名を入力してください' };
+    return { error: 'スクリプト名を入力してください' };
   }
 
   try {
-    const style = await prisma.$transaction(async (tx) => {
+    const script = await prisma.$transaction(async (tx) => {
       // 現在の最大orderを取得
-      const maxOrder = await tx.style.aggregate({
+      const maxOrder = await tx.script.aggregate({
         where: { itemId },
         _max: { order: true },
       });
 
       const newOrder = (maxOrder._max.order ?? -1) + 1;
 
-      return tx.style.create({
+      return tx.script.create({
         data: {
           itemId,
           name: input.name.trim(),
@@ -79,9 +79,9 @@ export async function createStyle(
     } else {
       revalidatePath('/', 'layout');
     }
-    return { success: true, style };
+    return { success: true, script };
   } catch (error) {
-    console.error('スタイル作成エラー:', error);
-    return { error: 'スタイルの作成に失敗しました' };
+    console.error('スクリプト作成エラー:', error);
+    return { error: 'スクリプトの作成に失敗しました' };
   }
 }

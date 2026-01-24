@@ -67,6 +67,7 @@ model Item {
   records     Record[]
   permissions ItemPermission[]
   styles      Style[]
+  scripts     Script[]
 
   @@index([parentId])
   @@index([createdById])
@@ -148,4 +149,19 @@ model Setting {
   hideAppName Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Script {
+  id        String   @id @default(uuid())
+  itemId    String?
+  name      String
+  content   String   @default("") @db.Text
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  item Item? @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([itemId])
+  @@index([itemId, order])
 }

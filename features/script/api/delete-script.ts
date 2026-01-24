@@ -11,10 +11,10 @@ type FormState = {
 };
 
 /**
- * スタイルを削除するServer Action
+ * スクリプトを削除するServer Action
  * ADMIN/DEVELOPERロールのみ実行可能
  */
-export async function deleteStyle(styleId: string): Promise<FormState> {
+export async function deleteScript(scriptId: string): Promise<FormState> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -38,28 +38,28 @@ export async function deleteStyle(styleId: string): Promise<FormState> {
   }
 
   try {
-    const existingStyle = await prisma.style.findUnique({
-      where: { id: styleId },
+    const existingScript = await prisma.script.findUnique({
+      where: { id: scriptId },
       select: { itemId: true },
     });
 
-    if (!existingStyle) {
-      return { error: 'スタイルが存在しません' };
+    if (!existingScript) {
+      return { error: 'スクリプトが存在しません' };
     }
 
-    await prisma.style.delete({
-      where: { id: styleId },
+    await prisma.script.delete({
+      where: { id: scriptId },
     });
 
-    if (existingStyle.itemId) {
-      revalidatePath(`/${existingStyle.itemId}/edit`);
-      revalidatePath(`/${existingStyle.itemId}`);
+    if (existingScript.itemId) {
+      revalidatePath(`/${existingScript.itemId}/edit`);
+      revalidatePath(`/${existingScript.itemId}`);
     } else {
       revalidatePath('/', 'layout');
     }
     return { success: true };
   } catch (error) {
-    console.error('スタイル削除エラー:', error);
-    return { error: 'スタイルの削除に失敗しました' };
+    console.error('スクリプト削除エラー:', error);
+    return { error: 'スクリプトの削除に失敗しました' };
   }
 }

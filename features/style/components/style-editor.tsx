@@ -74,7 +74,7 @@ export function StyleEditor({ itemId, initialStyles }: StyleEditorProps) {
     }
   };
 
-  const handleAdd = async (asset: Asset) => {
+  const handleAdd = async (asset: Asset): Promise<string | void> => {
     const result = await createStyle(itemId, {
       name: asset.name,
       content: asset.content,
@@ -85,6 +85,7 @@ export function StyleEditor({ itemId, initialStyles }: StyleEditorProps) {
       });
     } else {
       toast.success('スタイルを作成しました');
+      return result.style?.id;
     }
   };
 

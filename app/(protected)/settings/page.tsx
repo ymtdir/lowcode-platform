@@ -3,6 +3,7 @@ import { getCurrentUser } from '@/lib/auth';
 import { canManageSettings } from '@/lib/permissions';
 import { getSettings } from '@/features/setting/api';
 import { getStyles, extractStyles } from '@/features/style';
+import { getScripts, extractScripts } from '@/features/script';
 import { SettingsForm } from '@/features/setting/components/settings-form';
 
 export const dynamic = 'force-dynamic';
@@ -18,13 +19,13 @@ export default async function SettingsPage() {
     redirect('/');
   }
 
-  const [settings, globalStylesResult] = await Promise.all([
-    getSettings(),
-    getStyles(null),
-  ]);
+  const [settings, globalStylesResult, globalScriptsResult] = await Promise.all(
+    [getSettings(), getStyles(null), getScripts(null)]
+  );
 
-  // グローバルスタイルデータの展開
+  // グローバルスタイル・スクリプトデータの展開
   const globalStyles = extractStyles(globalStylesResult);
+  const globalScripts = extractScripts(globalScriptsResult);
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -35,6 +36,7 @@ export default async function SettingsPage() {
       <SettingsForm
         initialSettings={settings}
         initialGlobalStyles={globalStyles}
+        initialGlobalScripts={globalScripts}
       />
     </div>
   );

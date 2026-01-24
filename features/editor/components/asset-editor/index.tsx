@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useId } from 'react';
 import { Button } from '@/components/ui/button';
 import { CreateAssetButton } from './create-asset-button';
 import {
@@ -49,8 +49,8 @@ export type AssetEditorProps = {
   onDelete?: (id: string) => Promise<void>;
   /** アセット並び替え時のコールバック */
   onReorder?: (assets: Asset[]) => Promise<void>;
-  /** アセット追加時のコールバック */
-  onAdd?: (asset: Asset) => Promise<void>;
+  /** アセット追加時のコールバック（作成されたアセットのIDを返す） */
+  onAdd?: (asset: Asset) => Promise<string | void>;
 };
 
 /**
@@ -69,6 +69,9 @@ export function AssetEditor({
   onReorder,
   onAdd,
 }: AssetEditorProps) {
+  // 一意のIDを生成（ResizablePanelGroupの状態分離用）
+  const editorId = useId();
+
   // 保存済みのアセット
   const [savedAssets, setSavedAssets] = useState<Asset[]>(initialAssets);
 
@@ -224,19 +227,24 @@ export function AssetEditor({
 
   const handleAddAsset = useCallback(
     async (name: string) => {
-      const newId = `new-${Date.now()}`;
+      const tempId = `new-${Date.now()}`;
       const newAsset: Asset = {
-        id: newId,
+        id: tempId,
         name,
         content: newAssetContent,
       };
 
+      let createdId = tempId;
       if (onAdd) {
-        await onAdd(newAsset);
+        const result = await onAdd(newAsset);
+        if (result) {
+          createdId = result;
+          newAsset.id = createdId;
+        }
       }
 
       setSavedAssets((prev) => [...prev, newAsset]);
-      setSelectedAssetId(newId);
+      setSelectedAssetId(createdId);
     },
     [newAssetContent, onAdd]
   );
@@ -246,7 +254,7 @@ export function AssetEditor({
       <div className="h-[460px] rounded-lg border">
         <ResizablePanelGroup
           orientation="horizontal"
-          id="asset-editor"
+          id={`asset-editor-${editorId}`}
           defaultLayout={{ sidebar: 20, editor: 80 }}
         >
           {/* サイドバー: アセット一覧 */}

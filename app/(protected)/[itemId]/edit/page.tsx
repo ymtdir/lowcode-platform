@@ -7,6 +7,7 @@ import { getPermissions, extractPermissions } from '@/features/permission/api';
 import { getUsers } from '@/features/user/api';
 import { getGroups } from '@/features/group/api';
 import { getStyles, extractStyles } from '@/features/style';
+import { getScripts, extractScripts } from '@/features/script';
 import { TableEditLayout } from '@/features/table/components/edit';
 import { FolderEditLayout } from '@/features/folder/components/edit';
 
@@ -44,18 +45,26 @@ export default async function ItemEditPage({ params }: ItemEditPageProps) {
     const columns = columnSchema?.columns || [];
 
     // データを並列取得
-    const [tables, permissionsResult, users, groups, stylesResult] =
-      await Promise.all([
-        getTables(),
-        getPermissions(itemId),
-        getUsers(),
-        getGroups(),
-        getStyles(itemId),
-      ]);
+    const [
+      tables,
+      permissionsResult,
+      users,
+      groups,
+      stylesResult,
+      scriptsResult,
+    ] = await Promise.all([
+      getTables(),
+      getPermissions(itemId),
+      getUsers(),
+      getGroups(),
+      getStyles(itemId),
+      getScripts(itemId),
+    ]);
 
     // データの展開
     const permissions = extractPermissions(permissionsResult);
     const styles = extractStyles(stylesResult);
+    const scripts = extractScripts(scriptsResult);
 
     return (
       <TableEditLayout
@@ -68,6 +77,7 @@ export default async function ItemEditPage({ params }: ItemEditPageProps) {
         users={users}
         groups={groups}
         styles={styles}
+        scripts={scripts}
       />
     );
   }

@@ -255,6 +255,7 @@ export function UserTable({
             前へ
           </Button>
           <Button
+            className="cursor-pointer"
             variant="outline"
             size="sm"
             onClick={() => table.nextPage()}

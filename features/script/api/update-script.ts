@@ -4,21 +4,21 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 import { canManageStyles } from '@/lib/permissions';
-import type { Style, UpdateStyleInput } from '../types';
+import type { Script, UpdateScriptInput } from '../types';
 
 type FormState = {
   error?: string;
   success?: boolean;
-  style?: Style;
+  script?: Script;
 };
 
 /**
- * スタイルを更新するServer Action
+ * スクリプトを更新するServer Action
  * ADMIN/DEVELOPERロールのみ実行可能
  */
-export async function updateStyle(
-  styleId: string,
-  input: UpdateStyleInput
+export async function updateScript(
+  scriptId: string,
+  input: UpdateScriptInput
 ): Promise<FormState> {
   const supabase = await createClient();
   const {
@@ -43,20 +43,20 @@ export async function updateStyle(
   }
 
   try {
-    const existingStyle = await prisma.style.findUnique({
-      where: { id: styleId },
+    const existingScript = await prisma.script.findUnique({
+      where: { id: scriptId },
       select: { itemId: true },
     });
 
-    if (!existingStyle) {
-      return { error: 'スタイルが見つかりません' };
+    if (!existingScript) {
+      return { error: 'スクリプトが見つかりません' };
     }
 
     const updateData: { name?: string; content?: string } = {};
 
     if (input.name !== undefined) {
       if (input.name.trim() === '') {
-        return { error: 'スタイル名を入力してください' };
+        return { error: 'スクリプト名を入力してください' };
       }
       updateData.name = input.name.trim();
     }
@@ -69,8 +69,8 @@ export async function updateStyle(
       return { error: '更新内容がありません' };
     }
 
-    const style = await prisma.style.update({
-      where: { id: styleId },
+    const script = await prisma.script.update({
+      where: { id: scriptId },
       data: updateData,
       select: {
         id: true,
@@ -80,15 +80,15 @@ export async function updateStyle(
       },
     });
 
-    if (existingStyle.itemId) {
-      revalidatePath(`/${existingStyle.itemId}/edit`);
-      revalidatePath(`/${existingStyle.itemId}`);
+    if (existingScript.itemId) {
+      revalidatePath(`/${existingScript.itemId}/edit`);
+      revalidatePath(`/${existingScript.itemId}`);
     } else {
       revalidatePath('/', 'layout');
     }
-    return { success: true, style };
+    return { success: true, script };
   } catch (error) {
-    console.error('スタイル更新エラー:', error);
-    return { error: 'スタイルの更新に失敗しました' };
+    console.error('スクリプト更新エラー:', error);
+    return { error: 'スクリプトの更新に失敗しました' };
   }
 }

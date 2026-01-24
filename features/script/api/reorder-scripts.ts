@@ -11,13 +11,13 @@ type FormState = {
 };
 
 /**
- * スタイルの並び順を更新するServer Action
+ * スクリプトの並び順を更新するServer Action
  * ADMIN/DEVELOPERロールのみ実行可能
- * itemId が null の場合はグローバルスタイル
+ * itemId が null の場合はグローバルスクリプト
  */
-export async function reorderStyles(
+export async function reorderScripts(
   itemId: string | null,
-  styleIds: string[]
+  scriptIds: string[]
 ): Promise<FormState> {
   const supabase = await createClient();
   const {
@@ -42,21 +42,21 @@ export async function reorderStyles(
   }
 
   try {
-    // 更新対象のスタイルがすべて指定itemIdに属するか検証
-    const validStyles = await prisma.style.findMany({
-      where: { id: { in: styleIds }, itemId },
+    // 更新対象のスクリプトがすべて指定itemIdに属するか検証
+    const validScripts = await prisma.script.findMany({
+      where: { id: { in: scriptIds }, itemId },
       select: { id: true },
     });
 
-    if (validStyles.length !== styleIds.length) {
-      return { error: '無効なスタイルIDが含まれています' };
+    if (validScripts.length !== scriptIds.length) {
+      return { error: '無効なスクリプトIDが含まれています' };
     }
 
     // トランザクションで一括更新
     await prisma.$transaction(
-      styleIds.map((styleId, index) =>
-        prisma.style.update({
-          where: { id: styleId },
+      scriptIds.map((scriptId, index) =>
+        prisma.script.update({
+          where: { id: scriptId },
           data: { order: index },
         })
       )
@@ -70,7 +70,7 @@ export async function reorderStyles(
     }
     return { success: true };
   } catch (error) {
-    console.error('スタイル並び替えエラー:', error);
-    return { error: 'スタイルの並び替えに失敗しました' };
+    console.error('スクリプト並び替えエラー:', error);
+    return { error: 'スクリプトの並び替えに失敗しました' };
   }
 }
