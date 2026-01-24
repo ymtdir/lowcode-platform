@@ -50,7 +50,7 @@ describe('extractScripts', () => {
   });
 
   it('エラー結果の場合は空配列を返す', () => {
-    const result = {
+    const result: { error: string; scripts: [] } = {
       error: 'スクリプトの取得に失敗しました',
       scripts: [],
     };
