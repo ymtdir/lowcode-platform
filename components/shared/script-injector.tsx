@@ -22,6 +22,11 @@ export function ScriptInjector({ scripts = [] }: ScriptInjectorProps) {
       return;
     }
 
+    let cancelled = false;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let attempts = 0;
+    const maxAttempts = 200; // 50ms * 200 = 約10秒
+
     const combinedScript = scripts.map((script) => script.content).join('\n');
 
     function executeScripts() {
@@ -39,7 +44,13 @@ export function ScriptInjector({ scripts = [] }: ScriptInjectorProps) {
         typeof window !== 'undefined' &&
         typeof (window as { jQuery?: unknown }).jQuery === 'undefined'
       ) {
-        setTimeout(waitForReady, 50);
+        if (!cancelled && attempts++ < maxAttempts) {
+          timeoutId = setTimeout(waitForReady, 50);
+        } else if (!cancelled) {
+          console.warn(
+            'jQueryが読み込めなかったためスクリプト実行を中止しました'
+          );
+        }
         return;
       }
 
@@ -48,12 +59,19 @@ export function ScriptInjector({ scripts = [] }: ScriptInjectorProps) {
       if (typeof requestIdleCallback !== 'undefined') {
         requestIdleCallback(executeScripts);
       } else {
-        setTimeout(executeScripts, 100);
+        timeoutId = setTimeout(executeScripts, 100);
       }
     }
 
     // マウント時にスクリプトを実行
     waitForReady();
+
+    return () => {
+      cancelled = true;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [scripts]);
 
   return null;
