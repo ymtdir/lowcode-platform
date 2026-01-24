@@ -1,7 +1,7 @@
-# Lowcode Platform
+# muku
 
-![CI](https://github.com/ymtdir/lowcode-platform/workflows/CI/badge.svg)
-[![codecov](https://codecov.io/gh/ymtdir/lowcode-platform/graph/badge.svg?token=B0Z8GTSYQK)](https://codecov.io/gh/ymtdir/lowcode-platform)
+![CI](https://github.com/ymtdir/muku/workflows/CI/badge.svg)
+[![codecov](https://codecov.io/gh/ymtdir/muku/graph/badge.svg?token=B0Z8GTSYQK)](https://codecov.io/gh/ymtdir/muku)
 
 Next.js製の業務アプリケーションプラットフォーム
 

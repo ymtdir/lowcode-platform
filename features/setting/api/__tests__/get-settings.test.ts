@@ -48,7 +48,7 @@ describe('getSettings', () => {
     const result = await getSettings();
 
     expect(result).toEqual({
-      appName: 'Lowcode Platform',
+      appName: 'muku',
       appIcon: '/system/icon.png',
       appFavicon: '/system/favicon.ico',
       hideAppName: false,

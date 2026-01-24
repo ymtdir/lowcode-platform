@@ -133,7 +133,7 @@ describe('updateSettings', () => {
     const result = await updateSettings(input);
 
     expect(result).toEqual({
-      appName: 'Lowcode Platform',
+      appName: 'muku',
       appIcon: '/system/icon.png',
       appFavicon: '/system/favicon.ico',
       hideAppName: false,
@@ -175,7 +175,7 @@ describe('updateSettings', () => {
     const result = await updateSettings(input);
 
     expect(result).toEqual({
-      appName: 'Lowcode Platform',
+      appName: 'muku',
       appIcon: '/system/icon.png',
       appFavicon: '/system/favicon.ico',
       hideAppName: false,

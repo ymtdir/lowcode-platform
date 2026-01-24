@@ -8,7 +8,7 @@ import type { AppSettings } from '../types';
  * デフォルト設定値
  */
 const DEFAULT_SETTINGS: AppSettings = {
-  appName: 'Lowcode Platform',
+  appName: 'muku',
   appIcon: '/system/icon.png',
   appFavicon: '/system/favicon.ico',
   hideAppName: false,

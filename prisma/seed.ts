@@ -100,15 +100,16 @@ async function createAdminUser() {
 async function createSettings() {
   console.log('初期設定を作成中');
 
-  const settingId = 'default';
+  const settingId = 'singleton';
 
   const settings = await prisma.setting.upsert({
     where: { id: settingId },
     update: {},
     create: {
       id: settingId,
-      appName: 'Lowcode Platform',
-      appIcon: '/icon.svg',
+      appName: 'muku',
+      appIcon: '/system/icon.png',
+      appFavicon: '/system/favicon.ico',
       hideAppName: false,
     },
   });
