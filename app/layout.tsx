@@ -36,8 +36,8 @@ export async function generateMetadata(): Promise<Metadata> {
   } catch {
     // ビルド時などDBに接続できない場合はデフォルト値を返す
     return {
-      title: 'Lowcode Platform',
-      description: 'Lowcode Platform',
+      title: 'muku',
+      description: 'muku',
       icons: {
         icon: '/system/favicon.ico',
       },

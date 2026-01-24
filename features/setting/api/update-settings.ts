@@ -29,7 +29,7 @@ export async function updateSettings(
   });
 
   return {
-    appName: setting.appName ?? 'Lowcode Platform',
+    appName: setting.appName ?? 'muku',
     appIcon: setting.appIcon ?? '/system/icon.png',
     appFavicon: setting.appFavicon ?? '/system/favicon.ico',
     hideAppName: setting.hideAppName ?? false,

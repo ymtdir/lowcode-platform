@@ -5,7 +5,7 @@
 ## 全体構成
 
 ```text
-lowcode-platform/
+muku/
 ├── app/                          # Next.js App Router
 │   ├── (public)/                 # 認証不要（将来的にLP等を配置）
 │   ├── (protected)/              # 認証必須（メイン機能）

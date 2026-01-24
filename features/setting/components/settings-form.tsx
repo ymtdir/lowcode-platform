@@ -99,7 +99,7 @@ export function SettingsForm({
                 type="text"
                 value={appName}
                 onChange={(e) => setAppName(e.target.value)}
-                placeholder="Lowcode Platform"
+                placeholder="muku"
                 disabled={hideAppName}
               />
             </Field>
