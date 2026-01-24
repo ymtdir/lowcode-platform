@@ -75,6 +75,7 @@ export async function createStyle(
 
     if (itemId) {
       revalidatePath(`/${itemId}/edit`);
+      revalidatePath(`/${itemId}`);
     } else {
       revalidatePath('/', 'layout');
     }

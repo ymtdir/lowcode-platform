@@ -82,6 +82,7 @@ export async function updateStyle(
 
     if (existingStyle.itemId) {
       revalidatePath(`/${existingStyle.itemId}/edit`);
+      revalidatePath(`/${existingStyle.itemId}`);
     } else {
       revalidatePath('/', 'layout');
     }

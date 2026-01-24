@@ -53,6 +53,7 @@ export async function deleteScript(scriptId: string): Promise<FormState> {
 
     if (existingScript.itemId) {
       revalidatePath(`/${existingScript.itemId}/edit`);
+      revalidatePath(`/${existingScript.itemId}`);
     } else {
       revalidatePath('/', 'layout');
     }

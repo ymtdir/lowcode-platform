@@ -64,6 +64,7 @@ export async function reorderScripts(
 
     if (itemId) {
       revalidatePath(`/${itemId}/edit`);
+      revalidatePath(`/${itemId}`);
     } else {
       revalidatePath('/', 'layout');
     }

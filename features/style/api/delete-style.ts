@@ -53,6 +53,7 @@ export async function deleteStyle(styleId: string): Promise<FormState> {
 
     if (existingStyle.itemId) {
       revalidatePath(`/${existingStyle.itemId}/edit`);
+      revalidatePath(`/${existingStyle.itemId}`);
     } else {
       revalidatePath('/', 'layout');
     }

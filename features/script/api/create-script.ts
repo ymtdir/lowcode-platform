@@ -75,6 +75,7 @@ export async function createScript(
 
     if (itemId) {
       revalidatePath(`/${itemId}/edit`);
+      revalidatePath(`/${itemId}`);
     } else {
       revalidatePath('/', 'layout');
     }
