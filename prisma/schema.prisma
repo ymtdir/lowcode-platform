@@ -11,6 +11,7 @@ datasource db {
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
+  password  String
   name      String?
   role      UserRole @default(MEMBER)
   createdAt DateTime @default(now())
@@ -28,8 +29,8 @@ model Group {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  parent          Group?             @relation("GroupHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
-  children        Group[]            @relation("GroupHierarchy")
+  parent          Group?           @relation("GroupHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children        Group[]          @relation("GroupHierarchy")
   members         GroupMember[]
   itemPermissions ItemPermission[]
 
@@ -62,8 +63,8 @@ model Item {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  parent      Item?              @relation("ItemHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
-  children    Item[]             @relation("ItemHierarchy")
+  parent      Item?            @relation("ItemHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Item[]           @relation("ItemHierarchy")
   records     Record[]
   permissions ItemPermission[]
   styles      Style[]
