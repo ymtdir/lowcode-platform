@@ -1,7 +1,8 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
+import { signIn } from '@/lib/auth-config';
+import { AuthError } from 'next-auth';
 
 /**
  * ゲストログイン用のServer Action
@@ -16,15 +17,18 @@ export async function guestLogin(): Promise<void> {
     return;
   }
 
-  const supabase = await createClient();
-
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) {
-    console.error('ゲストログインエラー:', error.message);
+  try {
+    await signIn('credentials', {
+      email,
+      password,
+      redirect: false,
+    });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      console.error('ゲストログインエラー:', error.message);
+      return;
+    }
+    console.error('ゲストログインエラー:', error);
     return;
   }
 

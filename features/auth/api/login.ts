@@ -2,8 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-
-import { createClient } from '@/lib/supabase/server';
+import { signIn } from '@/lib/auth-config';
+import { AuthError } from 'next-auth';
 
 type FormState = {
   error?: string;
@@ -17,20 +17,16 @@ export async function login(
   formData: FormData
 ): Promise<FormState> {
   try {
-    const supabase = await createClient();
-
-    const data = {
+    await signIn('credentials', {
       email: formData.get('email') as string,
       password: formData.get('password') as string,
-    };
-
-    const { error } = await supabase.auth.signInWithPassword(data);
-
-    if (error) {
+      redirect: false,
+    });
+  } catch (error) {
+    if (error instanceof AuthError) {
       console.error('ログインエラー:', error.message);
       return { error: 'メールアドレスまたはパスワードが正しくありません' };
     }
-  } catch (error) {
     console.error('ログインエラー:', error);
     return { error: 'ログインに失敗しました' };
   }
