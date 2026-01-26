@@ -1,8 +1,8 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
 import { canManageColumns } from '@/lib/permissions';
 import type { Column, CreateColumnInput } from '../types/column';
 import { createTableMeta, getColumnSchema } from '../types/schema';
@@ -25,28 +25,15 @@ export async function addColumn(
   itemId: string,
   input: CreateColumnInput
 ): Promise<FormState> {
-  // セッションからユーザー情報を取得
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // ユーザー情報を取得
+  const currentUser = await requireAuth().catch(() => null);
 
-  if (!user) {
+  if (!currentUser) {
     return { error: '認証が必要です' };
   }
 
-  // DB からユーザー情報を取得
-  const dbUser = await prisma.user.findUnique({
-    where: { email: user.email! },
-    select: { id: true, role: true },
-  });
-
-  if (!dbUser) {
-    return { error: 'ユーザー情報が取得できませんでした' };
-  }
-
   // 権限チェック
-  if (!canManageColumns(dbUser.role)) {
+  if (!canManageColumns(currentUser.role)) {
     return { error: 'この操作を行う権限がありません' };
   }
 

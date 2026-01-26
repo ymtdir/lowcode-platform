@@ -1,9 +1,9 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
-import { createAdminClient } from '@/lib/supabase/admin';
+import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { canManageUsers } from '@/lib/permissions';
+import { requireAuth } from '@/lib/auth';
 import { parseCSV } from '@/lib/csv';
 import type { UserRole } from '@prisma/client';
 import type {
@@ -36,12 +36,9 @@ export async function importUsersAction(
   csvContent: string
 ): Promise<ImportResult> {
   // 認証チェック
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const currentUser = await requireAuth().catch(() => null);
 
-  if (!user?.email) {
+  if (!currentUser) {
     return {
       success: false,
       insertedCount: 0,
@@ -54,12 +51,7 @@ export async function importUsersAction(
   }
 
   // 権限チェック
-  const currentUser = await prisma.user.findUnique({
-    where: { email: user.email },
-    select: { role: true },
-  });
-
-  if (!currentUser || !canManageUsers(currentUser.role)) {
+  if (!canManageUsers(currentUser.role)) {
     return {
       success: false,
       insertedCount: 0,
@@ -192,7 +184,8 @@ export async function importUsersAction(
     let updatedCount = 0;
     let skippedCount = 0;
 
-    const adminSupabase = createAdminClient();
+    // デフォルトパスワードをハッシュ化
+    const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, 10);
 
     await prisma.$transaction(async (tx) => {
       for (const row of validRows) {
@@ -203,7 +196,7 @@ export async function importUsersAction(
             data: {
               name: row.name,
               role: row.role,
-              // メールアドレスは更新しない（Supabase Authとの整合性のため）
+              // メールアドレスとパスワードは更新しない
             },
           });
           updatedCount++;
@@ -214,36 +207,18 @@ export async function importUsersAction(
         }
         // 新規ユーザーを作成
         else {
-          // Supabase Admin APIでユーザー作成（固定のデフォルトパスワードを設定）
-          const { data: authData, error } =
-            await adminSupabase.auth.admin.createUser({
-              email: row.email,
-              password: DEFAULT_PASSWORD,
-              email_confirm: true,
-            });
-
-          if (error || !authData.user) {
-            console.error('Supabaseユーザー作成エラー:', error?.message);
-            skippedCount++;
-            continue;
-          }
-
           try {
-            // Prismaにユーザー情報を保存
             await tx.user.create({
               data: {
-                id: authData.user.id,
                 name: row.name,
                 email: row.email,
+                password: hashedPassword,
                 role: row.role,
               },
             });
-
             insertedCount++;
           } catch (error) {
-            // ロールバック: Prisma保存失敗時にSupabase Authユーザーを削除
-            await adminSupabase.auth.admin.deleteUser(authData.user.id);
-            console.error('ユーザー作成エラー（ロールバック済み）:', error);
+            console.error('ユーザー作成エラー:', error);
             skippedCount++;
           }
         }

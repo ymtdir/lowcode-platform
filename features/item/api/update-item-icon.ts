@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { canManageStructure } from '@/lib/permissions';
 import * as LucideIcons from 'lucide-react';
@@ -24,27 +24,19 @@ export async function updateItemIcon(
   itemId: string,
   iconName: string | null
 ): Promise<FormState> {
+  // ユーザー情報を取得
+  const currentUser = await requireAuth().catch(() => null);
+
+  if (!currentUser) {
+    return { error: '認証が必要です' };
+  }
+
+  // 権限チェック
+  if (!canManageStructure(currentUser.role)) {
+    return { error: 'この操作を行う権限がありません' };
+  }
+
   try {
-    // 認証チェック
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return { error: '認証が必要です' };
-    }
-
-    // 権限チェック
-    const currentUser = await prisma.user.findUnique({
-      where: { email: user.email! },
-      select: { role: true },
-    });
-
-    if (!currentUser || !canManageStructure(currentUser.role)) {
-      return { error: 'この操作を行う権限がありません' };
-    }
-
     // アイコン名のバリデーション
     if (iconName !== null) {
       // IconPickerはケバブケース（kebab-case）で返すため、

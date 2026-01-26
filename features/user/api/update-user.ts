@@ -1,9 +1,9 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createAdminClient } from '@/lib/supabase/admin';
-import { createClient } from '@/lib/supabase/server';
+import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
 
 type FormState = {
   error?: string;
@@ -37,10 +37,7 @@ export async function updateUserProfile(
 
   try {
     // 現在のユーザーを取得
-    const currentUserClient = await createClient();
-    const {
-      data: { user: currentUser },
-    } = await currentUserClient.auth.getUser();
+    const currentUser = await requireAuth().catch(() => null);
 
     if (!currentUser) {
       return { error: '認証エラーが発生しました' };
@@ -48,26 +45,21 @@ export async function updateUserProfile(
 
     // 自分自身のロールは変更できない
     if (currentUser.id === userId && role) {
-      const currentUserData = await prisma.user.findUnique({
-        where: { id: currentUser.id },
-        select: { role: true },
-      });
-
-      if (currentUserData && currentUserData.role !== role) {
+      if (currentUser.role !== role) {
         return { error: '自分自身のロールは変更できません' };
       }
     }
 
-    const supabase = createAdminClient();
+    // メールアドレスの重複チェック（自分以外）
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        email,
+        NOT: { id: userId },
+      },
+    });
 
-    const { error: authError } = await supabase.auth.admin.updateUserById(
-      userId,
-      { email }
-    );
-
-    if (authError) {
-      console.error('メールアドレス更新エラー:', authError.message);
-      return { error: 'メールアドレスの更新に失敗しました' };
+    if (existingUser) {
+      return { error: 'このメールアドレスは既に使用されています' };
     }
 
     await prisma.user.update({
@@ -98,43 +90,29 @@ export async function updateUserPassword(
   const newPassword = formData.get('newPassword') as string;
   const confirmPassword = formData.get('confirmPassword') as string;
 
+  if (!newPassword || newPassword.length < 6) {
+    return { error: 'パスワードは6文字以上で入力してください' };
+  }
+
   if (newPassword !== confirmPassword) {
     return { error: 'パスワードが一致しません' };
   }
 
   try {
     // 現在のユーザーを取得
-    const currentUserClient = await createClient();
-    const {
-      data: { user: currentUser },
-    } = await currentUserClient.auth.getUser();
+    const currentUser = await requireAuth().catch(() => null);
 
     if (!currentUser) {
       return { error: '認証エラーが発生しました' };
     }
 
-    // 自分自身のパスワードを変更する場合は通常のAPIを使用
-    if (currentUser.id === userId) {
-      const { error } = await currentUserClient.auth.updateUser({
-        password: newPassword,
-      });
+    // パスワードをハッシュ化して更新
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-      if (error) {
-        console.error('パスワード更新エラー:', error.message);
-        return { error: 'パスワードの更新に失敗しました' };
-      }
-    } else {
-      // 他のユーザーのパスワードを変更する場合はAdmin APIを使用
-      const adminClient = createAdminClient();
-      const { error } = await adminClient.auth.admin.updateUserById(userId, {
-        password: newPassword,
-      });
-
-      if (error) {
-        console.error('パスワード更新エラー:', error.message);
-        return { error: 'パスワードの更新に失敗しました' };
-      }
-    }
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
 
     revalidatePath('/users');
     return { success: true };
