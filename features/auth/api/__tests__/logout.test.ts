@@ -1,5 +1,5 @@
 import { logout } from '../logout';
-import { createClient } from '@/lib/supabase/server';
+import { signOut } from '@/lib/auth-config';
 import { redirect } from 'next/navigation';
 
 jest.mock('next/navigation', () => ({
@@ -8,8 +8,8 @@ jest.mock('next/navigation', () => ({
   }),
 }));
 
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn(),
+jest.mock('@/lib/auth-config', () => ({
+  signOut: jest.fn(),
 }));
 
 describe('logout', () => {
@@ -18,56 +18,24 @@ describe('logout', () => {
   });
 
   it('正常にログアウトできる', async () => {
-    const mockSupabase = {
-      auth: {
-        signOut: jest.fn().mockResolvedValue({ error: null }),
-      },
-    };
+    (signOut as jest.Mock).mockResolvedValue({});
 
-    (createClient as jest.Mock).mockResolvedValue(mockSupabase);
+    await expect(logout()).rejects.toThrow('NEXT_REDIRECT');
 
-    await expect(logout()).rejects.toThrow();
-
-    expect(mockSupabase.auth.signOut).toHaveBeenCalled();
+    expect(signOut).toHaveBeenCalledWith({ redirect: false });
     expect(redirect).toHaveBeenCalledWith('/login');
   });
 
   it('ログアウトエラーが発生してもログイン画面にリダイレクトする', async () => {
-    const mockSupabase = {
-      auth: {
-        signOut: jest.fn().mockRejectedValue(new Error('Sign out error')),
-      },
-    };
-
-    (createClient as jest.Mock).mockResolvedValue(mockSupabase);
+    (signOut as jest.Mock).mockRejectedValue(new Error('Sign out error'));
 
     const consoleErrorSpy = jest
       .spyOn(console, 'error')
       .mockImplementation(() => {});
 
-    await expect(logout()).rejects.toThrow();
+    await expect(logout()).rejects.toThrow('NEXT_REDIRECT');
 
-    expect(mockSupabase.auth.signOut).toHaveBeenCalled();
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      'ログアウトエラー:',
-      expect.any(Error)
-    );
-    expect(redirect).toHaveBeenCalledWith('/login');
-
-    consoleErrorSpy.mockRestore();
-  });
-
-  it('Supabaseクライアントの作成に失敗してもログイン画面にリダイレクトする', async () => {
-    (createClient as jest.Mock).mockRejectedValue(
-      new Error('Failed to create client')
-    );
-
-    const consoleErrorSpy = jest
-      .spyOn(console, 'error')
-      .mockImplementation(() => {});
-
-    await expect(logout()).rejects.toThrow();
-
+    expect(signOut).toHaveBeenCalledWith({ redirect: false });
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       'ログアウトエラー:',
       expect.any(Error)

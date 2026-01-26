@@ -1,29 +1,26 @@
 import { guestLogin, isGuestLoginEnabled } from '../guest-login';
-import { createClient } from '@/lib/supabase/server';
+import { signIn } from '@/lib/auth-config';
 import { redirect } from 'next/navigation';
+import { AuthError } from 'next-auth';
 
-// Supabaseクライアントのモック
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn(),
+// NextAuthのsignInをモック
+jest.mock('@/lib/auth-config', () => ({
+  signIn: jest.fn(),
 }));
 
 // Next.jsのredirectをモック
 jest.mock('next/navigation', () => ({
-  redirect: jest.fn(),
+  redirect: jest.fn(() => {
+    throw new Error('NEXT_REDIRECT');
+  }),
 }));
 
 describe('guestLogin', () => {
-  const mockSignInWithPassword = jest.fn();
   const originalEnv = process.env;
 
   beforeEach(() => {
     jest.clearAllMocks();
     process.env = { ...originalEnv };
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        signInWithPassword: mockSignInWithPassword,
-      },
-    });
   });
 
   afterEach(() => {
@@ -43,7 +40,7 @@ describe('guestLogin', () => {
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       'ゲストログインエラー: 環境変数が設定されていません'
     );
-    expect(mockSignInWithPassword).not.toHaveBeenCalled();
+    expect(signIn).not.toHaveBeenCalled();
     expect(redirect).not.toHaveBeenCalled();
 
     consoleErrorSpy.mockRestore();
@@ -62,7 +59,7 @@ describe('guestLogin', () => {
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       'ゲストログインエラー: 環境変数が設定されていません'
     );
-    expect(mockSignInWithPassword).not.toHaveBeenCalled();
+    expect(signIn).not.toHaveBeenCalled();
 
     consoleErrorSpy.mockRestore();
   });
@@ -80,7 +77,7 @@ describe('guestLogin', () => {
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       'ゲストログインエラー: 環境変数が設定されていません'
     );
-    expect(mockSignInWithPassword).not.toHaveBeenCalled();
+    expect(signIn).not.toHaveBeenCalled();
 
     consoleErrorSpy.mockRestore();
   });
@@ -89,18 +86,19 @@ describe('guestLogin', () => {
     process.env.GUEST_USER_EMAIL = 'guest@example.com';
     process.env.GUEST_USER_PASSWORD = 'guestpass123';
 
-    mockSignInWithPassword.mockResolvedValue({ error: null });
+    (signIn as jest.Mock).mockResolvedValue({});
 
-    await guestLogin();
+    await expect(guestLogin()).rejects.toThrow('NEXT_REDIRECT');
 
-    expect(mockSignInWithPassword).toHaveBeenCalledWith({
+    expect(signIn).toHaveBeenCalledWith('credentials', {
       email: 'guest@example.com',
       password: 'guestpass123',
+      redirect: false,
     });
     expect(redirect).toHaveBeenCalledWith('/');
   });
 
-  it('ログインに失敗した場合、エラーログを出力して早期リターンする', async () => {
+  it('ログインに失敗した場合（AuthError）、エラーログを出力して早期リターンする', async () => {
     const consoleErrorSpy = jest
       .spyOn(console, 'error')
       .mockImplementation(() => {});
@@ -108,14 +106,36 @@ describe('guestLogin', () => {
     process.env.GUEST_USER_EMAIL = 'guest@example.com';
     process.env.GUEST_USER_PASSWORD = 'wrongpassword';
 
-    const error = { message: 'Invalid login credentials' };
-    mockSignInWithPassword.mockResolvedValue({ error });
+    const authError = new AuthError('Invalid login credentials');
+    (signIn as jest.Mock).mockRejectedValue(authError);
 
     await guestLogin();
 
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       'ゲストログインエラー:',
       'Invalid login credentials'
+    );
+    expect(redirect).not.toHaveBeenCalled();
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('ログインに失敗した場合（一般的なエラー）、エラーログを出力して早期リターンする', async () => {
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+
+    process.env.GUEST_USER_EMAIL = 'guest@example.com';
+    process.env.GUEST_USER_PASSWORD = 'password';
+
+    const error = new Error('Network error');
+    (signIn as jest.Mock).mockRejectedValue(error);
+
+    await guestLogin();
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'ゲストログインエラー:',
+      expect.any(Error)
     );
     expect(redirect).not.toHaveBeenCalled();
 
