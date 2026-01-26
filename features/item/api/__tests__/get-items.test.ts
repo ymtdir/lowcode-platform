@@ -1,16 +1,10 @@
 import { getItems } from '../get-items';
-
-// Supabaseクライアントをモック化
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn(),
-}));
+import { getCurrentUser } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    user: {
-      findUnique: jest.fn(),
-    },
     item: {
       findMany: jest.fn(),
       findUnique: jest.fn(),
@@ -22,24 +16,43 @@ jest.mock('@/lib/prisma', () => ({
     groupMember: {
       findMany: jest.fn(),
     },
+    user: {
+      findUnique: jest.fn(),
+    },
   },
 }));
 
-import { createClient } from '@/lib/supabase/server';
-import { prisma } from '@/lib/prisma';
+// lib/authをモック化
+jest.mock('@/lib/auth', () => ({
+  getCurrentUser: jest.fn(),
+}));
+
+// revalidatePathをモック化
+jest.mock('next/cache', () => ({
+  revalidatePath: jest.fn(),
+}));
+
+
+
+const mockAdminUser = {
+  id: 'admin-1',
+  email: 'admin@example.com',
+  name: '管理者',
+  role: 'ADMIN' as const,
+};
+
+const mockUser = {
+  id: 'user-id',
+  email: 'test@example.com',
+  name: 'Test User',
+  role: 'DEVELOPER',
+};
 
 describe('getItems', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-
     // デフォルトでADMINユーザーを設定
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: { email: 'admin@example.com' } },
-        }),
-      },
-    });
+    (getCurrentUser as jest.Mock).mockResolvedValue(mockAdminUser);
 
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
       id: 'user-1',
@@ -156,13 +169,7 @@ describe('getItems', () => {
   });
 
   it('認証されていない場合は空配列を返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: null },
-        }),
-      },
-    });
+    (getCurrentUser as jest.Mock).mockResolvedValue(null);
 
     const result = await getItems();
 
@@ -172,12 +179,10 @@ describe('getItems', () => {
 
   it('権限のないアイテムは除外される', async () => {
     // MEMBER roleを設定（権限チェックが実行される）
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: { email: 'member@example.com' } },
-        }),
-      },
+    (getCurrentUser as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+      email: 'member@example.com',
+      role: 'MEMBER',
     });
 
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
@@ -240,12 +245,10 @@ describe('getItems', () => {
 
   it('子アイテムで権限のないものは除外される', async () => {
     // MEMBER roleを設定（権限チェックが実行される）
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: { email: 'member@example.com' } },
-        }),
-      },
+    (getCurrentUser as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+      email: 'member@example.com',
+      role: 'MEMBER',
     });
 
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({

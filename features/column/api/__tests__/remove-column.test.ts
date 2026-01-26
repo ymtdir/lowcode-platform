@@ -1,21 +1,20 @@
 import { removeColumn } from '../remove-column';
+import { requireAuth } from '@/lib/auth';
 
 // revalidatePathをモック化
 jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
 }));
 
-// Supabaseクライアントをモック化
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn(),
+// lib/authをモック化
+jest.mock('@/lib/auth', () => ({
+  requireAuth: jest.fn(),
 }));
 
+// Supabaseクライアントをモック化
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    user: {
-      findUnique: jest.fn(),
-    },
     item: {
       findUnique: jest.fn(),
       update: jest.fn(),
@@ -23,25 +22,19 @@ jest.mock('@/lib/prisma', () => ({
   },
 }));
 
-import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 
 describe('removeColumn', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
   });
 
-  const mockUser = {
-    auth: {
-      getUser: jest.fn().mockResolvedValue({
-        data: { user: { email: 'test@example.com' } },
-      }),
-    },
-  };
-
-  const mockDbUser = {
+  const mockDeveloperUser = {
     id: 'user-1',
-    role: 'DEVELOPER',
+    email: 'developer@example.com',
+    name: '開発者',
+    role: 'DEVELOPER' as const,
   };
 
   const mockItem = {
@@ -70,8 +63,7 @@ describe('removeColumn', () => {
   };
 
   it('カラムを削除できる', async () => {
-    (createClient as jest.Mock).mockResolvedValue(mockUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+    (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
     (prisma.item.findUnique as jest.Mock).mockResolvedValue(mockItem);
     (prisma.item.update as jest.Mock).mockResolvedValue({
       ...mockItem,
@@ -112,13 +104,7 @@ describe('removeColumn', () => {
   });
 
   it('認証されていない場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: null },
-        }),
-      },
-    });
+    (requireAuth as jest.Mock).mockResolvedValue(null);
 
     const result = await removeColumn('item-1', 'col-1');
 
@@ -127,8 +113,7 @@ describe('removeColumn', () => {
   });
 
   it('テーブルが見つからない場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue(mockUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+    (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
     (prisma.item.findUnique as jest.Mock).mockResolvedValue(null);
 
     const result = await removeColumn('item-1', 'col-1');
@@ -138,8 +123,7 @@ describe('removeColumn', () => {
   });
 
   it('テーブルではない場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue(mockUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+    (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
     (prisma.item.findUnique as jest.Mock).mockResolvedValue({
       ...mockItem,
       type: 'FOLDER',
@@ -152,9 +136,8 @@ describe('removeColumn', () => {
   });
 
   it('MEMBER権限ではエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue(mockUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      ...mockDbUser,
+    (requireAuth as jest.Mock).mockResolvedValue({
+      ...mockDeveloperUser,
       role: 'MEMBER',
     });
 
@@ -167,8 +150,7 @@ describe('removeColumn', () => {
   });
 
   it('スキーマが存在しない場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue(mockUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+    (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
     (prisma.item.findUnique as jest.Mock).mockResolvedValue({
       ...mockItem,
       meta: null,
@@ -181,8 +163,7 @@ describe('removeColumn', () => {
   });
 
   it('カラムが見つからない場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue(mockUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+    (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
     (prisma.item.findUnique as jest.Mock).mockResolvedValue(mockItem);
 
     const result = await removeColumn('item-1', 'col-999');
@@ -192,8 +173,7 @@ describe('removeColumn', () => {
   });
 
   it('データベースエラーが発生した場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue(mockUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+    (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
     (prisma.item.findUnique as jest.Mock).mockResolvedValue(mockItem);
     (prisma.item.update as jest.Mock).mockRejectedValue(
       new Error('Database error')

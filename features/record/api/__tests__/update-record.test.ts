@@ -1,28 +1,20 @@
 import { updateRecord } from '../update-record';
+import { getCurrentUser } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 // revalidatePathをモック化
 jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
 }));
 
-// Supabaseクライアントをモック化
-const mockGetUser = jest.fn();
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn(() =>
-    Promise.resolve({
-      auth: {
-        getUser: mockGetUser,
-      },
-    })
-  ),
+// Authをモック化
+jest.mock('@/lib/auth', () => ({
+  getCurrentUser: jest.fn(),
 }));
 
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    user: {
-      findUnique: jest.fn(),
-    },
     record: {
       findUnique: jest.fn(),
       update: jest.fn(),
@@ -39,16 +31,15 @@ jest.mock('@/lib/prisma', () => ({
   },
 }));
 
-import { prisma } from '@/lib/prisma';
-
 describe('updateRecord', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   const mockUser = {
-    id: 'auth-user-1',
+    id: 'user-1',
     email: 'test@example.com',
+    role: 'ADMIN',
   };
 
   const mockRecord = {
@@ -60,13 +51,7 @@ describe('updateRecord', () => {
   };
 
   it('レコードを更新できる', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: mockUser } });
-
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-      email: 'test@example.com',
-      role: 'ADMIN',
-    });
+    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
 
     (prisma.record.findUnique as jest.Mock).mockResolvedValue(mockRecord);
 
@@ -93,13 +78,7 @@ describe('updateRecord', () => {
   });
 
   it('既存のデータとマージされる', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: mockUser } });
-
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-      email: 'test@example.com',
-      role: 'ADMIN',
-    });
+    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
 
     (prisma.record.findUnique as jest.Mock).mockResolvedValue(mockRecord);
 
@@ -129,7 +108,7 @@ describe('updateRecord', () => {
   });
 
   it('未認証の場合はエラーを返す', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: null } });
+    (getCurrentUser as jest.Mock).mockResolvedValue(null);
 
     const result = await updateRecord('record-1', { name: '更新後' });
 
@@ -138,13 +117,7 @@ describe('updateRecord', () => {
   });
 
   it('レコードが存在しない場合はエラーを返す', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: mockUser } });
-
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-      email: 'test@example.com',
-      role: 'ADMIN',
-    });
+    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
 
     (prisma.record.findUnique as jest.Mock).mockResolvedValue(null);
 
@@ -155,11 +128,8 @@ describe('updateRecord', () => {
   });
 
   it('WRITE権限がない場合はエラーを返す', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: mockUser } });
-
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-      email: 'test@example.com',
+    (getCurrentUser as jest.Mock).mockResolvedValue({
+      ...mockUser,
       role: 'MEMBER',
     });
 
@@ -183,13 +153,7 @@ describe('updateRecord', () => {
   });
 
   it('データベースエラーが発生した場合はエラーを返す', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: mockUser } });
-
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-      email: 'test@example.com',
-      role: 'ADMIN',
-    });
+    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
 
     (prisma.record.findUnique as jest.Mock).mockResolvedValue(mockRecord);
 
@@ -215,13 +179,7 @@ describe('updateRecord', () => {
       ...mockRecord,
       data: null,
     };
-    mockGetUser.mockResolvedValue({ data: { user: mockUser } });
-
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-      email: 'test@example.com',
-      role: 'ADMIN',
-    });
+    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
 
     (prisma.record.findUnique as jest.Mock).mockResolvedValue(
       recordWithNullData

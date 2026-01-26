@@ -1,42 +1,34 @@
 import { removeMembers } from '../remove-members';
-import { createClient } from '@/lib/supabase/server';
-
-// Supabaseクライアントをモック化
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn(),
-}));
+import { requireAuth } from '@/lib/auth';
 
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    user: {
-      findUnique: jest.fn(),
-    },
     groupMember: {
       deleteMany: jest.fn(),
     },
   },
 }));
 
+// lib/authをモック化
+jest.mock('@/lib/auth', () => ({
+  requireAuth: jest.fn(),
+}));
 import { prisma } from '@/lib/prisma';
 
 // ADMINユーザーのモック
 const mockAdminUser = {
-  auth: {
-    getUser: jest.fn().mockResolvedValue({
-      data: { user: { email: 'admin@example.com' } },
-    }),
-  },
+  id: 'admin-1',
+  email: 'admin@example.com',
+  name: '管理者',
+  role: 'ADMIN' as const,
 };
 
 describe('removeMembers', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // デフォルトでADMINユーザーを設定
-    (createClient as jest.Mock).mockResolvedValue(mockAdminUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      role: 'ADMIN',
-    });
+    (requireAuth as jest.Mock).mockResolvedValue(mockAdminUser);
   });
 
   it('メンバーを削除できる', async () => {
@@ -62,13 +54,7 @@ describe('removeMembers', () => {
   });
 
   it('認証されていない場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: null },
-        }),
-      },
-    });
+    (requireAuth as jest.Mock).mockResolvedValue(null);
 
     const result = await removeMembers('group-1', ['user-1']);
 
@@ -76,7 +62,8 @@ describe('removeMembers', () => {
   });
 
   it('ADMIN以外のロールはエラーを返す', async () => {
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+    (requireAuth as jest.Mock).mockResolvedValue({
+      ...mockAdminUser,
       role: 'MEMBER',
     });
 

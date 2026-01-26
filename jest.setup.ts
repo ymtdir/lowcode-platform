@@ -18,3 +18,19 @@ jest.mock('next-auth', () => ({
     }
   },
 }));
+
+// next-auth providersのモック化
+jest.mock('next-auth/providers/credentials', () => ({
+  default: jest.fn(() => ({
+    id: 'credentials',
+    name: 'Credentials',
+  })),
+}));
+
+// lib/auth-configのモック化
+jest.mock('@/lib/auth-config', () => ({
+  handlers: { GET: jest.fn(), POST: jest.fn() },
+  signIn: jest.fn(),
+  signOut: jest.fn(),
+  auth: jest.fn(),
+}));

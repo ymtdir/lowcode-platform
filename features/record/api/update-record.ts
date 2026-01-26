@@ -2,7 +2,6 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { canAccessItem, hasPermission } from '@/lib/permissions';

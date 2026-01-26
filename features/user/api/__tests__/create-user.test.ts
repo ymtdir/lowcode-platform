@@ -1,23 +1,9 @@
 import { createUser } from '../create-user';
-import { createClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/auth';
 
-// Supabase Admin Clientのモック関数を定義
-const mockCreateUserFn = jest.fn();
-
-// Supabaseクライアントをモック化
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn(),
-}));
-
-// Supabase Admin Clientをモック化
-jest.mock('@/lib/supabase/admin', () => ({
-  createAdminClient: jest.fn(() => ({
-    auth: {
-      admin: {
-        createUser: mockCreateUserFn,
-      },
-    },
-  })),
+// lib/authをモック化
+jest.mock('@/lib/auth', () => ({
+  requireAuth: jest.fn(),
 }));
 
 // Prismaクライアントをモック化
@@ -34,21 +20,17 @@ import { prisma } from '@/lib/prisma';
 
 // ADMINユーザーのモック
 const mockAdminUser = {
-  auth: {
-    getUser: jest.fn().mockResolvedValue({
-      data: { user: { email: 'admin@example.com' } },
-    }),
-  },
+  id: 'admin-1',
+  email: 'admin@example.com',
+  name: '管理者',
+  role: 'ADMIN' as const,
 };
 
 describe('createUser', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // デフォルトでADMINユーザーを設定
-    (createClient as jest.Mock).mockResolvedValue(mockAdminUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      role: 'ADMIN',
-    });
+    (requireAuth as jest.Mock).mockResolvedValue(mockAdminUser);
   });
 
   it('ユーザーを作成できる', async () => {
@@ -59,16 +41,7 @@ describe('createUser', () => {
     formData.append('confirmPassword', 'password123');
     formData.append('role', 'DEVELOPER');
 
-    mockCreateUserFn.mockResolvedValue({
-      data: {
-        user: {
-          id: 'user-1',
-          email: 'test@example.com',
-        },
-      },
-      error: null,
-    });
-
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue(null); // 既存ユーザーなし
     (prisma.user.create as jest.Mock).mockResolvedValue({
       id: 'user-1',
       name: 'テストユーザー',
@@ -79,29 +52,18 @@ describe('createUser', () => {
     const result = await createUser({}, formData);
 
     expect(result).toEqual({ success: true });
-    expect(mockCreateUserFn).toHaveBeenCalledWith({
-      email: 'test@example.com',
-      password: 'password123',
-      email_confirm: true,
-    });
     expect(prisma.user.create).toHaveBeenCalledWith({
-      data: {
-        id: 'user-1',
+      data: expect.objectContaining({
         name: 'テストユーザー',
         email: 'test@example.com',
         role: 'DEVELOPER',
-      },
+        password: expect.any(String), // ハッシュ化されたパスワード
+      }),
     });
   });
 
   it('認証されていない場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: null },
-        }),
-      },
-    });
+    (requireAuth as jest.Mock).mockResolvedValue(null);
 
     const formData = new FormData();
     formData.append('name', 'テストユーザー');
@@ -115,7 +77,8 @@ describe('createUser', () => {
   });
 
   it('ADMIN以外のロールはエラーを返す', async () => {
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+    (requireAuth as jest.Mock).mockResolvedValue({
+      ...mockAdminUser,
       role: 'MEMBER',
     });
 
@@ -142,7 +105,7 @@ describe('createUser', () => {
     expect(result).toEqual({
       error: '名前を入力してください',
     });
-    expect(mockCreateUserFn).not.toHaveBeenCalled();
+    expect(prisma.user.create).not.toHaveBeenCalled();
   });
 
   it('パスワードが一致しない場合はエラーを返す', async () => {
@@ -157,7 +120,7 @@ describe('createUser', () => {
     expect(result).toEqual({
       error: 'パスワードが一致しません',
     });
-    expect(mockCreateUserFn).not.toHaveBeenCalled();
+    expect(prisma.user.create).not.toHaveBeenCalled();
   });
 
   it('無効なロールが指定された場合はエラーを返す', async () => {
@@ -173,25 +136,25 @@ describe('createUser', () => {
     expect(result).toEqual({
       error: '無効なロールが指定されました',
     });
-    expect(mockCreateUserFn).not.toHaveBeenCalled();
+    expect(prisma.user.create).not.toHaveBeenCalled();
   });
 
-  it('Supabase Auth でエラーが発生した場合はエラーを返す', async () => {
+  it('既にメールアドレスが使用されている場合はエラーを返す', async () => {
     const formData = new FormData();
     formData.append('name', 'テストユーザー');
     formData.append('email', 'test@example.com');
     formData.append('password', 'password123');
     formData.append('confirmPassword', 'password123');
 
-    mockCreateUserFn.mockResolvedValue({
-      data: { user: null },
-      error: { message: 'User already exists' },
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'existing-user',
+      email: 'test@example.com',
     });
 
     const result = await createUser({}, formData);
 
     expect(result).toEqual({
-      error: 'ユーザーの作成に失敗しました',
+      error: 'このメールアドレスは既に使用されています',
     });
     expect(prisma.user.create).not.toHaveBeenCalled();
   });
@@ -203,16 +166,7 @@ describe('createUser', () => {
     formData.append('password', 'password123');
     formData.append('confirmPassword', 'password123');
 
-    mockCreateUserFn.mockResolvedValue({
-      data: {
-        user: {
-          id: 'user-1',
-          email: 'test@example.com',
-        },
-      },
-      error: null,
-    });
-
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
     (prisma.user.create as jest.Mock).mockRejectedValue(
       new Error('Database error')
     );

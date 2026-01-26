@@ -1,17 +1,10 @@
 import { addPermission } from '../add-permission';
-import { createClient } from '@/lib/supabase/server';
-
-// Supabaseクライアントをモック化
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn(),
-}));
+import { getCurrentUser } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    user: {
-      findUnique: jest.fn(),
-    },
     item: {
       findUnique: jest.fn(),
     },
@@ -21,27 +14,35 @@ jest.mock('@/lib/prisma', () => ({
     itemPermission: {
       create: jest.fn(),
     },
+    user: {
+      findUnique: jest.fn(),
+    },
   },
 }));
 
-import { prisma } from '@/lib/prisma';
+// lib/authをモック化
+jest.mock('@/lib/auth', () => ({
+  getCurrentUser: jest.fn(),
+}));
 
-// DEVELOPERユーザーのモック
-const mockDeveloperUser = {
-  auth: {
-    getUser: jest.fn().mockResolvedValue({
-      data: { user: { email: 'developer@example.com' } },
-    }),
-  },
+// revalidatePathをモック化
+jest.mock('next/cache', () => ({
+  revalidatePath: jest.fn(),
+}));
+
+const mockUser = {
+  id: 'user-1',
+  email: 'test@example.com',
+  name: 'Test User',
+  role: 'DEVELOPER',
 };
 
 describe('addPermission', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // デフォルトでDEVELOPERユーザーを設定
-    (createClient as jest.Mock).mockResolvedValue(mockDeveloperUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
+    (getCurrentUser as jest.Mock).mockResolvedValue({
+      ...mockUser,
       role: 'DEVELOPER',
     });
   });
@@ -55,15 +56,10 @@ describe('addPermission', () => {
       name: 'テストアイテム',
     });
 
-    (prisma.user.findUnique as jest.Mock)
-      .mockResolvedValueOnce({
-        id: 'user-1',
-        role: 'DEVELOPER',
-      })
-      .mockResolvedValueOnce({
-        id: userId,
-        name: 'テストユーザー',
-      });
+    (prisma.user.findUnique as jest.Mock).mockResolvedValueOnce({
+      id: userId,
+      name: 'テストユーザー',
+    });
 
     (prisma.itemPermission.create as jest.Mock).mockResolvedValue({
       id: 'permission-1',
@@ -122,13 +118,7 @@ describe('addPermission', () => {
   });
 
   it('認証されていない場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: null },
-        }),
-      },
-    });
+    (getCurrentUser as jest.Mock).mockResolvedValue(null);
 
     const result = await addPermission('item-1', 'user', 'user-1', 'READ');
 
@@ -137,8 +127,8 @@ describe('addPermission', () => {
   });
 
   it('MEMBER権限ではエラーを返す', async () => {
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
+    (getCurrentUser as jest.Mock).mockResolvedValue({
+      ...mockUser,
       role: 'MEMBER',
     });
 
@@ -163,12 +153,7 @@ describe('addPermission', () => {
       name: 'テストアイテム',
     });
 
-    (prisma.user.findUnique as jest.Mock)
-      .mockResolvedValueOnce({
-        id: 'user-1',
-        role: 'DEVELOPER',
-      })
-      .mockResolvedValueOnce(null);
+    (prisma.user.findUnique as jest.Mock).mockResolvedValueOnce(null);
 
     const result = await addPermission('item-1', 'user', 'user-2', 'WRITE');
 
@@ -196,15 +181,10 @@ describe('addPermission', () => {
       name: 'テストアイテム',
     });
 
-    (prisma.user.findUnique as jest.Mock)
-      .mockResolvedValueOnce({
-        id: 'user-1',
-        role: 'DEVELOPER',
-      })
-      .mockResolvedValueOnce({
-        id: 'user-2',
-        name: 'テストユーザー',
-      });
+    (prisma.user.findUnique as jest.Mock).mockResolvedValueOnce({
+      id: 'user-2',
+      name: 'テストユーザー',
+    });
 
     (prisma.itemPermission.create as jest.Mock).mockRejectedValue({
       code: 'P2002',
@@ -245,15 +225,10 @@ describe('addPermission', () => {
       name: 'テストアイテム',
     });
 
-    (prisma.user.findUnique as jest.Mock)
-      .mockResolvedValueOnce({
-        id: 'user-1',
-        role: 'DEVELOPER',
-      })
-      .mockResolvedValueOnce({
-        id: 'user-2',
-        name: 'テストユーザー',
-      });
+    (prisma.user.findUnique as jest.Mock).mockResolvedValueOnce({
+      id: 'user-2',
+      name: 'テストユーザー',
+    });
 
     (prisma.itemPermission.create as jest.Mock).mockRejectedValue(
       new Error('Database error')

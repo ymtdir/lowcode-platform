@@ -1,28 +1,20 @@
 import { createRecord } from '../create-record';
+import { getCurrentUser } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 // revalidatePathをモック化
 jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
 }));
 
-// Supabaseクライアントをモック化
-const mockGetUser = jest.fn();
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn(() =>
-    Promise.resolve({
-      auth: {
-        getUser: mockGetUser,
-      },
-    })
-  ),
+// Authをモック化
+jest.mock('@/lib/auth', () => ({
+  getCurrentUser: jest.fn(),
 }));
 
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    user: {
-      findUnique: jest.fn(),
-    },
     item: {
       findUnique: jest.fn(),
     },
@@ -38,20 +30,15 @@ jest.mock('@/lib/prisma', () => ({
   },
 }));
 
-import { prisma } from '@/lib/prisma';
-
 describe('createRecord', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   const mockUser = {
-    id: 'auth-user-1',
-    email: 'test@example.com',
-  };
-
-  const mockDbUser = {
     id: 'db-user-1',
+    email: 'test@example.com',
+    role: 'ADMIN',
   };
 
   const mockTable = {
@@ -61,11 +48,7 @@ describe('createRecord', () => {
   };
 
   it('レコードを作成できる', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: mockUser } });
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      ...mockDbUser,
-      role: 'ADMIN',
-    });
+    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
     (prisma.item.findUnique as jest.Mock).mockResolvedValue(mockTable);
     (prisma.itemPermission.findUnique as jest.Mock).mockResolvedValue(null);
     (prisma.groupMember.findMany as jest.Mock).mockResolvedValue([]);
@@ -101,7 +84,7 @@ describe('createRecord', () => {
   });
 
   it('未認証の場合はエラーを返す', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: null } });
+    (getCurrentUser as jest.Mock).mockResolvedValue(null);
 
     const formData = new FormData();
     formData.set('tableId', 'table-1');
@@ -112,22 +95,8 @@ describe('createRecord', () => {
     expect(prisma.record.create).not.toHaveBeenCalled();
   });
 
-  it('ユーザー情報が取得できない場合はエラーを返す', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: mockUser } });
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
-
-    const formData = new FormData();
-    formData.set('tableId', 'table-1');
-
-    const result = await createRecord({}, formData);
-
-    expect(result).toEqual({ error: 'ユーザー情報が取得できませんでした' });
-    expect(prisma.record.create).not.toHaveBeenCalled();
-  });
-
   it('テーブルIDがない場合はエラーを返す', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: mockUser } });
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
 
     const formData = new FormData();
 
@@ -138,11 +107,7 @@ describe('createRecord', () => {
   });
 
   it('テーブルが存在しない場合はエラーを返す', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: mockUser } });
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      ...mockDbUser,
-      role: 'ADMIN',
-    });
+    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
     (prisma.item.findUnique as jest.Mock).mockResolvedValue(null);
 
     const formData = new FormData();
@@ -155,11 +120,7 @@ describe('createRecord', () => {
   });
 
   it('dataが空の場合は空オブジェクトで作成される', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: mockUser } });
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      ...mockDbUser,
-      role: 'ADMIN',
-    });
+    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
     (prisma.item.findUnique as jest.Mock).mockResolvedValue(mockTable);
     (prisma.itemPermission.findUnique as jest.Mock).mockResolvedValue(null);
     (prisma.groupMember.findMany as jest.Mock).mockResolvedValue([]);
@@ -194,11 +155,7 @@ describe('createRecord', () => {
   });
 
   it('データベースエラーが発生した場合はエラーを返す', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: mockUser } });
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      ...mockDbUser,
-      role: 'ADMIN',
-    });
+    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
     (prisma.item.findUnique as jest.Mock).mockResolvedValue(mockTable);
     (prisma.itemPermission.findUnique as jest.Mock).mockResolvedValue(null);
     (prisma.groupMember.findMany as jest.Mock).mockResolvedValue([]);

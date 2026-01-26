@@ -1,17 +1,15 @@
 import { removePermission } from '../remove-permission';
-import { createClient } from '@/lib/supabase/server';
+import { getCurrentUser } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
-// Supabaseクライアントをモック化
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn(),
+// revalidatePathをモック化
+jest.mock('next/cache', () => ({
+  revalidatePath: jest.fn(),
 }));
 
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    user: {
-      findUnique: jest.fn(),
-    },
     itemPermission: {
       findUnique: jest.fn(),
       delete: jest.fn(),
@@ -19,26 +17,20 @@ jest.mock('@/lib/prisma', () => ({
   },
 }));
 
-import { prisma } from '@/lib/prisma';
+// lib/authをモック化
+jest.mock('@/lib/auth', () => ({
+  getCurrentUser: jest.fn(),
+}));
 
-// DEVELOPERユーザーのモック
-const mockDeveloperUser = {
-  auth: {
-    getUser: jest.fn().mockResolvedValue({
-      data: { user: { email: 'developer@example.com' } },
-    }),
-  },
+const mockUser = {
+  id: 'user-1',
+  role: 'DEVELOPER',
 };
 
 describe('removePermission', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // デフォルトでDEVELOPERユーザーを設定
-    (createClient as jest.Mock).mockResolvedValue(mockDeveloperUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-      role: 'DEVELOPER',
-    });
+    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
   });
 
   it('権限を削除できる', async () => {
@@ -65,13 +57,7 @@ describe('removePermission', () => {
   });
 
   it('認証されていない場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: null },
-        }),
-      },
-    });
+    (getCurrentUser as jest.Mock).mockResolvedValue(null);
 
     const result = await removePermission('permission-1');
 
@@ -80,8 +66,8 @@ describe('removePermission', () => {
   });
 
   it('MEMBER権限ではエラーを返す', async () => {
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
+    (getCurrentUser as jest.Mock).mockResolvedValue({
+      ...mockUser,
       role: 'MEMBER',
     });
 

@@ -1,17 +1,15 @@
 import { addMembers } from '../add-members';
-import { createClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
-// Supabaseクライアントをモック化
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn(),
+// lib/authをモック化
+jest.mock('@/lib/auth', () => ({
+  requireAuth: jest.fn(),
 }));
 
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    user: {
-      findUnique: jest.fn(),
-    },
     groupMember: {
       findMany: jest.fn(),
       create: jest.fn(),
@@ -20,25 +18,19 @@ jest.mock('@/lib/prisma', () => ({
   },
 }));
 
-import { prisma } from '@/lib/prisma';
-
 // ADMINユーザーのモック
 const mockAdminUser = {
-  auth: {
-    getUser: jest.fn().mockResolvedValue({
-      data: { user: { email: 'admin@example.com' } },
-    }),
-  },
+  id: 'admin-1',
+  email: 'admin@example.com',
+  name: '管理者',
+  role: 'ADMIN' as const,
 };
 
 describe('addMembers', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // デフォルトでADMINユーザーを設定
-    (createClient as jest.Mock).mockResolvedValue(mockAdminUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      role: 'ADMIN',
-    });
+    (requireAuth as jest.Mock).mockResolvedValue(mockAdminUser);
   });
 
   it('新しいメンバーを追加できる', async () => {
@@ -68,13 +60,7 @@ describe('addMembers', () => {
   });
 
   it('認証されていない場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: null },
-        }),
-      },
-    });
+    (requireAuth as jest.Mock).mockResolvedValue(null);
 
     const result = await addMembers('group-1', ['user-1']);
 
@@ -82,7 +68,8 @@ describe('addMembers', () => {
   });
 
   it('ADMIN以外のロールはエラーを返す', async () => {
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+    (requireAuth as jest.Mock).mockResolvedValue({
+      ...mockAdminUser,
       role: 'MEMBER',
     });
 
@@ -94,13 +81,28 @@ describe('addMembers', () => {
   it('空の配列を渡すとエラーを返す', async () => {
     const result = await addMembers('group-1', []);
 
-    expect(result).toEqual({
-      error: 'ユーザーが選択されていません',
-    });
-    expect(prisma.groupMember.findMany).not.toHaveBeenCalled();
+    expect(result).toEqual({ error: 'ユーザーが選択されていません' });
   });
 
-  it('既存メンバーをスキップして新規メンバーのみ追加', async () => {
+  it('すべてのユーザーが既にメンバーの場合はエラーを返す', async () => {
+    const groupId = 'group-1';
+    const userIds = ['user-1', 'user-2'];
+
+    // 全員既存メンバー
+    (prisma.groupMember.findMany as jest.Mock).mockResolvedValue([
+      { userId: 'user-1' },
+      { userId: 'user-2' },
+    ]);
+
+    const result = await addMembers(groupId, userIds);
+
+    expect(result).toEqual({
+      error: 'すべてのユーザーは既にメンバーです',
+    });
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('一部のユーザーが既にメンバーの場合は新しいユーザーのみ追加する', async () => {
     const groupId = 'group-1';
     const userIds = ['user-1', 'user-2', 'user-3'];
 
@@ -109,7 +111,7 @@ describe('addMembers', () => {
       { userId: 'user-1' },
     ]);
 
-    // user-2, user-3のみ追加
+    // user-2, user-3を追加
     (prisma.$transaction as jest.Mock).mockResolvedValue([
       { id: 'member-2', userId: 'user-2', groupId },
       { id: 'member-3', userId: 'user-3', groupId },
@@ -124,29 +126,12 @@ describe('addMembers', () => {
     });
   });
 
-  it('すべてのユーザーが既にメンバーの場合はエラーを返す', async () => {
-    const groupId = 'group-1';
-    const userIds = ['user-1', 'user-2'];
-
-    // すべて既存メンバー
-    (prisma.groupMember.findMany as jest.Mock).mockResolvedValue([
-      { userId: 'user-1' },
-      { userId: 'user-2' },
-    ]);
-
-    const result = await addMembers(groupId, userIds);
-
-    expect(result).toEqual({
-      error: 'すべてのユーザーは既にメンバーです',
-    });
-    expect(prisma.$transaction).not.toHaveBeenCalled();
-  });
-
   it('データベースエラーが発生した場合はエラーを返す', async () => {
     const groupId = 'group-1';
     const userIds = ['user-1'];
 
-    (prisma.groupMember.findMany as jest.Mock).mockRejectedValue(
+    (prisma.groupMember.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.$transaction as jest.Mock).mockRejectedValue(
       new Error('Database error')
     );
 

@@ -1,4 +1,5 @@
 import { createFolder } from '../create-folder';
+import { requireAuth } from '@/lib/auth';
 import { Prisma } from '@prisma/client';
 
 // next/cacheをモック化
@@ -6,17 +7,9 @@ jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
 }));
 
-// Supabaseクライアントをモック化
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn(),
-}));
-
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    user: {
-      findUnique: jest.fn(),
-    },
     item: {
       findFirst: jest.fn(),
       create: jest.fn(),
@@ -24,25 +17,27 @@ jest.mock('@/lib/prisma', () => ({
   },
 }));
 
-import { createClient } from '@/lib/supabase/server';
+// lib/authをモック化
+jest.mock('@/lib/auth', () => ({
+  requireAuth: jest.fn(),
+}));
 import { prisma } from '@/lib/prisma';
 
 // DEVELOPERユーザーのモック
-const mockDeveloperUser = {
-  auth: {
-    getUser: jest.fn().mockResolvedValue({
-      data: { user: { email: 'developer@example.com' } },
-    }),
-  },
+
+const mockUser = {
+  id: 'user-id',
+  email: 'test@example.com',
+  name: 'Test User',
+  role: 'DEVELOPER',
 };
 
 describe('createFolder', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // デフォルトでDEVELOPERユーザーを設定
-    (createClient as jest.Mock).mockResolvedValue(mockDeveloperUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
+    (requireAuth as jest.Mock).mockResolvedValue({
+      ...mockUser,
       role: 'DEVELOPER',
     });
   });
@@ -59,7 +54,7 @@ describe('createFolder', () => {
       type: 'FOLDER',
       name: 'テストフォルダ',
       parentId: null,
-      createdById: 'user-1',
+      createdById: 'user-id',
       order: 0,
     });
 
@@ -71,7 +66,7 @@ describe('createFolder', () => {
         type: 'FOLDER',
         name: 'テストフォルダ',
         parentId: null,
-        createdById: 'user-1',
+        createdById: 'user-id',
         order: 0,
         meta: Prisma.JsonNull,
       },
@@ -90,7 +85,7 @@ describe('createFolder', () => {
       type: 'FOLDER',
       name: '子フォルダ',
       parentId: 'parent-1',
-      createdById: 'user-1',
+      createdById: 'user-id',
       order: 3,
     });
 
@@ -102,7 +97,7 @@ describe('createFolder', () => {
         type: 'FOLDER',
         name: '子フォルダ',
         parentId: 'parent-1',
-        createdById: 'user-1',
+        createdById: 'user-id',
         order: 3,
         meta: Prisma.JsonNull,
       },

@@ -1,22 +1,15 @@
 import { updateItemIcon } from '../update-item-icon';
-import { createClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 // revalidatePathをモック化
 jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
 }));
 
-// Supabaseクライアントをモック化
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn(),
-}));
-
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    user: {
-      findUnique: jest.fn(),
-    },
     item: {
       findUnique: jest.fn(),
       update: jest.fn(),
@@ -24,25 +17,24 @@ jest.mock('@/lib/prisma', () => ({
   },
 }));
 
-import { prisma } from '@/lib/prisma';
+// lib/authをモック化
+jest.mock('@/lib/auth', () => ({
+  requireAuth: jest.fn(),
+}));
 
 // DEVELOPERユーザーのモック
 const mockDeveloperUser = {
-  auth: {
-    getUser: jest.fn().mockResolvedValue({
-      data: { user: { email: 'developer@example.com' } },
-    }),
-  },
+  id: 'user-1',
+  email: 'developer@example.com',
+  name: 'Developer',
+  role: 'DEVELOPER' as const,
 };
 
 describe('updateItemIcon', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // デフォルトでDEVELOPERユーザーを設定
-    (createClient as jest.Mock).mockResolvedValue(mockDeveloperUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      role: 'DEVELOPER',
-    });
+    (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
   });
 
   it('有効なアイコン名でアイコンを更新できる', async () => {
@@ -89,13 +81,7 @@ describe('updateItemIcon', () => {
   });
 
   it('認証されていない場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: null },
-        }),
-      },
-    });
+    (requireAuth as jest.Mock).mockResolvedValue(null);
 
     const result = await updateItemIcon('folder-1', 'Users');
 
@@ -104,7 +90,8 @@ describe('updateItemIcon', () => {
   });
 
   it('MEMBER権限ではエラーを返す', async () => {
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+    (requireAuth as jest.Mock).mockResolvedValue({
+      ...mockDeveloperUser,
       role: 'MEMBER',
     });
 
@@ -193,8 +180,11 @@ describe('updateItemIcon', () => {
     const itemId = 'folder-1';
     const iconName = 'Folder';
 
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      role: 'ADMIN',
+    (requireAuth as jest.Mock).mockResolvedValue({
+      id: 'admin-1',
+      email: 'admin@example.com',
+      name: '管理者',
+      role: 'ADMIN' as const,
     });
 
     (prisma.item.findUnique as jest.Mock).mockResolvedValue({

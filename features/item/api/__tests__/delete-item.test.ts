@@ -1,45 +1,41 @@
 import { deleteItem } from '../delete-item';
-import { createClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/auth';
 
 // revalidatePathをモック化
 jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
 }));
 
-// Supabaseクライアントをモック化
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn(),
-}));
-
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    user: {
-      findUnique: jest.fn(),
-    },
     item: {
       delete: jest.fn(),
     },
   },
 }));
 
+// lib/authをモック化
+jest.mock('@/lib/auth', () => ({
+  requireAuth: jest.fn(),
+}));
 import { prisma } from '@/lib/prisma';
 
 // DEVELOPERユーザーのモック
-const mockDeveloperUser = {
-  auth: {
-    getUser: jest.fn().mockResolvedValue({
-      data: { user: { email: 'developer@example.com' } },
-    }),
-  },
+
+const mockUser = {
+  id: 'user-id',
+  email: 'test@example.com',
+  name: 'Test User',
+  role: 'DEVELOPER',
 };
 
 describe('deleteItem', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // デフォルトでDEVELOPERユーザーを設定
-    (createClient as jest.Mock).mockResolvedValue(mockDeveloperUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+    (requireAuth as jest.Mock).mockResolvedValue({
+      ...mockUser,
       role: 'DEVELOPER',
     });
   });
@@ -61,13 +57,7 @@ describe('deleteItem', () => {
   });
 
   it('認証されていない場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: null },
-        }),
-      },
-    });
+    (requireAuth as jest.Mock).mockResolvedValue(null);
 
     const result = await deleteItem('folder-1');
 
@@ -75,7 +65,8 @@ describe('deleteItem', () => {
   });
 
   it('MEMBER権限ではエラーを返す', async () => {
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+    (requireAuth as jest.Mock).mockResolvedValue({
+      ...mockUser,
       role: 'MEMBER',
     });
 
@@ -85,7 +76,8 @@ describe('deleteItem', () => {
   });
 
   it('ADMIN権限でも削除できる', async () => {
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+    (requireAuth as jest.Mock).mockResolvedValue({
+      ...mockUser,
       role: 'ADMIN',
     });
 

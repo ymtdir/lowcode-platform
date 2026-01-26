@@ -1,21 +1,20 @@
 import { updateColumn } from '../update-column';
+import { requireAuth } from '@/lib/auth';
 
 // revalidatePathをモック化
 jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
 }));
 
-// Supabaseクライアントをモック化
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn(),
+// lib/authをモック化
+jest.mock('@/lib/auth', () => ({
+  requireAuth: jest.fn(),
 }));
 
+// Supabaseクライアントをモック化
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    user: {
-      findUnique: jest.fn(),
-    },
     item: {
       findUnique: jest.fn(),
       update: jest.fn(),
@@ -23,25 +22,19 @@ jest.mock('@/lib/prisma', () => ({
   },
 }));
 
-import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 
 describe('updateColumn', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
   });
 
-  const mockUser = {
-    auth: {
-      getUser: jest.fn().mockResolvedValue({
-        data: { user: { email: 'test@example.com' } },
-      }),
-    },
-  };
-
-  const mockDbUser = {
+  const mockDeveloperUser = {
     id: 'user-1',
-    role: 'DEVELOPER',
+    email: 'developer@example.com',
+    name: '開発者',
+    role: 'DEVELOPER' as const,
   };
 
   const mockItem = {
@@ -64,8 +57,7 @@ describe('updateColumn', () => {
   };
 
   it('カラムを更新できる', async () => {
-    (createClient as jest.Mock).mockResolvedValue(mockUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+    (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
     (prisma.item.findUnique as jest.Mock).mockResolvedValue(mockItem);
     (prisma.item.update as jest.Mock).mockResolvedValue(mockItem);
 
@@ -94,13 +86,7 @@ describe('updateColumn', () => {
   });
 
   it('認証されていない場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: null },
-        }),
-      },
-    });
+    (requireAuth as jest.Mock).mockResolvedValue(null);
 
     const result = await updateColumn('item-1', 'col-1', {
       name: '顧客名（更新）',
@@ -111,8 +97,7 @@ describe('updateColumn', () => {
   });
 
   it('カラム名が空の場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue(mockUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+    (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
 
     const result = await updateColumn('item-1', 'col-1', {
       name: '',
@@ -125,8 +110,7 @@ describe('updateColumn', () => {
   });
 
   it('テーブルが見つからない場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue(mockUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+    (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
     (prisma.item.findUnique as jest.Mock).mockResolvedValue(null);
 
     const result = await updateColumn('item-1', 'col-1', {
@@ -138,8 +122,7 @@ describe('updateColumn', () => {
   });
 
   it('テーブルではない場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue(mockUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+    (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
     (prisma.item.findUnique as jest.Mock).mockResolvedValue({
       ...mockItem,
       type: 'FOLDER',
@@ -154,9 +137,8 @@ describe('updateColumn', () => {
   });
 
   it('MEMBER権限ではエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue(mockUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      ...mockDbUser,
+    (requireAuth as jest.Mock).mockResolvedValue({
+      ...mockDeveloperUser,
       role: 'MEMBER',
     });
 
@@ -171,8 +153,7 @@ describe('updateColumn', () => {
   });
 
   it('スキーマが存在しない場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue(mockUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+    (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
     (prisma.item.findUnique as jest.Mock).mockResolvedValue({
       ...mockItem,
       meta: null,
@@ -187,8 +168,7 @@ describe('updateColumn', () => {
   });
 
   it('同じ名前のカラムが既に存在する場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue(mockUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+    (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
     (prisma.item.findUnique as jest.Mock).mockResolvedValue({
       ...mockItem,
       meta: {
@@ -223,8 +203,7 @@ describe('updateColumn', () => {
   });
 
   it('カラムが見つからない場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue(mockUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+    (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
     (prisma.item.findUnique as jest.Mock).mockResolvedValue(mockItem);
 
     const result = await updateColumn('item-1', 'col-999', {
@@ -236,8 +215,7 @@ describe('updateColumn', () => {
   });
 
   it('データベースエラーが発生した場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue(mockUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+    (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
     (prisma.item.findUnique as jest.Mock).mockResolvedValue(mockItem);
     (prisma.item.update as jest.Mock).mockRejectedValue(
       new Error('Database error')
@@ -279,8 +257,7 @@ describe('updateColumn', () => {
     };
 
     it('SELECTカラムの選択肢を更新できる', async () => {
-      (createClient as jest.Mock).mockResolvedValue(mockUser);
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+      (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
       (prisma.item.findUnique as jest.Mock).mockResolvedValue(mockSelectItem);
       (prisma.item.update as jest.Mock).mockResolvedValue(mockSelectItem);
 
@@ -344,8 +321,7 @@ describe('updateColumn', () => {
         },
       };
 
-      (createClient as jest.Mock).mockResolvedValue(mockUser);
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+      (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
       (prisma.item.findUnique as jest.Mock).mockResolvedValue(
         mockMultiSelectItem
       );
@@ -392,8 +368,7 @@ describe('updateColumn', () => {
   });
 
   it('RELATION型カラムの設定を更新できる', async () => {
-    (createClient as jest.Mock).mockResolvedValue(mockUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+    (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
     (prisma.item.findUnique as jest.Mock).mockResolvedValue({
       ...mockItem,
       meta: {
@@ -449,8 +424,7 @@ describe('updateColumn', () => {
   });
 
   it('RELATION型カラムの複数選択設定を変更できる', async () => {
-    (createClient as jest.Mock).mockResolvedValue(mockUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
+    (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
     (prisma.item.findUnique as jest.Mock).mockResolvedValue({
       ...mockItem,
       meta: {

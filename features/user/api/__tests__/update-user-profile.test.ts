@@ -1,28 +1,5 @@
 import { updateUserProfile } from '../update-user';
-
-// モック関数を定義
-const mockUpdateUserById = jest.fn();
-const mockGetUser = jest.fn();
-
-// Supabase Server Clientをモック化
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn(() => ({
-    auth: {
-      getUser: mockGetUser,
-    },
-  })),
-}));
-
-// Supabase Admin Clientをモック化
-jest.mock('@/lib/supabase/admin', () => ({
-  createAdminClient: jest.fn(() => ({
-    auth: {
-      admin: {
-        updateUserById: mockUpdateUserById,
-      },
-    },
-  })),
-}));
+import { requireAuth } from '@/lib/auth';
 
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
@@ -30,19 +7,30 @@ jest.mock('@/lib/prisma', () => ({
     user: {
       update: jest.fn(),
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
     },
   },
 }));
 
+// lib/authをモック化
+jest.mock('@/lib/auth', () => ({
+  requireAuth: jest.fn(),
+}));
 import { prisma } from '@/lib/prisma';
 
+// ADMINユーザーのモック
 describe('updateUserProfile', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // デフォルトで別のユーザーとして認証
-    mockGetUser.mockResolvedValue({
-      data: { user: { id: 'current-user-id' } },
+    // デフォルトでADMINユーザーを設定（別のユーザーとして）
+    (requireAuth as jest.Mock).mockResolvedValue({
+      id: 'current-user-id',
+      email: 'current@example.com',
+      name: '現在のユーザー',
+      role: 'ADMIN' as const,
     });
+    // デフォルトでメールアドレスの重複なし
+    (prisma.user.findFirst as jest.Mock).mockResolvedValue(null);
   });
 
   it('ユーザー情報を更新できる', async () => {
@@ -51,10 +39,6 @@ describe('updateUserProfile', () => {
     formData.append('name', '更新されたユーザー');
     formData.append('email', 'updated@example.com');
     formData.append('role', 'ADMIN');
-
-    mockUpdateUserById.mockResolvedValue({
-      error: null,
-    });
 
     (prisma.user.update as jest.Mock).mockResolvedValue({
       id: userId,
@@ -66,9 +50,6 @@ describe('updateUserProfile', () => {
     const result = await updateUserProfile(userId, {}, formData);
 
     expect(result).toEqual({ success: true });
-    expect(mockUpdateUserById).toHaveBeenCalledWith(userId, {
-      email: 'updated@example.com',
-    });
     expect(prisma.user.update).toHaveBeenCalledWith({
       where: { id: userId },
       data: {
@@ -89,7 +70,7 @@ describe('updateUserProfile', () => {
     expect(result).toEqual({
       error: '名前を入力してください',
     });
-    expect(mockUpdateUserById).not.toHaveBeenCalled();
+    expect(prisma.user.update).not.toHaveBeenCalled();
   });
 
   it('無効なメールアドレスの場合はエラーを返す', async () => {
@@ -102,7 +83,7 @@ describe('updateUserProfile', () => {
     expect(result).toEqual({
       error: '有効なメールアドレスを入力してください',
     });
-    expect(mockUpdateUserById).not.toHaveBeenCalled();
+    expect(prisma.user.update).not.toHaveBeenCalled();
   });
 
   it('無効なロールが指定された場合はエラーを返す', async () => {
@@ -116,7 +97,7 @@ describe('updateUserProfile', () => {
     expect(result).toEqual({
       error: '無効なロールが指定されました',
     });
-    expect(mockUpdateUserById).not.toHaveBeenCalled();
+    expect(prisma.user.update).not.toHaveBeenCalled();
   });
 
   it('自分自身のロールは変更できない', async () => {
@@ -126,14 +107,12 @@ describe('updateUserProfile', () => {
     formData.append('email', 'test@example.com');
     formData.append('role', 'MEMBER');
 
-    // 現在のユーザーとして認証
-    mockGetUser.mockResolvedValue({
-      data: { user: { id: userId } },
-    });
-
-    // 現在のロールをADMINとして設定
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      role: 'ADMIN',
+    // 現在のユーザーとして認証（自分自身を編集しようとしている）
+    (requireAuth as jest.Mock).mockResolvedValue({
+      id: userId,
+      email: 'test@example.com',
+      name: 'テストユーザー',
+      role: 'ADMIN' as const,
     });
 
     const result = await updateUserProfile(userId, {}, formData);
@@ -141,25 +120,24 @@ describe('updateUserProfile', () => {
     expect(result).toEqual({
       error: '自分自身のロールは変更できません',
     });
-    expect(mockUpdateUserById).not.toHaveBeenCalled();
+    expect(prisma.user.update).not.toHaveBeenCalled();
   });
 
-  it('Supabase Auth でエラーが発生した場合はエラーを返す', async () => {
+  it('メールアドレスの検証でエラーが発生した場合はエラーを返す', async () => {
     const userId = 'user-1';
     const formData = new FormData();
     formData.append('name', 'テストユーザー');
     formData.append('email', 'test@example.com');
 
-    mockUpdateUserById.mockResolvedValue({
-      error: { message: 'Update failed' },
-    });
+    (prisma.user.update as jest.Mock).mockRejectedValue(
+      new Error('Email already exists')
+    );
 
     const result = await updateUserProfile(userId, {}, formData);
 
     expect(result).toEqual({
-      error: 'メールアドレスの更新に失敗しました',
+      error: 'ユーザー情報の更新に失敗しました',
     });
-    expect(prisma.user.update).not.toHaveBeenCalled();
   });
 
   it('Prisma でエラーが発生した場合はエラーを返す', async () => {
@@ -167,10 +145,6 @@ describe('updateUserProfile', () => {
     const formData = new FormData();
     formData.append('name', 'テストユーザー');
     formData.append('email', 'test@example.com');
-
-    mockUpdateUserById.mockResolvedValue({
-      error: null,
-    });
 
     (prisma.user.update as jest.Mock).mockRejectedValue(
       new Error('Database error')

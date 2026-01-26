@@ -1,20 +1,16 @@
 import { createScript } from '../create-script';
-import { createClient } from '@/lib/supabase/server';
-
-// Supabaseクライアントをモック化
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn(),
-}));
+import { requireAuth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    user: {
-      findUnique: jest.fn(),
-    },
     script: {
       aggregate: jest.fn(),
       create: jest.fn(),
+    },
+    user: {
+      findUnique: jest.fn(),
     },
     $transaction: jest.fn((callback) => callback(prisma)),
   },
@@ -25,24 +21,24 @@ jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
 }));
 
-import { prisma } from '@/lib/prisma';
+// lib/authをモック化
+jest.mock('@/lib/auth', () => ({
+  requireAuth: jest.fn(),
+}));
 
-// DEVELOPERユーザーのモック
-const mockDeveloperUser = {
-  auth: {
-    getUser: jest.fn().mockResolvedValue({
-      data: { user: { email: 'developer@example.com' } },
-    }),
-  },
+const mockUser = {
+  id: 'user-id',
+  email: 'test@example.com',
+  name: 'Test User',
+  role: 'DEVELOPER',
 };
 
 describe('createScript', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // デフォルトでDEVELOPERユーザーを設定
-    (createClient as jest.Mock).mockResolvedValue(mockDeveloperUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
+    (requireAuth as jest.Mock).mockResolvedValue({
+      ...mockUser,
       role: 'DEVELOPER',
     });
   });
@@ -143,13 +139,7 @@ describe('createScript', () => {
   });
 
   it('認証されていない場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: null },
-        }),
-      },
-    });
+    (requireAuth as jest.Mock).mockResolvedValue(null);
 
     const result = await createScript('item-1', { name: 'test.js' });
 
@@ -157,18 +147,9 @@ describe('createScript', () => {
     expect(prisma.script.create).not.toHaveBeenCalled();
   });
 
-  it('ユーザー情報が取得できない場合はエラーを返す', async () => {
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
-
-    const result = await createScript('item-1', { name: 'test.js' });
-
-    expect(result).toEqual({ error: 'ユーザー情報が取得できませんでした' });
-    expect(prisma.script.create).not.toHaveBeenCalled();
-  });
-
   it('MEMBER権限ではエラーを返す', async () => {
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
+    (requireAuth as jest.Mock).mockResolvedValue({
+      ...mockUser,
       role: 'MEMBER',
     });
 
@@ -233,8 +214,8 @@ describe('createScript', () => {
   });
 
   it('ADMINロールでもスクリプトを作成できる', async () => {
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
+    (requireAuth as jest.Mock).mockResolvedValue({
+      ...mockUser,
       role: 'ADMIN',
     });
 

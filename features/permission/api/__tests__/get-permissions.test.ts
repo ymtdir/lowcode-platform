@@ -1,17 +1,10 @@
 import { getPermissions } from '../get-permissions';
-import { createClient } from '@/lib/supabase/server';
-
-// Supabaseクライアントをモック化
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn(),
-}));
+import { getCurrentUser } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    user: {
-      findUnique: jest.fn(),
-    },
     item: {
       findUnique: jest.fn(),
     },
@@ -21,26 +14,20 @@ jest.mock('@/lib/prisma', () => ({
   },
 }));
 
-import { prisma } from '@/lib/prisma';
+// lib/authをモック化
+jest.mock('@/lib/auth', () => ({
+  getCurrentUser: jest.fn(),
+}));
 
-// DEVELOPERユーザーのモック
-const mockDeveloperUser = {
-  auth: {
-    getUser: jest.fn().mockResolvedValue({
-      data: { user: { email: 'developer@example.com' } },
-    }),
-  },
+const mockUser = {
+  id: 'user-1',
+  role: 'DEVELOPER',
 };
 
 describe('getPermissions', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // デフォルトでDEVELOPERユーザーを設定
-    (createClient as jest.Mock).mockResolvedValue(mockDeveloperUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-      role: 'DEVELOPER',
-    });
+    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
   });
 
   it('権限一覧を取得できる', async () => {
@@ -133,13 +120,7 @@ describe('getPermissions', () => {
   });
 
   it('認証されていない場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: null },
-        }),
-      },
-    });
+    (getCurrentUser as jest.Mock).mockResolvedValue(null);
 
     const result = await getPermissions('item-1');
 
@@ -148,8 +129,8 @@ describe('getPermissions', () => {
   });
 
   it('MEMBER権限ではエラーを返す', async () => {
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
+    (getCurrentUser as jest.Mock).mockResolvedValue({
+      ...mockUser,
       role: 'MEMBER',
     });
 
