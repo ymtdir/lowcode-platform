@@ -32,20 +32,11 @@ jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
 }));
 
-
-
 const mockAdminUser = {
   id: 'admin-1',
   email: 'admin@example.com',
   name: '管理者',
   role: 'ADMIN' as const,
-};
-
-const mockUser = {
-  id: 'user-id',
-  email: 'test@example.com',
-  name: 'Test User',
-  role: 'DEVELOPER',
 };
 
 describe('getItems', () => {
