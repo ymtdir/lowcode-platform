@@ -1,5 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { auth } from '@/lib/auth-config';
+import NextAuth from 'next-auth';
+import { authEdgeConfig } from '@/lib/auth-edge-config';
+
+const { auth } = NextAuth(authEdgeConfig);
 
 // 認証不要なパス
 const publicPaths = ['/login', '/register', '/api/auth'];
