@@ -54,8 +54,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: dummy-key-for-build-check
-          SUPABASE_SERVICE_ROLE_KEY: dummy-key-for-build-check
           DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
-          DEFAULT_USER_PASSWORD: P@ssw0rd
+          DIRECT_URL: postgresql://dummy:dummy@localhost:5432/dummy
+          NEXTAUTH_SECRET: dummy-secret-for-build-check
+          NEXTAUTH_URL: http://localhost:3000
