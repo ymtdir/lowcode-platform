@@ -5,10 +5,8 @@ Next.js製の業務アプリケーションプラットフォーム。ノーコ�
 ## 技術スタック
 
 - **フレームワーク**: Next.js 16.0.0 (App Router with Turbopack)
-- **データベース**: Supabase (PostgreSQL) + Prisma
-- **認証**: Supabase Auth（メール/パスワード認証）
-- **ストレージ**: Supabase Storage（ファイルアップロード用）
-- **リアルタイム**: Supabase Realtime（将来の複数人編集用）
+- **データベース**: Neon (PostgreSQL) + Prisma
+- **認証**: NextAuth.js v5 (Credentials Provider)
 - **UI**: shadcn/ui + Tailwind CSS
 - **テスト**: Jest with next/jest
 - **コードエディタ**: Monaco Editor（カスタマイズ機能用）
@@ -55,10 +53,7 @@ npm run lint             # ESLintチェック
 
 主要な環境変数（詳細は `.env.local.example` 参照）:
 
-- `DATABASE_URL`: PostgreSQL接続文字列
-- `NEXT_PUBLIC_SUPABASE_URL`: Supabase プロジェクトURL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase 匿名キー
-- `SUPABASE_SERVICE_ROLE_KEY`: Supabase サービスロールキー
+- `DATABASE_URL`: Neon PostgreSQL接続文字列
 - `NEXTAUTH_SECRET`: NextAuth用シークレット
 - `NEXTAUTH_URL`: アプリケーションURL
 

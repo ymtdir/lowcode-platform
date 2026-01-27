@@ -77,7 +77,6 @@ export default async function TableDetailPage({ params }) {
 - インタラクティブなUI（onClick, onChange等のイベントハンドラ）
 - ブラウザAPIの使用（localStorage, window等）
 - Reactのフック（useState, useEffect等）
-- リアルタイム更新（Supabase Realtime）
 
 ```typescript
 // features/record/components/RecordForm/RecordForm.tsx

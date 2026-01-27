@@ -6,11 +6,11 @@
 
 **目標**: ユーザー登録・ログイン・権限管理の基盤ができる
 
-- Next.js + Supabase + Prismaのセットアップ
-- Supabase Authの統合
-- ユーザー登録・ログイン画面
+- Next.js + Neon (PostgreSQL) + Prismaのセットアップ
+- NextAuth.jsの統合（Credentials Provider）
+- ログイン画面・ゲストログイン
 - 認証ミドルウェア
-- ユーザーロール（Admin/Member）の実装
+- ユーザーロール（ADMIN/DEVELOPER/MEMBER）の実装
 - 保護されたダッシュボード画面
 
 **成果物**:
