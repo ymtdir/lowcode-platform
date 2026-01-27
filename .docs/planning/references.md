@@ -35,11 +35,11 @@
 
 ### データベース・ORM・認証
 
-| リソース                              | 説明                           |
-| ------------------------------------- | ------------------------------ |
-| [Prisma](https://www.prisma.io/)      | 型安全なORM                    |
-| [Neon](https://neon.tech/docs)        | Serverless PostgreSQL          |
-| [NextAuth.js](https://authjs.dev/)    | Next.js用認証ライブラリ        |
+| リソース                           | 説明                    |
+| ---------------------------------- | ----------------------- |
+| [Prisma](https://www.prisma.io/)   | 型安全なORM             |
+| [Neon](https://neon.tech/docs)     | Serverless PostgreSQL   |
+| [NextAuth.js](https://authjs.dev/) | Next.js用認証ライブラリ |
 
 ### UI・スタイリング
 
