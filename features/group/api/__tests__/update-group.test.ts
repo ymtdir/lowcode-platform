@@ -1,17 +1,9 @@
 import { updateGroup } from '../update-group';
-import { createClient } from '@/lib/supabase/server';
-
-// Supabaseクライアントをモック化
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn(),
-}));
+import { requireAuth, AuthError } from '@/lib/auth';
 
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    user: {
-      findUnique: jest.fn(),
-    },
     group: {
       update: jest.fn(),
       findUnique: jest.fn(),
@@ -19,25 +11,29 @@ jest.mock('@/lib/prisma', () => ({
   },
 }));
 
+// lib/authをモック化
+jest.mock('@/lib/auth', () => {
+  const actual = jest.requireActual('@/lib/auth');
+  return {
+    ...actual,
+    requireAuth: jest.fn(),
+  };
+});
 import { prisma } from '@/lib/prisma';
 
 // ADMINユーザーのモック
 const mockAdminUser = {
-  auth: {
-    getUser: jest.fn().mockResolvedValue({
-      data: { user: { email: 'admin@example.com' } },
-    }),
-  },
+  id: 'admin-1',
+  email: 'admin@example.com',
+  name: '管理者',
+  role: 'ADMIN' as const,
 };
 
 describe('updateGroup', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // デフォルトでADMINユーザーを設定
-    (createClient as jest.Mock).mockResolvedValue(mockAdminUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      role: 'ADMIN',
-    });
+    (requireAuth as jest.Mock).mockResolvedValue(mockAdminUser);
   });
 
   it('グループを更新できる', async () => {
@@ -97,13 +93,9 @@ describe('updateGroup', () => {
   });
 
   it('認証されていない場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: null },
-        }),
-      },
-    });
+    (requireAuth as jest.Mock).mockRejectedValue(
+      new AuthError('認証が必要です')
+    );
 
     const formData = new FormData();
     formData.append('name', 'テストグループ');
@@ -114,7 +106,8 @@ describe('updateGroup', () => {
   });
 
   it('ADMIN以外のロールはエラーを返す', async () => {
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+    (requireAuth as jest.Mock).mockResolvedValue({
+      ...mockAdminUser,
       role: 'MEMBER',
     });
 

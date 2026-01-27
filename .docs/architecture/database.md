@@ -3,15 +3,10 @@
 ## 環境変数
 
 ```.env.local
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your-project-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+# Database（Neon PostgreSQL）
+DATABASE_URL=postgresql://[username]:[password]@[host]/[database]?sslmode=require
 
-# Database（Prisma）
-DATABASE_URL=postgresql://postgres:[password]@db.[project-ref].supabase.co:5432/postgres
-
-# Next.js
+# NextAuth.js
 NEXTAUTH_SECRET=your-nextauth-secret
 NEXTAUTH_URL=http://localhost:3000
 ```

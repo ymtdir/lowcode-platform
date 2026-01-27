@@ -1,22 +1,21 @@
 import { createItem } from '../create-item';
 import { Prisma } from '@prisma/client';
+import { requireAuth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 // revalidatePathをモック化
 jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
 }));
 
-// Supabaseクライアントをモック化
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn(),
+// Authをモック化
+jest.mock('@/lib/auth', () => ({
+  requireAuth: jest.fn(),
 }));
 
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    user: {
-      findUnique: jest.fn(),
-    },
     item: {
       findFirst: jest.fn(),
       create: jest.fn(),
@@ -24,27 +23,19 @@ jest.mock('@/lib/prisma', () => ({
   },
 }));
 
-import { createClient } from '@/lib/supabase/server';
-import { prisma } from '@/lib/prisma';
-
 // DEVELOPERユーザーのモック
 const mockDeveloperUser = {
-  auth: {
-    getUser: jest.fn().mockResolvedValue({
-      data: { user: { email: 'developer@example.com' } },
-    }),
-  },
+  id: 'user-1',
+  email: 'developer@example.com',
+  name: 'Developer',
+  role: 'DEVELOPER',
 };
 
 describe('createItem', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // デフォルトでDEVELOPERユーザーを設定
-    (createClient as jest.Mock).mockResolvedValue(mockDeveloperUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-      role: 'DEVELOPER',
-    });
+    (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
   });
 
   it('アイテムを作成できる', async () => {
@@ -112,13 +103,7 @@ describe('createItem', () => {
     formData.append('name', 'テストアイテム');
     formData.append('parentId', '');
 
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: null },
-        }),
-      },
-    });
+    (requireAuth as jest.Mock).mockRejectedValue(new Error('認証が必要です'));
 
     const result = await createItem({}, formData);
 
@@ -127,8 +112,8 @@ describe('createItem', () => {
   });
 
   it('MEMBER権限ではエラーを返す', async () => {
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
+    (requireAuth as jest.Mock).mockResolvedValue({
+      ...mockDeveloperUser,
       role: 'MEMBER',
     });
 

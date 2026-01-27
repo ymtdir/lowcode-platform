@@ -1,5 +1,5 @@
 import type { UserRole } from '@prisma/client';
-import { createClient } from '@/lib/supabase/server';
+import { auth } from '@/lib/auth-config';
 import { prisma } from '@/lib/prisma';
 
 /**
@@ -38,17 +38,14 @@ export class PermissionError extends Error {
  */
 export async function getCurrentUser(): Promise<AuthUser | null> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const session = await auth();
 
-    if (!user?.email) {
+    if (!session?.user?.email) {
       return null;
     }
 
     const dbUser = await prisma.user.findUnique({
-      where: { email: user.email },
+      where: { email: session.user.email },
       select: { id: true, name: true, role: true },
     });
 
@@ -58,7 +55,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 
     return {
       id: dbUser.id,
-      email: user.email,
+      email: session.user.email,
       name: dbUser.name,
       role: dbUser.role,
     };

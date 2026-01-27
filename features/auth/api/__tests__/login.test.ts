@@ -1,7 +1,8 @@
 import { login } from '../login';
-import { createClient } from '@/lib/supabase/server';
+import { signIn } from '@/lib/auth-config';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { AuthError } from 'next-auth';
 
 jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
@@ -13,8 +14,8 @@ jest.mock('next/navigation', () => ({
   }),
 }));
 
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn(),
+jest.mock('@/lib/auth-config', () => ({
+  signIn: jest.fn(),
 }));
 
 describe('login', () => {
@@ -27,38 +28,24 @@ describe('login', () => {
   });
 
   it('正しい認証情報でログインできる', async () => {
-    const mockSupabase = {
-      auth: {
-        signInWithPassword: jest.fn().mockResolvedValue({
-          data: { user: { id: 'user-1', email: 'test@example.com' } },
-          error: null,
-        }),
-      },
-    };
+    (signIn as jest.Mock).mockResolvedValue({ ok: true });
 
-    (createClient as jest.Mock).mockResolvedValue(mockSupabase);
+    await expect(login({}, mockFormData)).rejects.toThrow('NEXT_REDIRECT');
 
-    await expect(login({}, mockFormData)).rejects.toThrow();
-
-    expect(mockSupabase.auth.signInWithPassword).toHaveBeenCalledWith({
+    expect(signIn).toHaveBeenCalledWith('credentials', {
       email: 'test@example.com',
       password: 'password123',
+      redirect: false,
     });
     expect(revalidatePath).toHaveBeenCalledWith('/', 'layout');
     expect(redirect).toHaveBeenCalledWith('/');
   });
 
-  it('誤った認証情報の場合はエラーを返す', async () => {
-    const mockSupabase = {
-      auth: {
-        signInWithPassword: jest.fn().mockResolvedValue({
-          data: { user: null },
-          error: { message: 'Invalid login credentials' },
-        }),
-      },
-    };
-
-    (createClient as jest.Mock).mockResolvedValue(mockSupabase);
+  it('誤った認証情報の場合はエラーを返す（SignInResponse経由）', async () => {
+    (signIn as jest.Mock).mockResolvedValue({
+      ok: false,
+      error: 'CredentialsSignin',
+    });
 
     const result = await login({}, mockFormData);
 
@@ -69,17 +56,35 @@ describe('login', () => {
     expect(redirect).not.toHaveBeenCalled();
   });
 
-  it('メールアドレスが存在しない場合はエラーを返す', async () => {
-    const mockSupabase = {
-      auth: {
-        signInWithPassword: jest.fn().mockResolvedValue({
-          data: { user: null },
-          error: { message: 'Email not found' },
-        }),
-      },
-    };
+  it('誤った認証情報の場合はエラーを返す（AuthError経由）', async () => {
+    const authError = new AuthError('Invalid credentials');
+    (signIn as jest.Mock).mockRejectedValue(authError);
 
-    (createClient as jest.Mock).mockResolvedValue(mockSupabase);
+    const result = await login({}, mockFormData);
+
+    expect(result).toEqual({
+      error: 'メールアドレスまたはパスワードが正しくありません',
+    });
+    expect(revalidatePath).not.toHaveBeenCalled();
+    expect(redirect).not.toHaveBeenCalled();
+  });
+
+  it('メールアドレスが存在しない場合はエラーを返す（SignInResponse経由）', async () => {
+    (signIn as jest.Mock).mockResolvedValue({
+      ok: false,
+      error: 'User not found',
+    });
+
+    const result = await login({}, mockFormData);
+
+    expect(result).toEqual({
+      error: 'メールアドレスまたはパスワードが正しくありません',
+    });
+  });
+
+  it('メールアドレスが存在しない場合はエラーを返す（AuthError経由）', async () => {
+    const authError = new AuthError('Email not found');
+    (signIn as jest.Mock).mockRejectedValue(authError);
 
     const result = await login({}, mockFormData);
 
@@ -89,21 +94,12 @@ describe('login', () => {
   });
 
   it('ネットワークエラーの場合はエラーを返す', async () => {
-    const mockSupabase = {
-      auth: {
-        signInWithPassword: jest.fn().mockResolvedValue({
-          data: { user: null },
-          error: { message: 'Network error' },
-        }),
-      },
-    };
-
-    (createClient as jest.Mock).mockResolvedValue(mockSupabase);
+    (signIn as jest.Mock).mockRejectedValue(new Error('Network error'));
 
     const result = await login({}, mockFormData);
 
     expect(result).toEqual({
-      error: 'メールアドレスまたはパスワードが正しくありません',
+      error: 'ログインに失敗しました',
     });
   });
 });

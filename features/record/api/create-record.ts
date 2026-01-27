@@ -1,7 +1,6 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { canAccessItem, hasPermission } from '@/lib/permissions';
@@ -24,20 +23,10 @@ export async function createRecord(
   _prevState: FormState,
   formData: FormData
 ): Promise<FormState> {
-  // セッションからユーザー情報を取得
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: '認証が必要です' };
-  }
-
-  // DBからユーザー情報を取得
+  // ユーザー情報を取得
   const currentUser = await getCurrentUser();
   if (!currentUser) {
-    return { error: 'ユーザー情報が取得できませんでした' };
+    return { error: '認証が必要です' };
   }
 
   const tableId = formData.get('tableId') as string;

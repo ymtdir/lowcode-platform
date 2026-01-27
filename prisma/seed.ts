@@ -1,36 +1,11 @@
 import { config } from 'dotenv';
 import { PrismaClient } from '@prisma/client';
-import { createClient } from '@supabase/supabase-js';
+import bcrypt from 'bcryptjs';
 
 // .env.localから環境変数を読み込む
 config({ path: '.env.local' });
 
-// 必須環境変数のバリデーション
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!supabaseUrl || !supabaseServiceRoleKey) {
-  console.error('エラー: 必須の環境変数が設定されていません');
-  if (!supabaseUrl) {
-    console.error('- NEXT_PUBLIC_SUPABASE_URL');
-  }
-  if (!supabaseServiceRoleKey) {
-    console.error('- SUPABASE_SERVICE_ROLE_KEY');
-  }
-  process.exit(1);
-}
-
 const prisma = new PrismaClient();
-
-/**
- * Supabaseクライアントの作成
- */
-const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-});
 
 /**
  * 管理者ユーザーを作成
@@ -42,55 +17,33 @@ async function createAdminUser() {
 
   console.log(`管理者ユーザーを作成中: ${email}`);
 
-  // 既存のSupabase Authユーザーを削除
-  const { data: existingUsers } = await supabase.auth.admin.listUsers();
-  const existingAuthUser = existingUsers?.users.find((u) => u.email === email);
-
-  if (existingAuthUser) {
-    console.log('既存の管理者ユーザーをSupabase Authから削除中');
-    await supabase.auth.admin.deleteUser(existingAuthUser.id);
-    console.log('既存の管理者ユーザー（Supabase Auth）を削除しました');
-  }
-
-  // Prisma DBの既存ユーザーを削除
-  const existingPrismaUser = await prisma.user.findUnique({
+  // 既存ユーザーを削除
+  const existingUser = await prisma.user.findUnique({
     where: { email },
   });
-  if (existingPrismaUser) {
-    console.log('既存の管理者ユーザーをPrisma DBから削除中');
+
+  if (existingUser) {
+    console.log('既存の管理者ユーザーを削除中');
     await prisma.user.delete({
-      where: { id: existingPrismaUser.id },
+      where: { id: existingUser.id },
     });
-    console.log('既存の管理者ユーザー（Prisma DB）を削除しました');
+    console.log('既存の管理者ユーザーを削除しました');
   }
 
-  // Supabase Authにユーザーを作成
-  const { data: authData, error: authError } =
-    await supabase.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true, // メール確認をスキップ
-    });
+  // パスワードをハッシュ化
+  const hashedPassword = await bcrypt.hash(password, 10);
 
-  if (authError) {
-    throw authError;
-  }
-
-  console.log(
-    `Supabase Authに管理者ユーザーを作成しました: ${authData.user.id}`
-  );
-
-  // Prismaにユーザー情報を保存
+  // ユーザーを作成
   const user = await prisma.user.create({
     data: {
-      id: authData.user.id,
       name,
       email,
+      password: hashedPassword,
       role: 'ADMIN',
     },
   });
 
-  console.log(`データベースに管理者ユーザーを作成しました: ${user.id}`);
+  console.log(`管理者ユーザーを作成しました: ${user.id}`);
   return user.id;
 }
 

@@ -1,22 +1,16 @@
 import { updateItemIcon } from '../update-item-icon';
-import { createClient } from '@/lib/supabase/server';
+import { requireAuth, AuthError } from '@/lib/auth';
+import { canManageStructure } from '@/lib/permissions';
+import { prisma } from '@/lib/prisma';
 
 // revalidatePathをモック化
 jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
 }));
 
-// Supabaseクライアントをモック化
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn(),
-}));
-
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    user: {
-      findUnique: jest.fn(),
-    },
     item: {
       findUnique: jest.fn(),
       update: jest.fn(),
@@ -24,25 +18,35 @@ jest.mock('@/lib/prisma', () => ({
   },
 }));
 
-import { prisma } from '@/lib/prisma';
+// lib/authをモック化
+jest.mock('@/lib/auth', () => {
+  const actual = jest.requireActual('@/lib/auth');
+  return {
+    ...actual,
+    requireAuth: jest.fn(),
+  };
+});
+
+// lib/permissionsをモック化
+jest.mock('@/lib/permissions', () => ({
+  canManageStructure: jest.fn(),
+}));
 
 // DEVELOPERユーザーのモック
 const mockDeveloperUser = {
-  auth: {
-    getUser: jest.fn().mockResolvedValue({
-      data: { user: { email: 'developer@example.com' } },
-    }),
-  },
+  id: 'user-1',
+  email: 'developer@example.com',
+  name: 'Developer',
+  role: 'DEVELOPER' as const,
 };
 
 describe('updateItemIcon', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // デフォルトでDEVELOPERユーザーを設定
-    (createClient as jest.Mock).mockResolvedValue(mockDeveloperUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      role: 'DEVELOPER',
-    });
+    (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
+    // デフォルトで権限あり
+    (canManageStructure as jest.Mock).mockReturnValue(true);
   });
 
   it('有効なアイコン名でアイコンを更新できる', async () => {
@@ -89,13 +93,9 @@ describe('updateItemIcon', () => {
   });
 
   it('認証されていない場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: null },
-        }),
-      },
-    });
+    (requireAuth as jest.Mock).mockRejectedValue(
+      new AuthError('認証が必要です')
+    );
 
     const result = await updateItemIcon('folder-1', 'Users');
 
@@ -104,9 +104,11 @@ describe('updateItemIcon', () => {
   });
 
   it('MEMBER権限ではエラーを返す', async () => {
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+    (requireAuth as jest.Mock).mockResolvedValue({
+      ...mockDeveloperUser,
       role: 'MEMBER',
     });
+    (canManageStructure as jest.Mock).mockReturnValue(false);
 
     const result = await updateItemIcon('folder-1', 'Users');
 
@@ -193,8 +195,11 @@ describe('updateItemIcon', () => {
     const itemId = 'folder-1';
     const iconName = 'Folder';
 
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      role: 'ADMIN',
+    (requireAuth as jest.Mock).mockResolvedValue({
+      id: 'admin-1',
+      email: 'admin@example.com',
+      name: '管理者',
+      role: 'ADMIN' as const,
     });
 
     (prisma.item.findUnique as jest.Mock).mockResolvedValue({

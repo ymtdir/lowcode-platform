@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { canManageGroups } from '@/lib/permissions';
 import { parseCSV } from '@/lib/csv';
@@ -23,12 +23,9 @@ export async function importGroupsAction(
   csvContent: string
 ): Promise<ImportResult> {
   // 認証チェック
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const currentUser = await requireAuth().catch(() => null);
 
-  if (!user?.email) {
+  if (!currentUser) {
     return {
       success: false,
       insertedCount: 0,
@@ -41,12 +38,7 @@ export async function importGroupsAction(
   }
 
   // 権限チェック
-  const currentUser = await prisma.user.findUnique({
-    where: { email: user.email },
-    select: { role: true },
-  });
-
-  if (!currentUser || !canManageGroups(currentUser.role)) {
+  if (!canManageGroups(currentUser.role)) {
     return {
       success: false,
       insertedCount: 0,

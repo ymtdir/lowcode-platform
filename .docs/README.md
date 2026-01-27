@@ -32,7 +32,7 @@ mukuの詳細ドキュメント集です。
 
 | ファイル                                          | 内容                           | 参照タイミング             |
 | ------------------------------------------------- | ------------------------------ | -------------------------- |
-| [authentication.md](./features/authentication.md) | 認証機能、Supabase Auth        | 認証関連の実装時           |
+| [authentication.md](./features/authentication.md) | 認証機能、NextAuth.js          | 認証関連の実装時           |
 | [groups.md](./features/groups.md)                 | グループ管理、権限             | グループ機能の実装時       |
 | [users.md](./features/users.md)                   | ユーザー管理                   | ユーザー機能の実装時       |
 | [items.md](./features/items.md)                   | Item（フォルダ・テーブル）管理 | ワークスペース機能の実装時 |

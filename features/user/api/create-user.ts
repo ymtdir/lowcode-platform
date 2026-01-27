@@ -1,10 +1,10 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
-import { createAdminClient } from '@/lib/supabase/admin';
+import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { canManageUsers } from '@/lib/permissions';
+import { requireAuth } from '@/lib/auth';
 
 type FormState = {
   error?: string;
@@ -20,22 +20,14 @@ export async function createUser(
   formData: FormData
 ): Promise<FormState> {
   // 認証チェック
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const currentUser = await requireAuth().catch(() => null);
 
-  if (!user) {
+  if (!currentUser) {
     return { error: '認証が必要です' };
   }
 
   // 権限チェック
-  const currentUser = await prisma.user.findUnique({
-    where: { email: user.email! },
-    select: { role: true },
-  });
-
-  if (!currentUser || !canManageUsers(currentUser.role)) {
+  if (!canManageUsers(currentUser.role)) {
     return { error: 'この操作を行う権限がありません' };
   }
 
@@ -49,6 +41,14 @@ export async function createUser(
     return { error: '名前を入力してください' };
   }
 
+  if (!email || email.trim() === '') {
+    return { error: 'メールアドレスを入力してください' };
+  }
+
+  if (!password || password.length < 6) {
+    return { error: 'パスワードは6文字以上で入力してください' };
+  }
+
   if (password !== confirmPassword) {
     return { error: 'パスワードが一致しません' };
   }
@@ -59,31 +59,27 @@ export async function createUser(
   }
 
   try {
-    const supabase = createAdminClient();
-
-    // Supabase Admin APIでユーザー作成
-    const { data: authData, error } = await supabase.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
+    // 既存ユーザーチェック
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
     });
 
-    if (error) {
-      console.error('ユーザー作成エラー:', error.message);
-      return { error: 'ユーザーの作成に失敗しました' };
+    if (existingUser) {
+      return { error: 'このメールアドレスは既に使用されています' };
     }
 
-    // Prismaにユーザー情報を保存
-    if (authData.user) {
-      await prisma.user.create({
-        data: {
-          id: authData.user.id,
-          name,
-          email: authData.user.email!,
-          role: (role as 'ADMIN' | 'DEVELOPER' | 'MEMBER') || 'MEMBER',
-        },
-      });
-    }
+    // パスワードをハッシュ化
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // ユーザー作成
+    await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        role: (role as 'ADMIN' | 'DEVELOPER' | 'MEMBER') || 'MEMBER',
+      },
+    });
 
     revalidatePath('/users');
     return { success: true };

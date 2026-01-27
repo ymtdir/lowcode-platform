@@ -33,12 +33,13 @@
 | [Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations) | データ更新の推奨パターン                 |
 | [Data Fetching Patterns](https://nextjs.org/docs/app/building-your-application/data-fetching/patterns)             | データ取得のベストプラクティス           |
 
-### データベース・ORM
+### データベース・ORM・認証
 
-| リソース                              | 説明                           |
-| ------------------------------------- | ------------------------------ |
-| [Prisma](https://www.prisma.io/)      | 型安全なORM                    |
-| [Supabase](https://supabase.com/docs) | PostgreSQL + 認証 + ストレージ |
+| リソース                           | 説明                    |
+| ---------------------------------- | ----------------------- |
+| [Prisma](https://www.prisma.io/)   | 型安全なORM             |
+| [Neon](https://neon.tech/docs)     | Serverless PostgreSQL   |
+| [NextAuth.js](https://authjs.dev/) | Next.js用認証ライブラリ |
 
 ### UI・スタイリング
 

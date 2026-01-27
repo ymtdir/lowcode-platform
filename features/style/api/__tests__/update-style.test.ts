@@ -1,17 +1,9 @@
 import { updateStyle } from '../update-style';
-import { createClient } from '@/lib/supabase/server';
-
-// Supabaseクライアントをモック化
-jest.mock('@/lib/supabase/server', () => ({
-  createClient: jest.fn(),
-}));
+import { requireAuth } from '@/lib/auth';
 
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    user: {
-      findUnique: jest.fn(),
-    },
     style: {
       findUnique: jest.fn(),
       update: jest.fn(),
@@ -24,26 +16,33 @@ jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
 }));
 
+// lib/authをモック化
+jest.mock('@/lib/auth', () => ({
+  requireAuth: jest.fn(),
+}));
 import { prisma } from '@/lib/prisma';
 
 // DEVELOPERユーザーのモック
 const mockDeveloperUser = {
-  auth: {
-    getUser: jest.fn().mockResolvedValue({
-      data: { user: { email: 'developer@example.com' } },
-    }),
-  },
+  id: 'developer-1',
+  email: 'developer@example.com',
+  name: '開発者',
+  role: 'DEVELOPER' as const,
+};
+
+// ADMINユーザーのモック
+const mockAdminUser = {
+  id: 'admin-1',
+  email: 'admin@example.com',
+  name: '管理者',
+  role: 'ADMIN' as const,
 };
 
 describe('updateStyle', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // デフォルトでDEVELOPERユーザーを設定
-    (createClient as jest.Mock).mockResolvedValue(mockDeveloperUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-      role: 'DEVELOPER',
-    });
+    (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
   });
 
   it('スタイルの名前を更新できる', async () => {
@@ -153,13 +152,7 @@ describe('updateStyle', () => {
   });
 
   it('認証されていない場合はエラーを返す', async () => {
-    (createClient as jest.Mock).mockResolvedValue({
-      auth: {
-        getUser: jest.fn().mockResolvedValue({
-          data: { user: null },
-        }),
-      },
-    });
+    (requireAuth as jest.Mock).mockRejectedValue(new Error('認証が必要です'));
 
     const result = await updateStyle('style-1', { name: 'test.css' });
 
@@ -167,18 +160,9 @@ describe('updateStyle', () => {
     expect(prisma.style.update).not.toHaveBeenCalled();
   });
 
-  it('ユーザー情報が取得できない場合はエラーを返す', async () => {
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
-
-    const result = await updateStyle('style-1', { name: 'test.css' });
-
-    expect(result).toEqual({ error: 'ユーザー情報が取得できませんでした' });
-    expect(prisma.style.update).not.toHaveBeenCalled();
-  });
-
   it('MEMBER権限ではエラーを返す', async () => {
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
+    (requireAuth as jest.Mock).mockResolvedValue({
+      ...mockAdminUser,
       role: 'MEMBER',
     });
 
@@ -283,8 +267,8 @@ describe('updateStyle', () => {
   });
 
   it('ADMINロールでもスタイルを更新できる', async () => {
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
+    (requireAuth as jest.Mock).mockResolvedValue({
+      ...mockAdminUser,
       role: 'ADMIN',
     });
 
