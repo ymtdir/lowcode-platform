@@ -164,6 +164,7 @@ describe('getItems', () => {
     (getCurrentUser as jest.Mock).mockResolvedValue({
       id: 'user-1',
       email: 'member@example.com',
+      name: 'メンバー',
       role: 'MEMBER',
     });
 
@@ -224,6 +225,7 @@ describe('getItems', () => {
     (getCurrentUser as jest.Mock).mockResolvedValue({
       id: 'user-1',
       email: 'member@example.com',
+      name: 'メンバー',
       role: 'MEMBER',
     });
 
