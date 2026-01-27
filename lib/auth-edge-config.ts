@@ -1,4 +1,4 @@
-import type { NextAuthConfig } from 'next-auth';
+import NextAuth, { type NextAuthConfig } from 'next-auth';
 import type { UserRole } from '@prisma/client';
 
 export const authEdgeConfig = {
@@ -26,3 +26,6 @@ export const authEdgeConfig = {
   },
   providers: [],
 } satisfies NextAuthConfig;
+
+// Edge Runtime用のauth関数（middleware専用）
+export const { auth: authEdge } = NextAuth(authEdgeConfig);

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { auth } from '@/lib/auth-config';
+import { authEdge } from '@/lib/auth-edge-config';
 
 // 認証不要なパス
 const publicPaths = ['/login', '/register', '/api/auth'];
@@ -13,7 +13,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // セッションを確認
-  const session = await auth();
+  const session = await authEdge();
 
   // 未認証の場合はログインページにリダイレクト
   if (!session?.user) {
