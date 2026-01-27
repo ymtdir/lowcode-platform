@@ -17,25 +17,14 @@ export async function login(
   formData: FormData
 ): Promise<FormState> {
   try {
-    const result = await signIn('credentials', {
+    await signIn('credentials', {
       email: formData.get('email') as string,
       password: formData.get('password') as string,
       redirect: false,
     });
-
-    // redirect: falseの場合、結果をチェック
-    if (result?.error) {
-      console.error('ログインエラー:', result.error);
-      return { error: 'メールアドレスまたはパスワードが正しくありません' };
-    }
-
-    if (!result?.ok) {
-      console.error('ログインエラー: 認証に失敗しました');
-      return { error: 'メールアドレスまたはパスワードが正しくありません' };
-    }
   } catch (error) {
     if (error instanceof AuthError) {
-      console.error('ログインエラー:', error.message);
+      console.error('ログインエラー:', error.type);
       return { error: 'メールアドレスまたはパスワードが正しくありません' };
     }
     console.error('ログインエラー:', error);

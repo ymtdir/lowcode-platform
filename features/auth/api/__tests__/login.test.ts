@@ -41,21 +41,6 @@ describe('login', () => {
     expect(redirect).toHaveBeenCalledWith('/');
   });
 
-  it('誤った認証情報の場合はエラーを返す（SignInResponse経由）', async () => {
-    (signIn as jest.Mock).mockResolvedValue({
-      ok: false,
-      error: 'CredentialsSignin',
-    });
-
-    const result = await login({}, mockFormData);
-
-    expect(result).toEqual({
-      error: 'メールアドレスまたはパスワードが正しくありません',
-    });
-    expect(revalidatePath).not.toHaveBeenCalled();
-    expect(redirect).not.toHaveBeenCalled();
-  });
-
   it('誤った認証情報の場合はエラーを返す（AuthError経由）', async () => {
     const authError = new AuthError('Invalid credentials');
     (signIn as jest.Mock).mockRejectedValue(authError);
@@ -67,19 +52,6 @@ describe('login', () => {
     });
     expect(revalidatePath).not.toHaveBeenCalled();
     expect(redirect).not.toHaveBeenCalled();
-  });
-
-  it('メールアドレスが存在しない場合はエラーを返す（SignInResponse経由）', async () => {
-    (signIn as jest.Mock).mockResolvedValue({
-      ok: false,
-      error: 'User not found',
-    });
-
-    const result = await login({}, mockFormData);
-
-    expect(result).toEqual({
-      error: 'メールアドレスまたはパスワードが正しくありません',
-    });
   });
 
   it('メールアドレスが存在しない場合はエラーを返す（AuthError経由）', async () => {

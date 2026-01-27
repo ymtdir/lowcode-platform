@@ -4,8 +4,11 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { authEdgeConfig } from '@/lib/auth-edge-config';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const { providers, ...restEdgeConfig } = authEdgeConfig;
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  ...authEdgeConfig,
+  ...restEdgeConfig,
   providers: [
     Credentials({
       credentials: {
