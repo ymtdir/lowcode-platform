@@ -13,9 +13,9 @@ Next.js製の業務アプリケーションプラットフォーム
 ## 技術スタック
 
 - **フロントエンド・バックエンド**: Next.js 16 (App Router)
-- **データベース**: Supabase (PostgreSQL)
+- **データベース**: PostgreSQL (Neon, Supabase, etc.)
 - **ORM**: Prisma
-- **認証**: Supabase Auth
+- **認証**: NextAuth.js v5
 - **UI**: shadcn/ui + Tailwind CSS
 - **テスト**: Jest
 - **CI/CD**: GitHub Actions + Codecov
@@ -42,13 +42,15 @@ npx prisma generate
 `.env.local`ファイルを作成し、以下の環境変数を設定:
 
 ```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your-project-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-
 # Database（Prisma）
-DATABASE_URL=postgresql://postgres:[password]@db.[project-ref].supabase.co:5432/postgres
+# プーリング接続用URL (Transaction pooling)
+DATABASE_URL="postgresql://user:password@host:5432/db?pgbouncer=true"
+# 直接接続用URL (Migration用)
+DIRECT_URL="postgresql://user:password@host:5432/db"
+
+# NextAuth.js
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret-key" # `npx auth secret` で生成可能
 ```
 
 ### 開発サーバーの起動
