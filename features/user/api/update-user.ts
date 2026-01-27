@@ -43,6 +43,11 @@ export async function updateUserProfile(
       return { error: '認証エラーが発生しました' };
     }
 
+    // 認可チェック: 他のユーザーのプロフィールを更新する場合はADMIN権限が必要
+    if (currentUser.id !== userId && currentUser.role !== 'ADMIN') {
+      return { error: 'この操作を行う権限がありません' };
+    }
+
     // 自分自身のロールは変更できない
     if (currentUser.id === userId && role) {
       if (currentUser.role !== role) {
@@ -104,6 +109,11 @@ export async function updateUserPassword(
 
     if (!currentUser) {
       return { error: '認証エラーが発生しました' };
+    }
+
+    // 認可チェック: 他のユーザーのパスワードを更新する場合はADMIN権限が必要
+    if (currentUser.id !== userId && currentUser.role !== 'ADMIN') {
+      return { error: 'この操作を行う権限がありません' };
     }
 
     // パスワードをハッシュ化して更新

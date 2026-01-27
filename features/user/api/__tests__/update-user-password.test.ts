@@ -37,10 +37,18 @@ describe('updateUserPassword', () => {
   });
 
   it('自分自身のパスワードを更新できる', async () => {
-    const userId = 'user-1';
+    const userId = 'current-user';
     const formData = new FormData();
     formData.append('newPassword', 'newpassword123');
     formData.append('confirmPassword', 'newpassword123');
+
+    // 自分自身のパスワードを変更する場合
+    (requireAuth as jest.Mock).mockResolvedValue({
+      id: userId,
+      email: 'user@example.com',
+      name: 'テストユーザー',
+      role: 'MEMBER' as const,
+    });
 
     (prisma.user.update as jest.Mock).mockResolvedValue({
       id: userId,
@@ -55,11 +63,19 @@ describe('updateUserPassword', () => {
     });
   });
 
-  it('他のユーザーのパスワードを更新できる', async () => {
-    const userId = 'user-1';
+  it('ADMIN権限で他のユーザーのパスワードを更新できる', async () => {
+    const userId = 'other-user-id';
     const formData = new FormData();
     formData.append('newPassword', 'newpassword123');
     formData.append('confirmPassword', 'newpassword123');
+
+    // ADMIN権限で他のユーザーのパスワードを変更
+    (requireAuth as jest.Mock).mockResolvedValue({
+      id: 'admin-user-id',
+      email: 'admin@example.com',
+      name: '管理者',
+      role: 'ADMIN' as const,
+    });
 
     (prisma.user.update as jest.Mock).mockResolvedValue({
       id: userId,
@@ -87,6 +103,28 @@ describe('updateUserPassword', () => {
     expect(requireAuth).not.toHaveBeenCalled();
   });
 
+  it('他のユーザーのパスワードをADMIN以外は更新できない', async () => {
+    const userId = 'other-user-id';
+    const formData = new FormData();
+    formData.append('newPassword', 'newpassword123');
+    formData.append('confirmPassword', 'newpassword123');
+
+    // DEVELOPER権限で他のユーザーのパスワードを変更しようとする
+    (requireAuth as jest.Mock).mockResolvedValue({
+      id: 'current-user-id',
+      email: 'current@example.com',
+      name: '現在のユーザー',
+      role: 'DEVELOPER' as const,
+    });
+
+    const result = await updateUserPassword(userId, {}, formData);
+
+    expect(result).toEqual({
+      error: 'この操作を行う権限がありません',
+    });
+    expect(prisma.user.update).not.toHaveBeenCalled();
+  });
+
   it('認証エラーの場合はエラーを返す', async () => {
     const formData = new FormData();
     formData.append('newPassword', 'newpassword123');
@@ -104,10 +142,18 @@ describe('updateUserPassword', () => {
   });
 
   it('自分自身のパスワード更新でエラーが発生した場合はエラーを返す', async () => {
-    const userId = 'user-1';
+    const userId = 'current-user';
     const formData = new FormData();
     formData.append('newPassword', 'newpassword123');
     formData.append('confirmPassword', 'newpassword123');
+
+    // 自分自身のパスワードを変更する場合
+    (requireAuth as jest.Mock).mockResolvedValue({
+      id: userId,
+      email: 'user@example.com',
+      name: 'テストユーザー',
+      role: 'MEMBER' as const,
+    });
 
     (prisma.user.update as jest.Mock).mockRejectedValue(
       new Error('Update failed')
@@ -120,11 +166,19 @@ describe('updateUserPassword', () => {
     });
   });
 
-  it('他ユーザーのパスワード更新でエラーが発生した場合はエラーを返す', async () => {
-    const userId = 'user-1';
+  it('ADMIN権限で他ユーザーのパスワード更新時にエラーが発生した場合はエラーを返す', async () => {
+    const userId = 'other-user-id';
     const formData = new FormData();
     formData.append('newPassword', 'newpassword123');
     formData.append('confirmPassword', 'newpassword123');
+
+    // ADMIN権限で他のユーザーのパスワードを変更
+    (requireAuth as jest.Mock).mockResolvedValue({
+      id: 'admin-user-id',
+      email: 'admin@example.com',
+      name: '管理者',
+      role: 'ADMIN' as const,
+    });
 
     (prisma.user.update as jest.Mock).mockRejectedValue(
       new Error('Update failed')

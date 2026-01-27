@@ -33,18 +33,26 @@ describe('updateUserProfile', () => {
     (prisma.user.findFirst as jest.Mock).mockResolvedValue(null);
   });
 
-  it('ユーザー情報を更新できる', async () => {
-    const userId = 'user-1';
+  it('ADMIN権限で他のユーザー情報を更新できる', async () => {
+    const userId = 'other-user-id';
     const formData = new FormData();
     formData.append('name', '更新されたユーザー');
     formData.append('email', 'updated@example.com');
-    formData.append('role', 'ADMIN');
+    formData.append('role', 'DEVELOPER');
+
+    // ADMIN権限で他のユーザーを編集
+    (requireAuth as jest.Mock).mockResolvedValue({
+      id: 'admin-user-id',
+      email: 'admin@example.com',
+      name: '管理者',
+      role: 'ADMIN' as const,
+    });
 
     (prisma.user.update as jest.Mock).mockResolvedValue({
       id: userId,
       name: '更新されたユーザー',
       email: 'updated@example.com',
-      role: 'ADMIN',
+      role: 'DEVELOPER',
     });
 
     const result = await updateUserProfile(userId, {}, formData);
@@ -55,7 +63,7 @@ describe('updateUserProfile', () => {
       data: {
         name: '更新されたユーザー',
         email: 'updated@example.com',
-        role: 'ADMIN',
+        role: 'DEVELOPER',
       },
     });
   });
@@ -96,6 +104,28 @@ describe('updateUserProfile', () => {
 
     expect(result).toEqual({
       error: '無効なロールが指定されました',
+    });
+    expect(prisma.user.update).not.toHaveBeenCalled();
+  });
+
+  it('他のユーザーのプロフィールをADMIN以外は更新できない', async () => {
+    const userId = 'other-user-id';
+    const formData = new FormData();
+    formData.append('name', '他のユーザー');
+    formData.append('email', 'other@example.com');
+
+    // DEVELOPER権限で他のユーザーを編集しようとする
+    (requireAuth as jest.Mock).mockResolvedValue({
+      id: 'current-user-id',
+      email: 'current@example.com',
+      name: '現在のユーザー',
+      role: 'DEVELOPER' as const,
+    });
+
+    const result = await updateUserProfile(userId, {}, formData);
+
+    expect(result).toEqual({
+      error: 'この操作を行う権限がありません',
     });
     expect(prisma.user.update).not.toHaveBeenCalled();
   });
