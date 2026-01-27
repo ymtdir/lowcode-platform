@@ -1,5 +1,6 @@
 import { updateItemIcon } from '../update-item-icon';
 import { requireAuth } from '@/lib/auth';
+import { canManageStructure } from '@/lib/permissions';
 import { prisma } from '@/lib/prisma';
 
 // revalidatePathをモック化
@@ -22,6 +23,11 @@ jest.mock('@/lib/auth', () => ({
   requireAuth: jest.fn(),
 }));
 
+// lib/permissionsをモック化
+jest.mock('@/lib/permissions', () => ({
+  canManageStructure: jest.fn(),
+}));
+
 // DEVELOPERユーザーのモック
 const mockDeveloperUser = {
   id: 'user-1',
@@ -35,6 +41,8 @@ describe('updateItemIcon', () => {
     jest.clearAllMocks();
     // デフォルトでDEVELOPERユーザーを設定
     (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
+    // デフォルトで権限あり
+    (canManageStructure as jest.Mock).mockReturnValue(true);
   });
 
   it('有効なアイコン名でアイコンを更新できる', async () => {
@@ -94,6 +102,7 @@ describe('updateItemIcon', () => {
       ...mockDeveloperUser,
       role: 'MEMBER',
     });
+    (canManageStructure as jest.Mock).mockReturnValue(false);
 
     const result = await updateItemIcon('folder-1', 'Users');
 
