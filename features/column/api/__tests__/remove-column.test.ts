@@ -11,7 +11,6 @@ jest.mock('@/lib/auth', () => ({
   requireAuth: jest.fn(),
 }));
 
-// Supabaseクライアントをモック化
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
   prisma: {
