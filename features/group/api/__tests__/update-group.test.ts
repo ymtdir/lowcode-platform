@@ -1,5 +1,5 @@
 import { updateGroup } from '../update-group';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, AuthError } from '@/lib/auth';
 
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
@@ -12,9 +12,13 @@ jest.mock('@/lib/prisma', () => ({
 }));
 
 // lib/authをモック化
-jest.mock('@/lib/auth', () => ({
-  requireAuth: jest.fn(),
-}));
+jest.mock('@/lib/auth', () => {
+  const actual = jest.requireActual('@/lib/auth');
+  return {
+    ...actual,
+    requireAuth: jest.fn(),
+  };
+});
 import { prisma } from '@/lib/prisma';
 
 // ADMINユーザーのモック
@@ -89,7 +93,9 @@ describe('updateGroup', () => {
   });
 
   it('認証されていない場合はエラーを返す', async () => {
-    (requireAuth as jest.Mock).mockResolvedValue(null);
+    (requireAuth as jest.Mock).mockRejectedValue(
+      new AuthError('認証が必要です')
+    );
 
     const formData = new FormData();
     formData.append('name', 'テストグループ');

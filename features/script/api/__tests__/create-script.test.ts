@@ -1,5 +1,5 @@
 import { createScript } from '../create-script';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, AuthError } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 // Prismaクライアントをモック化
@@ -19,9 +19,13 @@ jest.mock('next/cache', () => ({
 }));
 
 // lib/authをモック化
-jest.mock('@/lib/auth', () => ({
-  requireAuth: jest.fn(),
-}));
+jest.mock('@/lib/auth', () => {
+  const actual = jest.requireActual('@/lib/auth');
+  return {
+    ...actual,
+    requireAuth: jest.fn(),
+  };
+});
 
 const mockUser = {
   id: 'user-id',
@@ -136,7 +140,9 @@ describe('createScript', () => {
   });
 
   it('認証されていない場合はエラーを返す', async () => {
-    (requireAuth as jest.Mock).mockResolvedValue(null);
+    (requireAuth as jest.Mock).mockRejectedValue(
+      new AuthError('認証が必要です')
+    );
 
     const result = await createScript('item-1', { name: 'test.js' });
 

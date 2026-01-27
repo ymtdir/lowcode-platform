@@ -1,5 +1,5 @@
 import { createTable } from '../create-table';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, AuthError } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 
@@ -19,9 +19,13 @@ jest.mock('@/lib/prisma', () => ({
 }));
 
 // lib/authをモック化
-jest.mock('@/lib/auth', () => ({
-  requireAuth: jest.fn(),
-}));
+jest.mock('@/lib/auth', () => {
+  const actual = jest.requireActual('@/lib/auth');
+  return {
+    ...actual,
+    requireAuth: jest.fn(),
+  };
+});
 
 // DEVELOPERユーザーのモック
 const mockDeveloperUser = {
@@ -101,7 +105,9 @@ describe('createTable', () => {
   });
 
   it('認証されていない場合はエラーを返す', async () => {
-    (requireAuth as jest.Mock).mockResolvedValue(null);
+    (requireAuth as jest.Mock).mockRejectedValue(
+      new AuthError('認証が必要です')
+    );
 
     const formData = new FormData();
     formData.append('name', 'テストテーブル');

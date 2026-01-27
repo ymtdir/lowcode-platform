@@ -1,11 +1,15 @@
 import { addMembers } from '../add-members';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, AuthError } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 // lib/authをモック化
-jest.mock('@/lib/auth', () => ({
-  requireAuth: jest.fn(),
-}));
+jest.mock('@/lib/auth', () => {
+  const actual = jest.requireActual('@/lib/auth');
+  return {
+    ...actual,
+    requireAuth: jest.fn(),
+  };
+});
 
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
@@ -60,7 +64,9 @@ describe('addMembers', () => {
   });
 
   it('認証されていない場合はエラーを返す', async () => {
-    (requireAuth as jest.Mock).mockResolvedValue(null);
+    (requireAuth as jest.Mock).mockRejectedValue(
+      new AuthError('認証が必要です')
+    );
 
     const result = await addMembers('group-1', ['user-1']);
 

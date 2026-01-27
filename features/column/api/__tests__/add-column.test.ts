@@ -1,10 +1,14 @@
 import { addColumn } from '../add-column';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, AuthError } from '@/lib/auth';
 
 // lib/authをモック化
-jest.mock('@/lib/auth', () => ({
-  requireAuth: jest.fn(),
-}));
+jest.mock('@/lib/auth', () => {
+  const actual = jest.requireActual('@/lib/auth');
+  return {
+    ...actual,
+    requireAuth: jest.fn(),
+  };
+});
 
 // Prismaクライアントをモック化
 jest.mock('@/lib/prisma', () => ({
@@ -137,7 +141,9 @@ describe('addColumn', () => {
   });
 
   it('認証されていない場合はエラーを返す', async () => {
-    (requireAuth as jest.Mock).mockResolvedValue(null);
+    (requireAuth as jest.Mock).mockRejectedValue(
+      new AuthError('認証が必要です')
+    );
 
     const result = await addColumn('item-1', {
       name: '顧客名',
