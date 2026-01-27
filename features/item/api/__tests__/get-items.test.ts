@@ -16,9 +16,6 @@ jest.mock('@/lib/prisma', () => ({
     groupMember: {
       findMany: jest.fn(),
     },
-    user: {
-      findUnique: jest.fn(),
-    },
   },
 }));
 
@@ -44,12 +41,6 @@ describe('getItems', () => {
     jest.clearAllMocks();
     // デフォルトでADMINユーザーを設定
     (getCurrentUser as jest.Mock).mockResolvedValue(mockAdminUser);
-
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-      email: 'admin@example.com',
-      role: 'ADMIN',
-    });
 
     // 権限チェック用のデフォルトモック（ADMIN権限なので常にアクセス可能）
     (prisma.itemPermission.findUnique as jest.Mock).mockResolvedValue(null);
@@ -176,12 +167,6 @@ describe('getItems', () => {
       role: 'MEMBER',
     });
 
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-      email: 'member@example.com',
-      role: 'MEMBER',
-    });
-
     const mockRootFolders = [{ id: 'folder-1' }, { id: 'folder-2' }];
 
     const mockItem1 = {
@@ -237,12 +222,6 @@ describe('getItems', () => {
   it('子アイテムで権限のないものは除外される', async () => {
     // MEMBER roleを設定（権限チェックが実行される）
     (getCurrentUser as jest.Mock).mockResolvedValue({
-      id: 'user-1',
-      email: 'member@example.com',
-      role: 'MEMBER',
-    });
-
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
       id: 'user-1',
       email: 'member@example.com',
       role: 'MEMBER',

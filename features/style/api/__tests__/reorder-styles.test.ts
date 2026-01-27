@@ -9,9 +9,6 @@ jest.mock('@/lib/prisma', () => ({
       update: jest.fn(),
       findMany: jest.fn(),
     },
-    user: {
-      findUnique: jest.fn(),
-    },
     $transaction: jest.fn(),
   },
 }));

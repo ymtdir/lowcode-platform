@@ -15,9 +15,6 @@ jest.mock('@/lib/prisma', () => ({
       findFirst: jest.fn(),
       create: jest.fn(),
     },
-    user: {
-      findUnique: jest.fn(),
-    },
   },
 }));
 
@@ -39,7 +36,6 @@ describe('createTable', () => {
     jest.clearAllMocks();
     // デフォルトでDEVELOPERユーザーを設定
     (requireAuth as jest.Mock).mockResolvedValue(mockDeveloperUser);
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDeveloperUser);
   });
 
   it('TABLEタイプのアイテムを作成できる', async () => {

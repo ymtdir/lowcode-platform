@@ -11,11 +11,11 @@ jest.mock('@/lib/prisma', () => ({
     group: {
       findUnique: jest.fn(),
     },
-    itemPermission: {
-      create: jest.fn(),
-    },
     user: {
       findUnique: jest.fn(),
+    },
+    itemPermission: {
+      create: jest.fn(),
     },
   },
 }));
