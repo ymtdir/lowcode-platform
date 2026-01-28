@@ -311,7 +311,7 @@ export function WorkspaceItemsWrapper({
           {canEdit && <CreateItemButton parentId="" />}
         </div>
       </SidebarGroupLabel>
-      <SidebarMenu className="min-h-[200px]">
+      <SidebarMenu className="min-h-[200px] gap-0">
         <SortableContext
           items={sortedIds}
           strategy={verticalListSortingStrategy}
