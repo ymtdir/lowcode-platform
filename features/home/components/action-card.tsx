@@ -26,7 +26,10 @@ export function ActionCard({
   color,
 }: ActionCardProps) {
   return (
-    <Link href={href} className="group block h-full">
+    <Link
+      href={href}
+      className="group block h-full rounded-xl outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+    >
       <Card
         className={cn(
           'h-full transition-colors hover:bg-accent hover:text-accent-foreground'
