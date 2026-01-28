@@ -32,7 +32,7 @@ export function ActionCard({
     >
       <Card
         className={cn(
-          'h-full transition-colors hover:bg-accent hover:text-accent-foreground'
+          'h-full transition-colors bg-transparent hover:bg-accent hover:text-accent-foreground'
         )}
       >
         <CardHeader className="gap-2">
