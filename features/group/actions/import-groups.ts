@@ -10,9 +10,43 @@ import type {
 } from '@/features/table/types/import';
 
 /**
- * グループインポート用のCSVヘッダー定義
+ * ヘッダー名のエイリアス定義（大文字小文字無視）
  */
-const REQUIRED_HEADERS = ['ID', 'グループ名', '説明', '親グループ'];
+const HEADER_ALIASES = {
+  id: ['id'],
+  name: ['name', 'グループ名', '名前'],
+  description: ['description', '説明'],
+  parent: ['parent', 'parentgroup', '親グループ'],
+} as const;
+
+/**
+ * ヘッダー名を正規化してフィールド名を取得
+ */
+function normalizeHeader(header: string): keyof typeof HEADER_ALIASES | null {
+  const normalized = header.trim().toLowerCase();
+  for (const [field, aliases] of Object.entries(HEADER_ALIASES)) {
+    if (aliases.some((alias) => alias.toLowerCase() === normalized)) {
+      return field as keyof typeof HEADER_ALIASES;
+    }
+  }
+  return null;
+}
+
+/**
+ * ヘッダーからカラムインデックスマッピングを作成
+ */
+function createHeaderMapping(
+  headers: string[]
+): Map<keyof typeof HEADER_ALIASES, number> {
+  const mapping = new Map<keyof typeof HEADER_ALIASES, number>();
+  headers.forEach((header, index) => {
+    const field = normalizeHeader(header);
+    if (field && !mapping.has(field)) {
+      mapping.set(field, index);
+    }
+  });
+  return mapping;
+}
 
 /**
  * グループデータをCSVインポートするServer Action
@@ -68,10 +102,13 @@ export async function importGroupsAction(
       };
     }
 
+    // ヘッダーマッピングを作成
+    const headerMapping = createHeaderMapping(parsed.headers);
+
     // データ検証
     const validationErrors: ValidationError[] = [];
     const validRows: Array<{
-      id: string;
+      id: string | null;
       name: string;
       description: string | null;
       parentName: string | null;
@@ -84,24 +121,28 @@ export async function importGroupsAction(
     const existingIds = new Set(existingGroups.map((g) => g.id));
     const groupNameToId = new Map(existingGroups.map((g) => [g.name, g.id]));
 
+    // インデックスを取得（IDは任意なのでundefinedの可能性あり）
+    const idIndex = headerMapping.get('id');
+    const nameIndex = headerMapping.get('name')!;
+    const descriptionIndex = headerMapping.get('description');
+    const parentIndex = headerMapping.get('parent');
+
     for (let i = 0; i < parsed.rows.length; i++) {
       const row = parsed.rows[i];
       const rowNum = i + 2; // ヘッダー行 + 1行目からのインデックス
 
-      if (row.length !== REQUIRED_HEADERS.length) {
-        validationErrors.push({
-          type: 'INVALID_TYPE',
-          row: i,
-          column: '',
-          message: `${rowNum}行目: カラム数が正しくありません`,
-        });
-        continue;
-      }
-
-      const [id, name, description, parentName] = row;
+      // 各フィールドを取得（順序に依存しない）
+      const id = idIndex !== undefined ? row[idIndex]?.trim() || null : null;
+      const name = row[nameIndex]?.trim() || '';
+      const description =
+        descriptionIndex !== undefined
+          ? row[descriptionIndex]?.trim() || null
+          : null;
+      const parentName =
+        parentIndex !== undefined ? row[parentIndex]?.trim() || null : null;
 
       // グループ名の必須チェック
-      if (!name || name.trim() === '') {
+      if (!name) {
         validationErrors.push({
           type: 'REQUIRED_FIELD',
           row: i,
@@ -112,10 +153,10 @@ export async function importGroupsAction(
       }
 
       validRows.push({
-        id: id.trim(),
-        name: name.trim(),
-        description: description.trim() || null,
-        parentName: parentName.trim() || null,
+        id,
+        name,
+        description,
+        parentName,
       });
     }
 
@@ -156,7 +197,7 @@ export async function importGroupsAction(
           }
         }
 
-        // IDが存在する場合は更新、存在しない場合は新規作成
+        // ID値がある + 既存IDと一致 → 更新
         if (row.id && existingIds.has(row.id)) {
           await tx.group.update({
             where: { id: row.id },
@@ -168,8 +209,12 @@ export async function importGroupsAction(
           });
           updatedCount++;
         } else {
+          // 新規作成（ID指定またはUUID自動生成）
           const created = await tx.group.create({
             data: {
+              // ID値がある + 既存IDと不一致 → ID指定で新規作成
+              // ID値が空 → UUID自動生成（idフィールドを省略）
+              ...(row.id ? { id: row.id } : {}),
               name: row.name,
               description: row.description,
               parentId,
@@ -209,19 +254,20 @@ export async function importGroupsAction(
 
 /**
  * CSVヘッダーを検証
+ * 必須: name（ID、説明、親グループは任意）
  */
 function validateHeaders(headers: string[]): ValidationError[] {
   const errors: ValidationError[] = [];
+  const mapping = createHeaderMapping(headers);
 
-  for (const required of REQUIRED_HEADERS) {
-    if (!headers.includes(required)) {
-      errors.push({
-        type: 'MISSING_HEADER',
-        row: -1,
-        column: required,
-        message: `必須ヘッダー "${required}" がありません`,
-      });
-    }
+  // 必須フィールドのチェック（グループ名のみ必須）
+  if (!mapping.has('name')) {
+    errors.push({
+      type: 'MISSING_HEADER',
+      row: -1,
+      column: 'グループ名',
+      message: `必須ヘッダー「グループ名」がありません（許容: ${HEADER_ALIASES.name.join(', ')}）`,
+    });
   }
 
   return errors;

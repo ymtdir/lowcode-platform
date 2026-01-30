@@ -12,14 +12,48 @@ import type {
 } from '@/features/table/types/import';
 
 /**
- * ユーザーインポート用のCSVヘッダー定義
+ * ヘッダー名のエイリアス定義（大文字小文字無視）
  */
-const REQUIRED_HEADERS = ['ID', 'メールアドレス', '名前', 'ロール'];
+const HEADER_ALIASES = {
+  id: ['id'],
+  email: ['email', 'mail', 'メールアドレス'],
+  name: ['name', '氏名', '名前'],
+  role: ['role', '権限', 'ロール'],
+} as const;
 
 /**
  * 有効なUserRole
  */
 const VALID_ROLES: UserRole[] = ['ADMIN', 'DEVELOPER', 'MEMBER'];
+
+/**
+ * ヘッダー名を正規化してフィールド名を取得
+ */
+function normalizeHeader(header: string): keyof typeof HEADER_ALIASES | null {
+  const normalized = header.trim().toLowerCase();
+  for (const [field, aliases] of Object.entries(HEADER_ALIASES)) {
+    if (aliases.some((alias) => alias.toLowerCase() === normalized)) {
+      return field as keyof typeof HEADER_ALIASES;
+    }
+  }
+  return null;
+}
+
+/**
+ * ヘッダーからカラムインデックスマッピングを作成
+ */
+function createHeaderMapping(
+  headers: string[]
+): Map<keyof typeof HEADER_ALIASES, number> {
+  const mapping = new Map<keyof typeof HEADER_ALIASES, number>();
+  headers.forEach((header, index) => {
+    const field = normalizeHeader(header);
+    if (field && !mapping.has(field)) {
+      mapping.set(field, index);
+    }
+  });
+  return mapping;
+}
 
 /**
  * CSVインポートで作成されるユーザーのデフォルトパスワード
@@ -81,10 +115,13 @@ export async function importUsersAction(
       };
     }
 
+    // ヘッダーマッピングを作成
+    const headerMapping = createHeaderMapping(parsed.headers);
+
     // データ検証
     const validationErrors: ValidationError[] = [];
     const validRows: Array<{
-      id: string;
+      id: string | null;
       email: string;
       name: string;
       role: UserRole;
@@ -97,24 +134,24 @@ export async function importUsersAction(
     const existingIds = new Set(existingUsers.map((u) => u.id));
     const existingEmails = new Set(existingUsers.map((u) => u.email));
 
+    // インデックスを取得（IDは任意なのでundefinedの可能性あり）
+    const idIndex = headerMapping.get('id');
+    const emailIndex = headerMapping.get('email')!;
+    const nameIndex = headerMapping.get('name')!;
+    const roleIndex = headerMapping.get('role')!;
+
     for (let i = 0; i < parsed.rows.length; i++) {
       const row = parsed.rows[i];
       const rowNum = i + 2; // ヘッダー行 + 1行目からのインデックス
 
-      if (row.length !== REQUIRED_HEADERS.length) {
-        validationErrors.push({
-          type: 'INVALID_TYPE',
-          row: i,
-          column: '',
-          message: `${rowNum}行目: カラム数が正しくありません`,
-        });
-        continue;
-      }
-
-      const [id, email, name, role] = row;
+      // 各フィールドを取得（順序に依存しない）
+      const id = idIndex !== undefined ? row[idIndex]?.trim() || null : null;
+      const email = row[emailIndex]?.trim() || '';
+      const name = row[nameIndex]?.trim() || '';
+      const role = row[roleIndex]?.trim() || '';
 
       // メールアドレスの必須チェック
-      if (!email || email.trim() === '') {
+      if (!email) {
         validationErrors.push({
           type: 'REQUIRED_FIELD',
           row: i,
@@ -126,7 +163,7 @@ export async function importUsersAction(
 
       // メールアドレスの形式チェック
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email.trim())) {
+      if (!emailRegex.test(email)) {
         validationErrors.push({
           type: 'INVALID_TYPE',
           row: i,
@@ -137,7 +174,7 @@ export async function importUsersAction(
       }
 
       // 名前の必須チェック
-      if (!name || name.trim() === '') {
+      if (!name) {
         validationErrors.push({
           type: 'REQUIRED_FIELD',
           row: i,
@@ -159,9 +196,9 @@ export async function importUsersAction(
       }
 
       validRows.push({
-        id: id.trim(),
-        email: email.trim(),
-        name: name.trim(),
+        id,
+        email,
+        name,
         role: role as UserRole,
       });
     }
@@ -189,7 +226,7 @@ export async function importUsersAction(
 
     await prisma.$transaction(async (tx) => {
       for (const row of validRows) {
-        // IDが存在する場合は更新
+        // ID値がある + 既存IDと一致 → 更新
         if (row.id && existingIds.has(row.id)) {
           await tx.user.update({
             where: { id: row.id },
@@ -201,7 +238,7 @@ export async function importUsersAction(
           });
           updatedCount++;
         }
-        // メールアドレスが既に存在する場合はスキップ
+        // メールアドレスが既に存在する場合はスキップ（新規作成のみ）
         else if (existingEmails.has(row.email)) {
           skippedCount++;
         }
@@ -210,6 +247,9 @@ export async function importUsersAction(
           try {
             await tx.user.create({
               data: {
+                // ID値がある + 既存IDと不一致 → ID指定で新規作成
+                // ID値が空 → UUID自動生成（idフィールドを省略）
+                ...(row.id ? { id: row.id } : {}),
                 name: row.name,
                 email: row.email,
                 password: hashedPassword,
@@ -252,17 +292,29 @@ export async function importUsersAction(
 
 /**
  * CSVヘッダーを検証
+ * 必須: email, name, role（IDは任意）
  */
 function validateHeaders(headers: string[]): ValidationError[] {
   const errors: ValidationError[] = [];
+  const mapping = createHeaderMapping(headers);
 
-  for (const required of REQUIRED_HEADERS) {
-    if (!headers.includes(required)) {
+  // 必須フィールドのチェック（IDは任意なので含まない）
+  const requiredFields: Array<{
+    field: keyof typeof HEADER_ALIASES;
+    displayName: string;
+  }> = [
+    { field: 'email', displayName: 'メールアドレス' },
+    { field: 'name', displayName: '名前' },
+    { field: 'role', displayName: 'ロール' },
+  ];
+
+  for (const { field, displayName } of requiredFields) {
+    if (!mapping.has(field)) {
       errors.push({
         type: 'MISSING_HEADER',
         row: -1,
-        column: required,
-        message: `必須ヘッダー "${required}" がありません`,
+        column: displayName,
+        message: `必須ヘッダー「${displayName}」がありません（許容: ${HEADER_ALIASES[field].join(', ')}）`,
       });
     }
   }
