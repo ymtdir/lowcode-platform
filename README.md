@@ -86,6 +86,97 @@ npm test
 npm run test:coverage
 ```
 
+## Dockerでの起動
+
+### 前提条件
+
+- Docker / Docker Compose がインストール済みであること
+
+### セットアップ
+
+```bash
+# 環境変数ファイルを作成
+cp .env.docker.example .env
+
+# 必要に応じて .env を編集（パスワード等）
+```
+
+### 起動
+
+```bash
+docker compose up --build
+```
+
+起動後、以下のURLでアクセスできます:
+
+| サービス         | URL                       |
+| ---------------- | ------------------------- |
+| アプリケーション | <http://localhost>          |
+| pgAdmin          | <http://localhost/pgadmin/> |
+
+### 初期データの投入
+
+起動後、以下のコマンドで管理者アカウントと初期設定を作成します:
+
+```bash
+docker compose exec app npx prisma db seed
+```
+
+作成されるアカウント（`.env` で変更可能）:
+
+- **メール**: `admin@example.com`
+- **パスワード**: `P@ssw0rd`
+
+### pgAdminの接続設定
+
+pgAdminにログイン後、以下の情報でサーバーを追加してください:
+
+#### General
+
+| 項目 | 値                      |
+| ---- | ----------------------- |
+| Name | `.env` の `POSTGRES_DB` |
+
+#### Connection
+
+| 項目                 | 値                            |
+| -------------------- | ----------------------------- |
+| Host name/address    | `db`                          |
+| Port                 | `5432`                        |
+| Maintenance database | `postgres`                    |
+| Username             | `.env` の `POSTGRES_USER`     |
+| Password             | `.env` の `POSTGRES_PASSWORD` |
+
+### 停止
+
+```bash
+docker compose down
+```
+
+データベースのデータを含めて完全に削除する場合:
+
+```bash
+docker compose down -v
+```
+
+### トラブルシューティング
+
+#### ポートが競合する場合
+
+`.env` でポートを変更できます。`NEXTAUTH_URL` もポートに合わせて更新してください:
+
+```env
+NGINX_PORT=8080
+NEXTAUTH_URL=http://localhost:8080
+```
+
+#### データベースをリセットしたい場合
+
+```bash
+docker compose down -v
+docker compose up --build
+```
+
 ## ドキュメント
 
 詳細なドキュメントは [.docs/README.md](.docs/README.md) に集約されています。
