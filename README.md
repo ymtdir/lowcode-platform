@@ -111,8 +111,8 @@ docker compose up --build
 
 | サービス         | URL                       |
 | ---------------- | ------------------------- |
-| アプリケーション | http://localhost          |
-| pgAdmin          | http://localhost/pgadmin/ |
+| アプリケーション | <http://localhost>          |
+| pgAdmin          | <http://localhost/pgadmin/> |
 
 ### 初期データの投入
 
@@ -131,13 +131,13 @@ docker compose exec app npx prisma db seed
 
 pgAdminにログイン後、以下の情報でサーバーを追加してください:
 
-**General**
+#### General
 
 | 項目 | 値                      |
 | ---- | ----------------------- |
 | Name | `.env` の `POSTGRES_DB` |
 
-**Connection**
+#### Connection
 
 | 項目                 | 値                            |
 | -------------------- | ----------------------------- |
@@ -161,15 +161,16 @@ docker compose down -v
 
 ### トラブルシューティング
 
-**ポートが競合する場合**
+#### ポートが競合する場合
 
-`.env` でポートを変更できます:
+`.env` でポートを変更できます。`NEXTAUTH_URL` もポートに合わせて更新してください:
 
 ```env
 NGINX_PORT=8080
+NEXTAUTH_URL=http://localhost:8080
 ```
 
-**データベースをリセットしたい場合**
+#### データベースをリセットしたい場合
 
 ```bash
 docker compose down -v
