@@ -2,6 +2,7 @@
 
 ![CI](https://github.com/ymtdir/muku/workflows/CI/badge.svg)
 [![codecov](https://codecov.io/gh/ymtdir/muku/graph/badge.svg?token=B0Z8GTSYQK)](https://codecov.io/gh/ymtdir/muku)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Next.js製の業務アプリケーションプラットフォーム
 
@@ -109,8 +110,8 @@ docker compose up --build
 
 起動後、以下のURLでアクセスできます:
 
-| サービス         | URL                       |
-| ---------------- | ------------------------- |
+| サービス         | URL                         |
+| ---------------- | --------------------------- |
 | アプリケーション | <http://localhost>          |
 | pgAdmin          | <http://localhost/pgadmin/> |
 
@@ -185,3 +186,7 @@ docker compose up --build
 - **ディレクトリ構成**: [directory-structure.md](.docs/architecture/directory-structure.md)
 - **開発ガイド**: [development/](.docs/development/)
 - **機能仕様**: [features/](.docs/features/)
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
