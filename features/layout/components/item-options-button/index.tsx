@@ -11,6 +11,8 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import Link from 'next/link';
+import type { ItemType } from '@prisma/client';
+import { RenameItemOption } from '@/features/layout/components/workspace-menu/edit-item-button/rename-item-option';
 import type { PageType } from './container';
 import type { ExportColumnFilter } from '@/features/table/types/export';
 import {
@@ -61,6 +63,7 @@ export function ItemOptionsButton({
 }: ItemOptionsButtonProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -168,7 +171,7 @@ export function ItemOptionsButton({
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon">
             <Ellipsis />
@@ -178,6 +181,12 @@ export function ItemOptionsButton({
         <DropdownMenuContent align="end">
           {pageType === 'TABLE' && itemId && (
             <>
+              <RenameItemOption
+                itemId={itemId}
+                itemType={'TABLE' as ItemType}
+                currentName={itemName}
+                onOpenChange={setDropdownOpen}
+              />
               <DropdownMenuItem asChild>
                 <Link href={`/${itemId}/edit`} className="cursor-pointer">
                   <Settings />
@@ -199,6 +208,12 @@ export function ItemOptionsButton({
           )}
           {pageType === 'FOLDER' && itemId && (
             <>
+              <RenameItemOption
+                itemId={itemId}
+                itemType={'FOLDER' as ItemType}
+                currentName={itemName}
+                onOpenChange={setDropdownOpen}
+              />
               <DropdownMenuItem asChild>
                 <Link href={`/${itemId}/edit`} className="cursor-pointer">
                   <Settings />
@@ -221,11 +236,11 @@ export function ItemOptionsButton({
             <>
               <DropdownMenuItem onSelect={() => setImportDialogOpen(true)}>
                 <FileInput />
-                インポート
+                レコードのインポート
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={handleExport}>
                 <FileOutput />
-                エクスポート
+                レコードのエクスポート
               </DropdownMenuItem>
             </>
           )}
