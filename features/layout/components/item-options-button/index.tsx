@@ -43,7 +43,7 @@ import { importTableAction } from '@/features/table/actions/import-table';
 import { importGroupsAction } from '@/features/group/actions/import-groups';
 import { importUsersAction } from '@/features/user/actions/import-users';
 import { getItemById } from '@/features/item/api';
-import { downloadCSV } from '@/lib/csv';
+import { downloadCSV } from '@/lib/download';
 import { ImportDialog } from '@/components/shared/import-dialog';
 import { ExportItemDialog } from '@/features/item/components/export-item-dialog';
 

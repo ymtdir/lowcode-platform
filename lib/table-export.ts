@@ -1,5 +1,6 @@
 import type { Table } from '@tanstack/react-table';
-import { convertToCSV, downloadCSV } from './csv';
+import { convertToCSV } from './csv';
+import { downloadCSV } from './download';
 
 /**
  * TanStack Tableからフィルター・ソート済みのデータをCSVエクスポートする
