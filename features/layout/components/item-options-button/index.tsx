@@ -163,12 +163,15 @@ export function ItemOptionsButton({
     }
 
     if (result.error) {
-      console.error('Export error:', result.error);
+      toast.error('エクスポートに失敗しました', {
+        description: result.error,
+      });
       return;
     }
 
     if (result.csv && result.filename) {
       downloadCSV(result.csv, result.filename);
+      toast.success('エクスポートが完了しました');
     }
   };
 
