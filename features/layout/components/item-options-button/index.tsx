@@ -6,11 +6,14 @@ import {
   Ellipsis,
   FileOutput,
   FileInput,
+  Package,
   Settings,
   Trash2,
   AlertCircle,
 } from 'lucide-react';
 import Link from 'next/link';
+import type { ItemType } from '@prisma/client';
+import { RenameItemOption } from '@/features/layout/components/workspace-menu/edit-item-button/rename-item-option';
 import type { PageType } from './container';
 import type { ExportColumnFilter } from '@/features/table/types/export';
 import {
@@ -40,8 +43,9 @@ import { importTableAction } from '@/features/table/actions/import-table';
 import { importGroupsAction } from '@/features/group/actions/import-groups';
 import { importUsersAction } from '@/features/user/actions/import-users';
 import { getItemById } from '@/features/item/api';
-import { downloadCSV } from '@/lib/csv';
+import { downloadCSV } from '@/lib/download';
 import { ImportDialog } from '@/components/shared/import-dialog';
+import { ExportItemDialog } from '@/features/item/components/export-item-dialog';
 
 /**
  * アイテムオプションボタンのProps型
@@ -61,7 +65,9 @@ export function ItemOptionsButton({
 }: ItemOptionsButtonProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [exportItemDialogOpen, setExportItemDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [itemName, setItemName] = useState<string>('');
@@ -157,18 +163,21 @@ export function ItemOptionsButton({
     }
 
     if (result.error) {
-      console.error('Export error:', result.error);
+      toast.error('エクスポートに失敗しました', {
+        description: result.error,
+      });
       return;
     }
 
     if (result.csv && result.filename) {
       downloadCSV(result.csv, result.filename);
+      toast.success('エクスポートが完了しました');
     }
   };
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon">
             <Ellipsis />
@@ -178,6 +187,12 @@ export function ItemOptionsButton({
         <DropdownMenuContent align="end">
           {pageType === 'TABLE' && itemId && (
             <>
+              <RenameItemOption
+                itemId={itemId}
+                itemType={'TABLE' as ItemType}
+                currentName={itemName}
+                onOpenChange={setDropdownOpen}
+              />
               <DropdownMenuItem asChild>
                 <Link href={`/${itemId}/edit`} className="cursor-pointer">
                   <Settings />
@@ -199,6 +214,12 @@ export function ItemOptionsButton({
           )}
           {pageType === 'FOLDER' && itemId && (
             <>
+              <RenameItemOption
+                itemId={itemId}
+                itemType={'FOLDER' as ItemType}
+                currentName={itemName}
+                onOpenChange={setDropdownOpen}
+              />
               <DropdownMenuItem asChild>
                 <Link href={`/${itemId}/edit`} className="cursor-pointer">
                   <Settings />
@@ -215,17 +236,29 @@ export function ItemOptionsButton({
                 <Trash2 className="text-destructive" />
                 削除
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
             </>
+          )}
+          {(pageType === 'TABLE' || pageType === 'FOLDER') && itemId && (
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                setExportItemDialogOpen(true);
+              }}
+            >
+              <Package />
+              アイテムのエクスポート
+            </DropdownMenuItem>
           )}
           {exportableTypes.includes(pageType) && (
             <>
               <DropdownMenuItem onSelect={() => setImportDialogOpen(true)}>
                 <FileInput />
-                インポート
+                レコードのインポート
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={handleExport}>
                 <FileOutput />
-                エクスポート
+                レコードのエクスポート
               </DropdownMenuItem>
             </>
           )}
@@ -267,6 +300,17 @@ export function ItemOptionsButton({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+      )}
+
+      {/* アイテムエクスポートダイアログ */}
+      {(pageType === 'TABLE' || pageType === 'FOLDER') && itemId && (
+        <ExportItemDialog
+          itemId={itemId}
+          itemName={itemName}
+          itemType={pageType}
+          open={exportItemDialogOpen}
+          onOpenChange={setExportItemDialogOpen}
+        />
       )}
 
       {/* インポートダイアログ */}
