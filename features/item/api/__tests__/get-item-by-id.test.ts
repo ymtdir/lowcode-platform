@@ -9,11 +9,36 @@ jest.mock('@/lib/prisma', () => ({
   },
 }));
 
+// lib/authをモック化
+jest.mock('@/lib/auth', () => ({
+  getCurrentUser: jest.fn(),
+}));
+
+// lib/permissionsをモック化
+jest.mock('@/lib/permissions', () => ({
+  canAccessItem: jest.fn(),
+}));
+
 import { prisma } from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth';
+import { canAccessItem } from '@/lib/permissions';
+
+const mockUser = {
+  id: 'user-1',
+  email: 'test@example.com',
+  name: 'Test User',
+  role: 'MEMBER' as const,
+};
 
 describe('getItemById', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // デフォルトで認証済み・アクセス可能に設定
+    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
+    (canAccessItem as jest.Mock).mockResolvedValue({
+      canAccess: true,
+      level: 'READ',
+    });
   });
 
   it('アイテムを取得できる', async () => {
@@ -96,5 +121,43 @@ describe('getItemById', () => {
     const result = await getItemById(itemId);
 
     expect(result).toBeNull();
+  });
+
+  it('未認証の場合はnullを返す', async () => {
+    (getCurrentUser as jest.Mock).mockResolvedValue(null);
+
+    const result = await getItemById('folder-1');
+
+    expect(result).toBeNull();
+    expect(prisma.item.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('権限がない場合はnullを返す', async () => {
+    const mockItem = {
+      id: 'folder-1',
+      name: 'テストアイテム',
+      parentId: null,
+      order: 0,
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-01'),
+      createdById: 'user-2',
+      children: [],
+      _count: { children: 0 },
+    };
+
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue(mockItem);
+    (canAccessItem as jest.Mock).mockResolvedValue({
+      canAccess: false,
+      level: 'NONE',
+    });
+
+    const result = await getItemById('folder-1');
+
+    expect(result).toBeNull();
+    expect(canAccessItem).toHaveBeenCalledWith(
+      'folder-1',
+      mockUser.id,
+      mockUser.role
+    );
   });
 });
