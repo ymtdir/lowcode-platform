@@ -6,6 +6,7 @@ import { getItemById } from '@/features/item/api';
 import { getStyles } from '@/features/style/api/get-styles';
 import { getScripts } from '@/features/script/api/get-scripts';
 import { getRecords } from '@/features/record/api/get-records';
+import type { UserRole } from '@prisma/client';
 import type {
   ItemExportData,
   ItemExportFile,
@@ -17,7 +18,9 @@ import type {
  */
 async function buildItemExportData(
   itemId: string,
-  options: ItemExportOptions
+  options: ItemExportOptions,
+  userId: string,
+  userRole: UserRole
 ): Promise<ItemExportData | null> {
   const item = await getItemById(itemId);
   if (!item) return null;
@@ -58,7 +61,15 @@ async function buildItemExportData(
   if (options.includeChildren && item.type === 'FOLDER' && item.children) {
     const children: ItemExportData[] = [];
     for (const child of item.children) {
-      const childData = await buildItemExportData(child.id, options);
+      const { canAccess } = await canAccessItem(child.id, userId, userRole);
+      if (!canAccess) continue;
+
+      const childData = await buildItemExportData(
+        child.id,
+        options,
+        userId,
+        userRole
+      );
       if (childData) {
         children.push(childData);
       }
@@ -94,7 +105,12 @@ export async function exportItemAction(
       return { error: 'このアイテムへのアクセス権限がありません' };
     }
 
-    const exportData = await buildItemExportData(itemId, options);
+    const exportData = await buildItemExportData(
+      itemId,
+      options,
+      currentUser.id,
+      currentUser.role
+    );
     if (!exportData) {
       return { error: 'アイテムが見つかりません' };
     }
