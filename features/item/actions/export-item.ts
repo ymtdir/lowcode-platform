@@ -118,7 +118,8 @@ export async function exportItemAction(
         second: '2-digit',
       })
       .replace(/[/:\s]/g, '-');
-    const filename = `${exportData.name}_${timestamp}.json`;
+    const safeName = exportData.name.replace(/[\\/:*?"<>|]/g, '_');
+    const filename = `${safeName}_${timestamp}.json`;
 
     return { json, filename };
   } catch (error) {

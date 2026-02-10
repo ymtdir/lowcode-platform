@@ -137,7 +137,8 @@ export async function exportTableAction(
       second: '2-digit',
     })
     .replace(/[/:\s]/g, '-');
-  const filename = `${item.name}_${timestamp}.csv`;
+  const safeName = item.name.replace(/[\\/:*?"<>|]/g, '_');
+  const filename = `${safeName}_${timestamp}.csv`;
 
   return { csv, filename };
 }

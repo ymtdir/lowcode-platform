@@ -51,6 +51,7 @@ export function exportTableToCSV<TData>(
       second: '2-digit',
     })
     .replace(/[/:\s]/g, '-');
-  const filename = `${tableName}_${timestamp}.csv`;
+  const safeName = tableName.replace(/[\\/:*?"<>|]/g, '_');
+  const filename = `${safeName}_${timestamp}.csv`;
   downloadCSV(csv, filename);
 }
