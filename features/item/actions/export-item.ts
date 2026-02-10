@@ -1,5 +1,7 @@
 'use server';
 
+import { requireAuth } from '@/lib/auth';
+import { canAccessItem } from '@/lib/permissions';
 import { getItemById } from '@/features/item/api';
 import { getStyles } from '@/features/style/api/get-styles';
 import { getScripts } from '@/features/script/api/get-scripts';
@@ -77,6 +79,21 @@ export async function exportItemAction(
   options: ItemExportOptions
 ): Promise<{ json?: string; filename?: string; error?: string }> {
   try {
+    // 認証・権限チェック
+    const currentUser = await requireAuth().catch(() => null);
+    if (!currentUser) {
+      return { error: '認証が必要です' };
+    }
+
+    const { canAccess } = await canAccessItem(
+      itemId,
+      currentUser.id,
+      currentUser.role
+    );
+    if (!canAccess) {
+      return { error: 'このアイテムへのアクセス権限がありません' };
+    }
+
     const exportData = await buildItemExportData(itemId, options);
     if (!exportData) {
       return { error: 'アイテムが見つかりません' };
