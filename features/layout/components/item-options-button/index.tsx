@@ -46,6 +46,7 @@ import { getItemById } from '@/features/item/api';
 import { downloadCSV } from '@/lib/download';
 import { ImportDialog } from '@/components/shared/import-dialog';
 import { ExportItemDialog } from '@/features/item/components/export-item-dialog';
+import { ImportItemDialog } from '@/features/item/components/import-item-dialog';
 
 /**
  * アイテムオプションボタンのProps型
@@ -68,6 +69,7 @@ export function ItemOptionsButton({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [exportItemDialogOpen, setExportItemDialogOpen] = useState(false);
+  const [importItemDialogOpen, setImportItemDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [itemName, setItemName] = useState<string>('');
@@ -240,15 +242,26 @@ export function ItemOptionsButton({
             </>
           )}
           {(pageType === 'TABLE' || pageType === 'FOLDER') && itemId && (
-            <DropdownMenuItem
-              onSelect={(e) => {
-                e.preventDefault();
-                setExportItemDialogOpen(true);
-              }}
-            >
-              <Package />
-              アイテムのエクスポート
-            </DropdownMenuItem>
+            <>
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.preventDefault();
+                  setExportItemDialogOpen(true);
+                }}
+              >
+                <Package />
+                アイテムのエクスポート
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.preventDefault();
+                  setImportItemDialogOpen(true);
+                }}
+              >
+                <Package />
+                アイテムのインポート
+              </DropdownMenuItem>
+            </>
           )}
           {exportableTypes.includes(pageType) && (
             <>
@@ -310,6 +323,15 @@ export function ItemOptionsButton({
           itemType={pageType}
           open={exportItemDialogOpen}
           onOpenChange={setExportItemDialogOpen}
+        />
+      )}
+
+      {/* アイテムインポートダイアログ */}
+      {(pageType === 'TABLE' || pageType === 'FOLDER') && itemId && (
+        <ImportItemDialog
+          parentId={pageType === 'FOLDER' ? itemId : null}
+          open={importItemDialogOpen}
+          onOpenChange={setImportItemDialogOpen}
         />
       )}
 

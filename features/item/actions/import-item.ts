@@ -28,7 +28,10 @@ async function createItemFromExport(
       icon: itemData.icon,
       parentId,
       order: baseOrder,
-      meta: itemData.meta === null ? Prisma.JsonNull : (itemData.meta as Prisma.InputJsonValue),
+      meta:
+        itemData.meta === null
+          ? Prisma.JsonNull
+          : (itemData.meta as Prisma.InputJsonValue),
       createdById,
     },
   });
@@ -59,7 +62,11 @@ async function createItemFromExport(
   }
 
   // レコードを作成（TABLE型の場合のみ）
-  if (itemData.records && itemData.records.length > 0 && itemData.type === 'TABLE') {
+  if (
+    itemData.records &&
+    itemData.records.length > 0 &&
+    itemData.type === 'TABLE'
+  ) {
     await tx.record.createMany({
       data: itemData.records.map((r) => ({
         tableId: item.id,
@@ -189,7 +196,8 @@ export async function importItemAction(
         updatedCount: 0,
         skippedCount: 0,
         totalCount: 0,
-        message: 'インポートファイルの形式が不正です。エクスポートしたファイルを使用してください。',
+        message:
+          'インポートファイルの形式が不正です。エクスポートしたファイルを使用してください。',
       };
     }
 

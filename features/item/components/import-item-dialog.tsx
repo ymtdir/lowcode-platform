@@ -31,7 +31,12 @@ type ImportItemDialogProps = {
  */
 type ImportState =
   | { type: 'idle' }
-  | { type: 'preview'; fileName: string; jsonContent: string; summary: ImportSummary }
+  | {
+      type: 'preview';
+      fileName: string;
+      jsonContent: string;
+      summary: ImportSummary;
+    }
   | { type: 'importing' }
   | { type: 'success'; result: ImportResult }
   | { type: 'error'; message: string };
@@ -87,7 +92,9 @@ function buildSummary(items: ItemExportData[]): ImportSummary {
 /**
  * JSONバリデーション（クライアント側の簡易チェック）
  */
-function parseAndValidate(jsonContent: string): { exportFile: ItemExportFile } | { error: string } {
+function parseAndValidate(
+  jsonContent: string
+): { exportFile: ItemExportFile } | { error: string } {
   let parsed: unknown;
   try {
     parsed = JSON.parse(jsonContent);
@@ -296,23 +303,31 @@ export function ImportItemDialog({
                 </div>
                 <div className="grid grid-cols-2 gap-1 text-sm text-muted-foreground">
                   <div>アイテム数:</div>
-                  <div className="font-semibold">{state.summary.itemCount}件</div>
+                  <div className="font-semibold">
+                    {state.summary.itemCount}件
+                  </div>
                   {state.summary.folderCount > 0 && (
                     <>
                       <div>フォルダ:</div>
-                      <div className="font-semibold">{state.summary.folderCount}件</div>
+                      <div className="font-semibold">
+                        {state.summary.folderCount}件
+                      </div>
                     </>
                   )}
                   {state.summary.tableCount > 0 && (
                     <>
                       <div>テーブル:</div>
-                      <div className="font-semibold">{state.summary.tableCount}件</div>
+                      <div className="font-semibold">
+                        {state.summary.tableCount}件
+                      </div>
                     </>
                   )}
                   {state.summary.hasRecords && (
                     <>
                       <div>レコード:</div>
-                      <div className="font-semibold">{state.summary.recordCount}件</div>
+                      <div className="font-semibold">
+                        {state.summary.recordCount}件
+                      </div>
                     </>
                   )}
                 </div>
