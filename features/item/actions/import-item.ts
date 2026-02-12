@@ -124,6 +124,28 @@ function validateExportItem(data: unknown): data is ItemExportData {
   if (!Array.isArray(item.styles)) return false;
   if (!Array.isArray(item.scripts)) return false;
 
+  // styles の各要素を検証
+  for (const s of item.styles) {
+    if (!s || typeof s !== 'object') return false;
+    const style = s as Record<string, unknown>;
+    if (typeof style.name !== 'string' || typeof style.content !== 'string' || typeof style.order !== 'number') return false;
+  }
+
+  // scripts の各要素を検証
+  for (const s of item.scripts) {
+    if (!s || typeof s !== 'object') return false;
+    const script = s as Record<string, unknown>;
+    if (typeof script.name !== 'string' || typeof script.content !== 'string' || typeof script.order !== 'number') return false;
+  }
+
+  // records の各要素を検証（存在する場合）
+  if (item.records) {
+    if (!Array.isArray(item.records)) return false;
+    for (const r of item.records) {
+      if (!r || typeof r !== 'object' || !('data' in r)) return false;
+    }
+  }
+
   // 子アイテムのバリデーション（再帰）
   if (item.children) {
     if (!Array.isArray(item.children)) return false;
