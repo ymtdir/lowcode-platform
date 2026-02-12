@@ -77,7 +77,7 @@ async function createItemFromExport(
   }
 
   // 子アイテムを再帰的に作成（FOLDER型の場合のみ）
-  if (itemData.children && itemData.children.length > 0) {
+  if (itemData.children && itemData.children.length > 0 && itemData.type === 'FOLDER') {
     for (let i = 0; i < itemData.children.length; i++) {
       const childCount = await createItemFromExport(
         tx,
