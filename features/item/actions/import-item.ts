@@ -233,18 +233,21 @@ export async function importItemAction(
     // トランザクションでアイテムを一括作成
     let insertedCount = 0;
 
-    await prisma.$transaction(async (tx) => {
-      for (let i = 0; i < exportFile.items.length; i++) {
-        const count = await createItemFromExport(
-          tx,
-          exportFile.items[i],
-          parentId,
-          currentUser.id,
-          startOrder + i
-        );
-        insertedCount += count;
-      }
-    });
+    await prisma.$transaction(
+      async (tx) => {
+        for (let i = 0; i < exportFile.items.length; i++) {
+          const count = await createItemFromExport(
+            tx,
+            exportFile.items[i],
+            parentId,
+            currentUser.id,
+            startOrder + i
+          );
+          insertedCount += count;
+        }
+      },
+      { timeout: 60000 }
+    );
 
     revalidatePath('/', 'layout');
 
