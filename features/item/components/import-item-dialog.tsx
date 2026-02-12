@@ -194,7 +194,7 @@ export function ImportItemDialog({
     onDrop,
     onDropRejected,
     accept: { 'application/json': ['.json'] },
-    maxSize: 50 * 1024 * 1024, // 50MB制限
+    maxSize: 10 * 1024 * 1024, // 10MB制限
     multiple: false,
   });
 
@@ -279,7 +279,7 @@ export function ImportItemDialog({
                     </span>
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    JSON形式のファイル（最大50MB）
+                    JSON形式のファイル（最大10MB）
                   </p>
                 </div>
               </div>
