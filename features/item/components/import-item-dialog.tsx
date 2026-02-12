@@ -234,12 +234,15 @@ export function ImportItemDialog({
   // ダイアログを閉じる際のリセット
   const handleOpenChange = useCallback(
     (newOpen: boolean) => {
+      if (!newOpen && state.type === 'importing') {
+        return;
+      }
       onOpenChange(newOpen);
       if (!newOpen) {
         setState({ type: 'idle' });
       }
     },
-    [onOpenChange]
+    [onOpenChange, state.type]
   );
 
   return (
