@@ -226,37 +226,30 @@ export async function importItemAction(
     const exportFile = parsed;
     const totalItemCount = countItems(exportFile.items);
 
-    // 親アイテムの存在チェック（parentId が指定されている場合）
-    if (parentId) {
-      const parentItem = await prisma.item.findUnique({
-        where: { id: parentId },
-        select: { id: true, type: true },
-      });
-      if (!parentItem) {
-        return {
-          success: false,
-          insertedCount: 0,
-          updatedCount: 0,
-          skippedCount: 0,
-          totalCount: totalItemCount,
-          message: 'インポート先のフォルダが見つかりません',
-        };
-      }
-    }
-
-    // 同じ親の最大order値を取得
-    const maxOrderItem = await prisma.item.findFirst({
-      where: { parentId: parentId || null },
-      orderBy: { order: 'desc' },
-      select: { order: true },
-    });
-    const startOrder = maxOrderItem ? maxOrderItem.order + 1 : 0;
-
     // トランザクションでアイテムを一括作成
     let insertedCount = 0;
 
     await prisma.$transaction(
       async (tx) => {
+        // 親アイテムの存在チェック（parentId が指定されている場合）
+        if (parentId) {
+          const parentItem = await tx.item.findUnique({
+            where: { id: parentId },
+            select: { id: true, type: true },
+          });
+          if (!parentItem) {
+            throw new Error('インポート先のフォルダが見つかりません');
+          }
+        }
+
+        // 同じ親の最大order値を取得
+        const maxOrderItem = await tx.item.findFirst({
+          where: { parentId: parentId || null },
+          orderBy: { order: 'desc' },
+          select: { order: true },
+        });
+        const startOrder = maxOrderItem ? maxOrderItem.order + 1 : 0;
+
         for (let i = 0; i < exportFile.items.length; i++) {
           const count = await createItemFromExport(
             tx,
