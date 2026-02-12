@@ -77,7 +77,11 @@ async function createItemFromExport(
   }
 
   // 子アイテムを再帰的に作成（FOLDER型の場合のみ）
-  if (itemData.children && itemData.children.length > 0 && itemData.type === 'FOLDER') {
+  if (
+    itemData.children &&
+    itemData.children.length > 0 &&
+    itemData.type === 'FOLDER'
+  ) {
     for (let i = 0; i < itemData.children.length; i++) {
       const childCount = await createItemFromExport(
         tx,
@@ -128,14 +132,24 @@ function validateExportItem(data: unknown): data is ItemExportData {
   for (const s of item.styles) {
     if (!s || typeof s !== 'object') return false;
     const style = s as Record<string, unknown>;
-    if (typeof style.name !== 'string' || typeof style.content !== 'string' || typeof style.order !== 'number') return false;
+    if (
+      typeof style.name !== 'string' ||
+      typeof style.content !== 'string' ||
+      typeof style.order !== 'number'
+    )
+      return false;
   }
 
   // scripts の各要素を検証
   for (const s of item.scripts) {
     if (!s || typeof s !== 'object') return false;
     const script = s as Record<string, unknown>;
-    if (typeof script.name !== 'string' || typeof script.content !== 'string' || typeof script.order !== 'number') return false;
+    if (
+      typeof script.name !== 'string' ||
+      typeof script.content !== 'string' ||
+      typeof script.order !== 'number'
+    )
+      return false;
   }
 
   // records の各要素を検証（存在する場合）
@@ -239,6 +253,9 @@ export async function importItemAction(
           });
           if (!parentItem) {
             throw new Error('インポート先のフォルダが見つかりません');
+          }
+          if (parentItem.type !== 'FOLDER') {
+            throw new Error('インポート先はフォルダである必要があります');
           }
         }
 
