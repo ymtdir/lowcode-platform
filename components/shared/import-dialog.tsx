@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, FileText, AlertCircle, CheckCircle2 } from 'lucide-react';
 import {
@@ -60,6 +60,16 @@ export function ImportDialog({
   const [internalOpen, setInternalOpen] = useState(false);
   const [state, setState] = useState<ImportState>({ type: 'idle' });
   const [progress, setProgress] = useState(0);
+  const autoCloseTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  // 自動クローズタイマーのクリーンアップ
+  useEffect(() => {
+    return () => {
+      if (autoCloseTimerRef.current) {
+        clearTimeout(autoCloseTimerRef.current);
+      }
+    };
+  }, []);
 
   // 制御モード（親から open/onOpenChange が渡された場合）と非制御モード
   const open = controlledOpen ?? internalOpen;
@@ -154,7 +164,7 @@ export function ImportDialog({
       if (result.success) {
         setState({ type: 'success', result });
         // 成功後、3秒後にダイアログを閉じてコールバックを実行
-        setTimeout(() => {
+        autoCloseTimerRef.current = setTimeout(() => {
           if (controlledOnOpenChange) {
             controlledOnOpenChange(false);
           } else {
@@ -191,6 +201,10 @@ export function ImportDialog({
         setInternalOpen(newOpen);
       }
       if (!newOpen) {
+        if (autoCloseTimerRef.current) {
+          clearTimeout(autoCloseTimerRef.current);
+          autoCloseTimerRef.current = undefined;
+        }
         setState({ type: 'idle' });
       }
     },

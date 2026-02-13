@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, FileText, AlertCircle, CheckCircle2 } from 'lucide-react';
 import {
@@ -127,6 +127,16 @@ export function ImportItemDialog({
 }: ImportItemDialogProps) {
   const [state, setState] = useState<ImportState>({ type: 'idle' });
   const [progress, setProgress] = useState(0);
+  const autoCloseTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  // 自動クローズタイマーのクリーンアップ
+  useEffect(() => {
+    return () => {
+      if (autoCloseTimerRef.current) {
+        clearTimeout(autoCloseTimerRef.current);
+      }
+    };
+  }, []);
 
   // インポート中のプログレスバーアニメーション
   useEffect(() => {
@@ -209,7 +219,7 @@ export function ImportItemDialog({
 
       if (result.success) {
         setState({ type: 'success', result });
-        setTimeout(() => {
+        autoCloseTimerRef.current = setTimeout(() => {
           onOpenChange(false);
           setState({ type: 'idle' });
           window.location.reload();
@@ -239,6 +249,10 @@ export function ImportItemDialog({
       }
       onOpenChange(newOpen);
       if (!newOpen) {
+        if (autoCloseTimerRef.current) {
+          clearTimeout(autoCloseTimerRef.current);
+          autoCloseTimerRef.current = undefined;
+        }
         setState({ type: 'idle' });
       }
     },
