@@ -201,6 +201,10 @@ export function ImportDialog({
         setInternalOpen(newOpen);
       }
       if (!newOpen) {
+        if (autoCloseTimerRef.current) {
+          clearTimeout(autoCloseTimerRef.current);
+          autoCloseTimerRef.current = undefined;
+        }
         setState({ type: 'idle' });
       }
     },
