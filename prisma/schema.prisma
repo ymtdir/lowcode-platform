@@ -19,6 +19,7 @@ model User {
 
   groupMembers    GroupMember[]
   itemPermissions ItemPermission[]
+  apiKeys         ApiKey[]
 }
 
 model Group {
@@ -165,4 +166,19 @@ model Script {
 
   @@index([itemId])
   @@index([itemId, order])
+}
+
+model ApiKey {
+  id        String   @id @default(uuid())
+  name      String
+  keyHash   String   @unique
+  keyPrefix String
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([keyHash])
 }
