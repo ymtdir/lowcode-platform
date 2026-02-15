@@ -70,9 +70,7 @@ describe('generateApiKey', () => {
   });
 
   it('DBエラーの場合はエラーになる', async () => {
-    (prisma.$transaction as jest.Mock).mockRejectedValue(
-      new Error('DB Error')
-    );
+    (prisma.$transaction as jest.Mock).mockRejectedValue(new Error('DB Error'));
 
     await expect(generateApiKey()).rejects.toThrow('DB Error');
   });
