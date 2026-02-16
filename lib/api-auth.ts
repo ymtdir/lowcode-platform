@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { apiError } from '@/lib/api-response';
 import type { AuthUser } from '@/lib/auth';
-
-/**
- * APIエラーレスポンスを生成する
- */
-export function apiError(message: string, status: number): NextResponse {
-  return NextResponse.json({ error: message }, { status });
-}
 
 /**
  * リクエストヘッダーからAPIキーを抽出する
@@ -36,7 +30,7 @@ export async function authenticateApiKey(
   const key = extractApiKey(request);
 
   if (!key) {
-    return apiError('APIキーが必要です', 401);
+    return apiError('APIキーが必要です', 'UNAUTHORIZED', 401);
   }
 
   const apiKey = await prisma.apiKey.findUnique({
@@ -54,7 +48,7 @@ export async function authenticateApiKey(
   });
 
   if (!apiKey) {
-    return apiError('無効なAPIキーです', 401);
+    return apiError('無効なAPIキーです', 'UNAUTHORIZED', 401);
   }
 
   return {
