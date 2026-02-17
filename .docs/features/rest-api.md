@@ -29,18 +29,18 @@
 
 | メソッド | パス                    | 用途             | 状態        |
 | -------- | ----------------------- | ---------------- | ----------- |
-| `GET`    | `/api/v1/items`         | アイテム一覧取得 | ⚠️ 未実装   |
+| `GET`    | `/api/v1/items`         | アイテム一覧取得 | ✅ 実装済み |
 | `GET`    | `/api/v1/items/:itemId` | アイテム詳細取得 | ✅ 実装済み |
 
 ### レコード（CRUD）
 
-| メソッド | パス                                      | 用途             | 状態                       |
-| -------- | ----------------------------------------- | ---------------- | -------------------------- |
-| `GET`    | `/api/v1/items/:itemId/records`           | レコード一覧取得 | ⚠️ 未実装                  |
-| `POST`   | `/api/v1/items/:itemId/records`           | レコード作成     | ✅ 実装済み                |
-| `GET`    | `/api/v1/items/:itemId/records/:recordId` | レコード詳細取得 | ✅ 実装済み                |
-| `PATCH`  | `/api/v1/items/:itemId/records/:recordId` | レコード部分更新 | ⚠️ 未実装（PUT→PATCH変更） |
-| `DELETE` | `/api/v1/items/:itemId/records/:recordId` | レコード削除     | ✅ 実装済み                |
+| メソッド | パス                                      | 用途             | 状態                          |
+| -------- | ----------------------------------------- | ---------------- | ----------------------------- |
+| `GET`    | `/api/v1/items/:itemId/records`           | レコード一覧取得 | ✅ 実装済み                   |
+| `POST`   | `/api/v1/items/:itemId/records`           | レコード作成     | ✅ 実装済み                   |
+| `GET`    | `/api/v1/items/:itemId/records/:recordId` | レコード詳細取得 | ✅ 実装済み                   |
+| `PATCH`  | `/api/v1/items/:itemId/records/:recordId` | レコード部分更新 | ✅ 実装済み（PUTも後方互換維持） |
+| `DELETE` | `/api/v1/items/:itemId/records/:recordId` | レコード削除     | ✅ 実装済み                   |
 
 ---
 
@@ -503,10 +503,10 @@ Content-Type: application/json
 
 ### PATCH /api/v1/items/:itemId/records/:recordId
 
-レコードを部分更新する。指定したフィールドのみ更新し、他のフィールドは保持される。
+レコードを部分更新する。（✅ 実装済み）
 
-> **注意:** 現在は `PUT` で実装されているが、動作が部分更新（マージ）であるため `PATCH` に変更する。
-> 移行期間として `PUT` も同じ動作で残す。
+指定したフィールドのみ更新し、他のフィールドは保持される。
+後方互換のため `PUT` も同じ動作で残している。
 
 #### リクエスト
 
@@ -609,15 +609,15 @@ Content-Type: application/json
 
 ## 実装の優先順位
 
-| 優先度 | タスク                               | 概要                                             |
-| ------ | ------------------------------------ | ------------------------------------------------ |
-| 🔴 1   | レスポンスフォーマット統一           | `{ data: ... }` ラッパーの導入、エラー形式の統一 |
-| 🔴 2   | `GET /items`                         | アイテム一覧エンドポイント                       |
-| 🔴 3   | `GET /items/:itemId` の修正          | レコードを含めない、レスポンスラッパー適用       |
-| 🔴 4   | `GET /items/:itemId/records`         | レコード一覧（ページネーション + 基本ソート）    |
-| 🔴 5   | `POST /items/:itemId/records/search` | 高度なフィルタリング                             |
-| 🟡 6   | `PATCH` メソッド追加                 | PUT → PATCH 移行（PUTも維持）                    |
-| 🟡 7   | バリデーション強化                   | スキーマに基づくレコード入力バリデーション       |
+| 優先度 | タスク                               | 概要                                             | 状態        |
+| ------ | ------------------------------------ | ------------------------------------------------ | ----------- |
+| 🔴 1   | レスポンスフォーマット統一           | `{ data: ... }` ラッパーの導入、エラー形式の統一 | ✅ 完了     |
+| 🔴 2   | `GET /items`                         | アイテム一覧エンドポイント                       | ✅ 完了     |
+| 🔴 3   | `GET /items/:itemId` の修正          | レコードを含めない、レスポンスラッパー適用       | ✅ 完了     |
+| 🔴 4   | `GET /items/:itemId/records`         | レコード一覧（ページネーション + 基本ソート）    | ✅ 完了     |
+| 🔴 5   | `POST /items/:itemId/records/search` | 高度なフィルタリング                             | ⚠️ 未実装   |
+| 🟡 6   | `PATCH` メソッド追加                 | PUT → PATCH 移行（PUTも維持）                    | ✅ 完了     |
+| 🟡 7   | バリデーション強化                   | スキーマに基づくレコード入力バリデーション       | ⚠️ 未実装   |
 
 ---
 
@@ -636,25 +636,22 @@ Content-Type: application/json
 
 ```text
 app/api/v1/
+├── __tests__/
+│   ├── items-api.test.ts                           # アイテム一覧・詳細のテスト
+│   └── records-api.test.ts                         # レコードCRUDのテスト
 ├── items/
 │   ├── route.ts                                    # GET: アイテム一覧
 │   └── [itemId]/
 │       ├── route.ts                                # GET: アイテム詳細
-│       ├── __tests__/
-│       │   └── item-detail-api.test.ts
 │       └── records/
 │           ├── route.ts                            # GET: レコード一覧, POST: レコード作成
 │           ├── search/
-│           │   └── route.ts                        # POST: レコード検索
-│           ├── __tests__/
-│           │   └── records-api.test.ts
+│           │   └── route.ts                        # POST: レコード検索（未実装）
 │           └── [recordId]/
-│               ├── route.ts                        # GET: 詳細, PATCH/PUT: 更新, DELETE: 削除
-│               └── __tests__/
-│                   └── record-api.test.ts
+│               └── route.ts                        # GET: 詳細, PATCH/PUT: 更新, DELETE: 削除
 lib/
-├── api-auth.ts                                     # APIキー認証（実装済み）
-├── api-response.ts                                 # レスポンスヘルパー（新規）
-├── api-filter.ts                                   # フィルタ構文パーサー（新規）
-└── permissions.ts                                  # 権限チェック（実装済み）
+├── api-auth.ts                                     # APIキー認証
+├── api-response.ts                                 # レスポンスヘルパー
+├── api-filter.ts                                   # フィルタ構文パーサー（未実装）
+└── permissions.ts                                  # 権限チェック
 ```
