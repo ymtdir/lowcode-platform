@@ -1,6 +1,7 @@
 import { generateApiKey } from '../generate-api-key';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { hashApiKey } from '@/lib/api-auth';
 
 // Authをモック化
 jest.mock('@/lib/auth', () => ({
@@ -23,6 +24,7 @@ jest.mock('crypto', () => ({
   randomBytes: jest.fn(() => ({
     toString: jest.fn(() => 'a'.repeat(64)),
   })),
+  createHash: jest.requireActual('crypto').createHash,
 }));
 
 const mockUser = {
@@ -38,24 +40,31 @@ describe('generateApiKey', () => {
     (requireAuth as jest.Mock).mockResolvedValue(mockUser);
   });
 
-  it('APIキーを生成できる', async () => {
+  it('APIキーを生成しハッシュとprefixを保存する', async () => {
     const createdAt = new Date();
-    const expectedKey = `mk_${'a'.repeat(64)}`;
+    const rawKey = `mk_${'a'.repeat(64)}`;
+    const expectedPrefix = rawKey.slice(0, 8);
+    const expectedHash = hashApiKey(rawKey);
 
     (prisma.$transaction as jest.Mock).mockResolvedValue([
       { count: 0 },
-      { key: expectedKey, createdAt },
+      { prefix: expectedPrefix, createdAt },
     ]);
 
     const result = await generateApiKey();
 
-    expect(result).toEqual({ key: expectedKey, createdAt });
+    expect(result.prefix).toBe(expectedPrefix);
+    expect(result.plainTextKey).toBe(rawKey);
+    expect(result.createdAt).toBe(createdAt);
+    expect(result.lastUsedAt).toBeNull();
+    expect(result.expiresAt).toBeNull();
     expect(prisma.$transaction).toHaveBeenCalledWith([
       prisma.apiKey.deleteMany({ where: { userId: 'user-1' } }),
       prisma.apiKey.create({
         data: {
           name: 'default',
-          key: expectedKey,
+          key: expectedHash,
+          prefix: expectedPrefix,
           userId: 'user-1',
         },
       }),

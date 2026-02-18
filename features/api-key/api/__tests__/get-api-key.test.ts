@@ -29,18 +29,34 @@ describe('getApiKey', () => {
     (requireAuth as jest.Mock).mockResolvedValue(mockUser);
   });
 
-  it('APIキーを取得できる', async () => {
+  it('APIキー情報を取得できる（plainTextKeyはnull）', async () => {
     const createdAt = new Date();
-    const apiKey = { key: 'mk_test123', createdAt };
+    const apiKey = {
+      prefix: 'mk_abc1d',
+      lastUsedAt: null,
+      expiresAt: null,
+      createdAt,
+    };
 
     (prisma.apiKey.findFirst as jest.Mock).mockResolvedValue(apiKey);
 
     const result = await getApiKey();
 
-    expect(result).toEqual(apiKey);
+    expect(result).toEqual({
+      prefix: 'mk_abc1d',
+      plainTextKey: null,
+      lastUsedAt: null,
+      expiresAt: null,
+      createdAt,
+    });
     expect(prisma.apiKey.findFirst).toHaveBeenCalledWith({
       where: { userId: 'user-1' },
-      select: { key: true, createdAt: true },
+      select: {
+        prefix: true,
+        lastUsedAt: true,
+        expiresAt: true,
+        createdAt: true,
+      },
     });
   });
 
