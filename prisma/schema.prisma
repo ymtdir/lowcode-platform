@@ -169,12 +169,15 @@ model Script {
 }
 
 model ApiKey {
-  id        String   @id @default(uuid())
-  name      String
-  key       String   @unique
-  userId    String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String    @id @default(uuid())
+  name       String
+  key        String    @unique
+  prefix     String
+  userId     String    @unique
+  lastUsedAt DateTime?
+  expiresAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
