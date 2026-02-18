@@ -9,6 +9,7 @@ type ErrorCode =
   | 'FORBIDDEN'
   | 'NOT_FOUND'
   | 'VALIDATION_ERROR'
+  | 'RATE_LIMIT_EXCEEDED'
   | 'INTERNAL_ERROR';
 
 /**
