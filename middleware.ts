@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { authEdge } from '@/lib/auth-edge-config';
 
 // 認証不要なパス
-const publicPaths = ['/login', '/register', '/api/auth'];
+const publicPaths = ['/login', '/register', '/api/auth', '/api/v1'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

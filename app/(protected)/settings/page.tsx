@@ -5,6 +5,7 @@ import { getSettings } from '@/features/setting/api';
 import { getStyles, extractStyles } from '@/features/style';
 import { getScripts, extractScripts } from '@/features/script';
 import { SettingsForm } from '@/features/setting/components/settings-form';
+import { ApiKeySection } from '@/features/api-key/components/api-key-section';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,6 +39,14 @@ export default async function SettingsPage() {
         initialGlobalStyles={globalStyles}
         initialGlobalScripts={globalScripts}
       />
+
+      <div className="border-t pt-8">
+        <h2 className="text-lg font-semibold mb-2">APIキー管理</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          REST APIにアクセスするためのAPIキーを管理します。
+        </p>
+        <ApiKeySection />
+      </div>
     </div>
   );
 }
