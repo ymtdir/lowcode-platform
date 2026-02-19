@@ -225,20 +225,19 @@ describe('PATCH /api/v1/items/[itemId]/records/[recordId]', () => {
   const params = Promise.resolve({ itemId: 'table-1', recordId: 'rec-1' });
 
   function createRequest(body?: unknown): NextRequest {
-    const init: RequestInit = {
-      method: 'PATCH',
-      headers: { Authorization: 'Bearer mk_test' },
+    const headers: Record<string, string> = {
+      Authorization: 'Bearer mk_test',
     };
     if (body) {
-      init.headers = {
-        ...init.headers,
-        'Content-Type': 'application/json',
-      };
-      init.body = JSON.stringify(body);
+      headers['Content-Type'] = 'application/json';
     }
     return new NextRequest(
       'http://localhost:3000/api/v1/items/table-1/records/rec-1',
-      init
+      {
+        method: 'PATCH',
+        headers,
+        body: body ? JSON.stringify(body) : undefined,
+      }
     );
   }
 
