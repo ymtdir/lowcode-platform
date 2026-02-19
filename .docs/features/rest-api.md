@@ -3,7 +3,7 @@
 ## 概要
 
 外部アプリケーションからmukuのデータにアクセスするためのREST API。
-テーブルのレコードに対してCRUD操作を行い、高度なフィルタリング・ソート・ページネーションにも対応する。
+テーブルのレコードに対してCRUD操作を行い、ソート・ページネーションに対応する。
 
 ### 設計方針
 
@@ -34,13 +34,13 @@
 
 ### レコード（CRUD）
 
-| メソッド | パス                                      | 用途             | 状態                          |
-| -------- | ----------------------------------------- | ---------------- | ----------------------------- |
-| `GET`    | `/api/v1/items/:itemId/records`           | レコード一覧取得 | ✅ 実装済み                   |
-| `POST`   | `/api/v1/items/:itemId/records`           | レコード作成     | ✅ 実装済み                   |
-| `GET`    | `/api/v1/items/:itemId/records/:recordId` | レコード詳細取得 | ✅ 実装済み                   |
+| メソッド | パス                                      | 用途             | 状態                             |
+| -------- | ----------------------------------------- | ---------------- | -------------------------------- |
+| `GET`    | `/api/v1/items/:itemId/records`           | レコード一覧取得 | ✅ 実装済み                      |
+| `POST`   | `/api/v1/items/:itemId/records`           | レコード作成     | ✅ 実装済み                      |
+| `GET`    | `/api/v1/items/:itemId/records/:recordId` | レコード詳細取得 | ✅ 実装済み                      |
 | `PATCH`  | `/api/v1/items/:itemId/records/:recordId` | レコード部分更新 | ✅ 実装済み（PUTも後方互換維持） |
-| `DELETE` | `/api/v1/items/:itemId/records/:recordId` | レコード削除     | ✅ 実装済み                   |
+| `DELETE` | `/api/v1/items/:itemId/records/:recordId` | レコード削除     | ✅ 実装済み                      |
 
 ---
 
@@ -71,14 +71,35 @@ curl -H "X-API-Key: mk_xxxxxxxxxxxx" \
 }
 ```
 
-| HTTPステータス | コード             | 説明                       |
-| -------------- | ------------------ | -------------------------- |
-| 400            | `BAD_REQUEST`      | リクエストが不正           |
-| 401            | `UNAUTHORIZED`     | 認証が必要 / APIキーが無効 |
-| 403            | `FORBIDDEN`        | 権限不足                   |
-| 404            | `NOT_FOUND`        | リソースが見つからない     |
-| 422            | `VALIDATION_ERROR` | バリデーションエラー       |
-| 500            | `INTERNAL_ERROR`   | サーバー内部エラー         |
+| HTTPステータス | コード                | 説明                       |
+| -------------- | --------------------- | -------------------------- |
+| 400            | `BAD_REQUEST`         | リクエストが不正           |
+| 401            | `UNAUTHORIZED`        | 認証が必要 / APIキーが無効 |
+| 403            | `FORBIDDEN`           | 権限不足                   |
+| 404            | `NOT_FOUND`           | リソースが見つからない     |
+| 422            | `VALIDATION_ERROR`    | バリデーションエラー       |
+| 429            | `RATE_LIMIT_EXCEEDED` | レート制限超過             |
+| 500            | `INTERNAL_ERROR`      | サーバー内部エラー         |
+
+### APIキーのセキュリティ
+
+- APIキーはSHA-256ハッシュとしてDBに保存される（平文は保存しない）
+- キー生成時に一度だけ平文を表示し、以降はprefix（先頭8文字、例: `mk_abc1d`）でマスク表示する
+- `lastUsedAt`: APIキーの最終使用日時を記録（fire-and-forgetで非同期更新）
+- `expiresAt`: 有効期限（設定されている場合、期限切れキーは401を返す）
+- 1ユーザーにつきAPIキーは1個まで（再生成時は既存キーを削除）
+
+### レート制限
+
+インメモリのスライディングウィンドウ方式で、1ユーザーあたり **100リクエスト/分** に制限。
+
+制限を超えた場合は `429 Too Many Requests` を返し、以下のヘッダーを付与する:
+
+| ヘッダー                | 説明                                 |
+| ----------------------- | ------------------------------------ |
+| `X-RateLimit-Limit`     | ウィンドウあたりの最大リクエスト数   |
+| `X-RateLimit-Remaining` | 残りリクエスト数                     |
+| `X-RateLimit-Reset`     | ウィンドウリセット時刻（UNIXタイム） |
 
 ### 成功レスポンス
 
@@ -248,7 +269,7 @@ GET /api/v1/items
 
 ### GET /api/v1/items/:itemId/records
 
-レコード一覧を取得する。高度なフィルタリング・ソート・ページネーションに対応。
+レコード一覧を取得する。ソート・ページネーションに対応。（✅ 実装済み）
 
 #### クエリパラメータ（基本）
 
@@ -259,122 +280,9 @@ GET /api/v1/items
 | `sort`     | `string`      | `createdAt` | ソートフィールド（カラムIDまたは `createdAt`, `updatedAt`） |
 | `order`    | `asc \| desc` | `desc`      | ソート順                                                    |
 
-#### フィルタリング（JSON形式）
+#### フィルタリング
 
-クエリパラメータ `filter` にJSON文字列を指定するか、
-POSTメソッド（`POST /api/v1/items/:itemId/records/search`）でJSONボディとして送信できる。
-
-```bash
-# GETクエリパラメータ方式（シンプルなフィルタ向け）
-GET /api/v1/items/:itemId/records?filter={"col-1":{"$contains":"株式会社"}}
-
-# POST方式（複雑なフィルタ向け） ※推奨
-POST /api/v1/items/:itemId/records/search
-Content-Type: application/json
-
-{
-  "filter": { ... },
-  "sort": { ... },
-  "page": 1,
-  "limit": 50
-}
-```
-
-#### フィルタ構文
-
-##### 基本フィルタ（フィールドごと）
-
-```json
-{
-  "filter": {
-    "<columnId>": {
-      "<operator>": "<value>"
-    }
-  }
-}
-```
-
-##### 演算子一覧
-
-| 演算子        | 説明           | 対応型         | 例                            |
-| ------------- | -------------- | -------------- | ----------------------------- |
-| `$eq`         | 等しい         | 全型           | `{ "$eq": "東京" }`           |
-| `$ne`         | 等しくない     | 全型           | `{ "$ne": "大阪" }`           |
-| `$gt`         | より大きい     | NUMBER, DATE   | `{ "$gt": 100 }`              |
-| `$gte`        | 以上           | NUMBER, DATE   | `{ "$gte": 100 }`             |
-| `$lt`         | より小さい     | NUMBER, DATE   | `{ "$lt": 1000 }`             |
-| `$lte`        | 以下           | NUMBER, DATE   | `{ "$lte": 1000 }`            |
-| `$contains`   | 部分一致       | TEXT, TEXTAREA | `{ "$contains": "株式" }`     |
-| `$startsWith` | 前方一致       | TEXT, TEXTAREA | `{ "$startsWith": "東京" }`   |
-| `$endsWith`   | 後方一致       | TEXT, TEXTAREA | `{ "$endsWith": "株式会社" }` |
-| `$in`         | いずれか       | 全型           | `{ "$in": ["A", "B"] }`       |
-| `$notIn`      | いずれでもない | 全型           | `{ "$notIn": ["C", "D"] }`    |
-| `$isNull`     | NULL判定       | 全型           | `{ "$isNull": true }`         |
-| `$isNotNull`  | NOT NULL判定   | 全型           | `{ "$isNotNull": true }`      |
-
-##### 論理演算子
-
-```json
-// AND（デフォルト: 複数フィールドを指定すると暗黙的にAND）
-{
-  "filter": {
-    "col-1": { "$contains": "株式会社" },
-    "col-2": { "$gte": 100000 }
-  }
-}
-
-// 明示的 AND
-{
-  "filter": {
-    "$and": [
-      { "col-1": { "$contains": "株式会社" } },
-      { "col-2": { "$gte": 100000 } }
-    ]
-  }
-}
-
-// OR
-{
-  "filter": {
-    "$or": [
-      { "col-1": { "$eq": "東京" } },
-      { "col-1": { "$eq": "大阪" } }
-    ]
-  }
-}
-
-// AND + OR の組み合わせ
-{
-  "filter": {
-    "$and": [
-      {
-        "$or": [
-          { "col-region": { "$eq": "関東" } },
-          { "col-region": { "$eq": "関西" } }
-        ]
-      },
-      { "col-revenue": { "$gte": 1000000 } }
-    ]
-  }
-}
-```
-
-##### ソート（JSON形式）
-
-```json
-// 単一フィールドソート
-{
-  "sort": { "field": "col-revenue", "order": "desc" }
-}
-
-// 複数フィールドソート
-{
-  "sort": [
-    { "field": "col-region", "order": "asc" },
-    { "field": "col-revenue", "order": "desc" }
-  ]
-}
-```
+> フィルタリング機能は Issue #141 で別途実装予定。
 
 #### リクエスト例
 
@@ -382,32 +290,8 @@ Content-Type: application/json
 # 基本的な一覧取得
 GET /api/v1/items/item-abc123/records?page=1&limit=20
 
-# シンプルなフィルタ（クエリパラメータ）
-GET /api/v1/items/item-abc123/records?filter={"col-1":{"$contains":"東京"}}&sort=createdAt&order=desc
-
-# 高度なフィルタ（POST /search）
-POST /api/v1/items/item-abc123/records/search
-Content-Type: application/json
-
-{
-  "filter": {
-    "$and": [
-      { "col-company": { "$contains": "株式会社" } },
-      { "col-revenue": { "$gte": 500000 } },
-      {
-        "$or": [
-          { "col-status": { "$eq": "active" } },
-          { "col-status": { "$eq": "pending" } }
-        ]
-      }
-    ]
-  },
-  "sort": [
-    { "field": "col-revenue", "order": "desc" }
-  ],
-  "page": 1,
-  "limit": 20
-}
+# ソート指定
+GET /api/v1/items/item-abc123/records?sort=createdAt&order=desc&limit=20
 ```
 
 #### レスポンス
@@ -550,48 +434,6 @@ Content-Type: application/json
 
 ---
 
-## 検索エンドポイント
-
-### POST /api/v1/items/:itemId/records/search
-
-レコードを高度なフィルタ条件で検索する。`GET /records` と同じデータを返すが、
-複雑なフィルタ条件をJSONボディで送信できる。
-
-> **なぜPOSTか:** GETのクエリパラメータではURL長制限やエスケープの問題があり、
-> ネストされた論理演算子を含む複雑なフィルタには不向きなため。
-
-#### リクエスト
-
-```json
-{
-  "filter": {
-    "$or": [
-      {
-        "$and": [
-          { "col-region": { "$eq": "関東" } },
-          { "col-revenue": { "$gte": 1000000 } }
-        ]
-      },
-      {
-        "col-status": { "$in": ["VIP", "premium"] }
-      }
-    ]
-  },
-  "sort": [
-    { "field": "col-revenue", "order": "desc" },
-    { "field": "createdAt", "order": "asc" }
-  ],
-  "page": 1,
-  "limit": 50
-}
-```
-
-#### レスポンス
-
-`GET /records` と同一フォーマット。
-
----
-
 ## 権限チェック
 
 | 操作             | 必要な権限レベル                           |
@@ -603,21 +445,23 @@ Content-Type: application/json
 | レコード作成     | WRITE以上                                  |
 | レコード更新     | WRITE以上                                  |
 | レコード削除     | WRITE以上                                  |
-| レコード検索     | READ以上                                   |
+| レコード検索     | READ以上（Issue #141 で実装予定）          |
 
 ---
 
 ## 実装の優先順位
 
-| 優先度 | タスク                               | 概要                                             | 状態        |
-| ------ | ------------------------------------ | ------------------------------------------------ | ----------- |
-| 🔴 1   | レスポンスフォーマット統一           | `{ data: ... }` ラッパーの導入、エラー形式の統一 | ✅ 完了     |
-| 🔴 2   | `GET /items`                         | アイテム一覧エンドポイント                       | ✅ 完了     |
-| 🔴 3   | `GET /items/:itemId` の修正          | レコードを含めない、レスポンスラッパー適用       | ✅ 完了     |
-| 🔴 4   | `GET /items/:itemId/records`         | レコード一覧（ページネーション + 基本ソート）    | ✅ 完了     |
-| 🔴 5   | `POST /items/:itemId/records/search` | 高度なフィルタリング                             | ⚠️ 未実装   |
-| 🟡 6   | `PATCH` メソッド追加                 | PUT → PATCH 移行（PUTも維持）                    | ✅ 完了     |
-| 🟡 7   | バリデーション強化                   | スキーマに基づくレコード入力バリデーション       | ⚠️ 未実装   |
+| 優先度 | タスク                               | 概要                                             | 状態                     |
+| ------ | ------------------------------------ | ------------------------------------------------ | ------------------------ |
+| 🔴 1   | レスポンスフォーマット統一           | `{ data: ... }` ラッパーの導入、エラー形式の統一 | ✅ 完了                  |
+| 🔴 2   | `GET /items`                         | アイテム一覧エンドポイント                       | ✅ 完了                  |
+| 🔴 3   | `GET /items/:itemId` の修正          | レコードを含めない、レスポンスラッパー適用       | ✅ 完了                  |
+| 🔴 4   | `GET /items/:itemId/records`         | レコード一覧（ページネーション + 基本ソート）    | ✅ 完了                  |
+| 🔴 5   | APIキーセキュリティ                  | SHA-256ハッシュ保存、prefix表示、有効期限        | ✅ 完了                  |
+| 🔴 6   | レート制限                           | 100リクエスト/分、429レスポンス                  | ✅ 完了                  |
+| 🟡 7   | `PATCH` メソッド追加                 | PUT → PATCH 移行（PUTも維持）                    | ✅ 完了                  |
+| 🟡 8   | `POST /items/:itemId/records/search` | 高度なフィルタリング                             | 📋 Issue #141 で実装予定 |
+| 🟡 9   | バリデーション強化                   | スキーマに基づくレコード入力バリデーション       | ⚠️ 未実装                |
 
 ---
 
@@ -645,13 +489,23 @@ app/api/v1/
 │       ├── route.ts                                # GET: アイテム詳細
 │       └── records/
 │           ├── route.ts                            # GET: レコード一覧, POST: レコード作成
-│           ├── search/
-│           │   └── route.ts                        # POST: レコード検索（未実装）
 │           └── [recordId]/
 │               └── route.ts                        # GET: 詳細, PATCH/PUT: 更新, DELETE: 削除
 lib/
-├── api-auth.ts                                     # APIキー認証
+├── api-auth.ts                                     # APIキー認証（SHA-256ハッシュ照合）
 ├── api-response.ts                                 # レスポンスヘルパー
-├── api-filter.ts                                   # フィルタ構文パーサー（未実装）
+├── rate-limit.ts                                   # レート制限（インメモリ）
 └── permissions.ts                                  # 権限チェック
+
+features/api-key/
+├── api/
+│   ├── __tests__/
+│   │   ├── generate-api-key.test.ts                # APIキー生成テスト
+│   │   └── get-api-key.test.ts                     # APIキー取得テスト
+│   ├── generate-api-key.ts                         # APIキー生成（ハッシュ+prefix保存）
+│   └── get-api-key.ts                              # APIキー取得（prefix表示）
+├── components/
+│   └── api-key-section.tsx                         # APIキー管理UI
+└── types/
+    └── index.ts                                    # ApiKeyInfo型定義
 ```
