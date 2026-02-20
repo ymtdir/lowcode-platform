@@ -500,8 +500,10 @@ lib/
 features/api-key/
 ├── api/
 │   ├── __tests__/
+│   │   ├── delete-api-key.test.ts                  # APIキー削除テスト
 │   │   ├── generate-api-key.test.ts                # APIキー生成テスト
 │   │   └── get-api-key.test.ts                     # APIキー取得テスト
+│   ├── delete-api-key.ts                           # APIキー削除
 │   ├── generate-api-key.ts                         # APIキー生成（ハッシュ+prefix保存）
 │   └── get-api-key.ts                              # APIキー取得（prefix表示）
 ├── components/
