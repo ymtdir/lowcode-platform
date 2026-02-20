@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { ThemeSelector } from '@/features/theme/components/theme-selector';
 import { ColorSelector } from '@/features/theme/components/color-selector';
 import { EditorThemeSelector } from '@/features/theme/components/editor-theme-selector';
+import { ApiKeySection } from '@/features/api-key/components/api-key-section';
 
 /**
  * アカウント設定オプションコンポーネント
@@ -44,6 +45,8 @@ export function AccountSettingsOption() {
             <h3 className="text-sm font-medium">エディタカラー</h3>
             <EditorThemeSelector />
           </div>
+          <Separator />
+          <ApiKeySection />
         </div>
       </DialogContent>
     </Dialog>
