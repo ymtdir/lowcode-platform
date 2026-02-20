@@ -66,8 +66,12 @@ export function ApiKeySection() {
 
   const handleCopyNewKey = async () => {
     if (!newlyGeneratedKey) return;
-    await navigator.clipboard.writeText(newlyGeneratedKey);
-    toast.success('APIキーをコピーしました');
+    try {
+      await navigator.clipboard.writeText(newlyGeneratedKey);
+      toast.success('APIキーをコピーしました');
+    } catch {
+      toast.error('クリップボードへのコピーに失敗しました');
+    }
   };
 
   if (isLoading) {
@@ -91,7 +95,7 @@ export function ApiKeySection() {
             <code className="flex-1 text-xs bg-white dark:bg-black px-3 py-2 rounded break-all border">
               {newlyGeneratedKey}
             </code>
-            <Button variant="outline" size="icon" onClick={handleCopyNewKey}>
+            <Button variant="outline" size="icon" onClick={handleCopyNewKey} aria-label="APIキーをコピー">
               <Copy className="h-4 w-4" />
             </Button>
           </div>
@@ -139,6 +143,7 @@ export function ApiKeySection() {
                 className="h-7 w-7"
                 onClick={handleGenerate}
                 disabled={isProcessing}
+                aria-label="APIキーを再生成"
               >
                 <RefreshCw className="h-3.5 w-3.5" />
               </Button>
@@ -148,6 +153,7 @@ export function ApiKeySection() {
                 className="h-7 w-7"
                 onClick={handleDelete}
                 disabled={isProcessing}
+                aria-label="APIキーを削除"
               >
                 <Trash2 className="h-3.5 w-3.5 text-destructive" />
               </Button>
