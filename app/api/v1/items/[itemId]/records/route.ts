@@ -106,9 +106,18 @@ export async function POST(
       return apiError('テーブルが見つかりません', 'NOT_FOUND', 404);
     }
 
-    const body = await request.json();
+    let body: { data?: unknown };
+    try {
+      body = await request.json();
+    } catch {
+      return apiError('リクエストボディが不正なJSONです', 'BAD_REQUEST', 400);
+    }
 
-    if (!body.data || typeof body.data !== 'object') {
+    if (
+      !body.data ||
+      typeof body.data !== 'object' ||
+      Array.isArray(body.data)
+    ) {
       return apiError('data フィールドが必要です', 'BAD_REQUEST', 400);
     }
 

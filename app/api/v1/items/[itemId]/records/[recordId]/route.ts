@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { authenticateApiKey } from '@/lib/api-auth';
 import { apiSuccess, apiError } from '@/lib/api-response';
@@ -67,18 +68,30 @@ async function handleUpdate(
       return apiError('レコードが見つかりません', 'NOT_FOUND', 404);
     }
 
-    const body = await request.json();
+    let body: { data?: unknown };
+    try {
+      body = await request.json();
+    } catch {
+      return apiError('リクエストボディが不正なJSONです', 'BAD_REQUEST', 400);
+    }
 
-    if (!body.data || typeof body.data !== 'object') {
+    if (
+      !body.data ||
+      typeof body.data !== 'object' ||
+      Array.isArray(body.data)
+    ) {
       return apiError('data フィールドが必要です', 'BAD_REQUEST', 400);
     }
 
     const existingData = (record.data as Record<string, unknown>) || {};
-    const updatedData = { ...existingData, ...body.data };
+    const updatedData = {
+      ...existingData,
+      ...(body.data as Record<string, unknown>),
+    };
 
     const updated = await prisma.record.update({
       where: { id: recordId },
-      data: { data: updatedData },
+      data: { data: updatedData as Prisma.InputJsonValue },
     });
 
     return apiSuccess(updated);
