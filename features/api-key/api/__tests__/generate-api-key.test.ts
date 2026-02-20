@@ -58,17 +58,18 @@ describe('generateApiKey', () => {
     expect(result.createdAt).toBe(createdAt);
     expect(result.lastUsedAt).toBeNull();
     expect(result.expiresAt).toBeNull();
-    expect(prisma.$transaction).toHaveBeenCalledWith([
-      prisma.apiKey.deleteMany({ where: { userId: 'user-1' } }),
-      prisma.apiKey.create({
-        data: {
-          name: 'default',
-          key: expectedHash,
-          prefix: expectedPrefix,
-          userId: 'user-1',
-        },
-      }),
-    ]);
+    expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+    expect(prisma.apiKey.deleteMany).toHaveBeenCalledWith({
+      where: { userId: 'user-1' },
+    });
+    expect(prisma.apiKey.create).toHaveBeenCalledWith({
+      data: {
+        name: 'default',
+        key: expectedHash,
+        prefix: expectedPrefix,
+        userId: 'user-1',
+      },
+    });
   });
 
   it('未認証の場合はエラーになる', async () => {
