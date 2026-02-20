@@ -203,6 +203,30 @@ GET /api/v1/items
           "name": "顧客マスタ",
           "icon": null,
           "parentId": "folder-xyz",
+          "meta": {
+            "schema": {
+              "columns": [
+                {
+                  "id": "col-1",
+                  "name": "会社名",
+                  "type": "TEXT",
+                  "required": true,
+                  "order": 0,
+                  "config": {}
+                },
+                {
+                  "id": "col-2",
+                  "name": "電話番号",
+                  "type": "TEXT",
+                  "required": false,
+                  "order": 1,
+                  "config": {}
+                }
+              ]
+            }
+          },
+          "createdAt": "2026-01-15T10:00:00.000Z",
+          "updatedAt": "2026-02-10T08:30:00.000Z",
           "children": []
         }
       ],
