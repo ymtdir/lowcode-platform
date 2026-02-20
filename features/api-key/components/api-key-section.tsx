@@ -95,7 +95,12 @@ export function ApiKeySection() {
             <code className="flex-1 text-xs bg-white dark:bg-black px-3 py-2 rounded break-all border">
               {newlyGeneratedKey}
             </code>
-            <Button variant="outline" size="icon" onClick={handleCopyNewKey} aria-label="APIキーをコピー">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleCopyNewKey}
+              aria-label="APIキーをコピー"
+            >
               <Copy className="h-4 w-4" />
             </Button>
           </div>
