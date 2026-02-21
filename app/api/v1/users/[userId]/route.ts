@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { authenticateApiKey } from '@/lib/api-auth';
 import { apiSuccess, apiError } from '@/lib/api-response';
@@ -157,7 +158,22 @@ export async function PATCH(
     });
 
     return apiSuccess(updatedUser);
-  } catch {
+  } catch (error) {
+    // TOCTOU競合などによるPrismaエラーを個別ハンドリング
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      // P2002: メールアドレスの一意制約違反（並行リクエストによる競合）
+      if (error.code === 'P2002') {
+        return apiError(
+          'このメールアドレスは既に使用されています',
+          'BAD_REQUEST',
+          400
+        );
+      }
+      // P2025: 存在チェック後に対象ユーザーが削除された場合
+      if (error.code === 'P2025') {
+        return apiError('ユーザーが見つかりません', 'NOT_FOUND', 404);
+      }
+    }
     return apiError('ユーザーの更新に失敗しました', 'INTERNAL_ERROR', 500);
   }
 }
@@ -196,7 +212,14 @@ export async function DELETE(
     await prisma.user.delete({ where: { id: userId } });
 
     return apiSuccess({ message: 'ユーザーを削除しました' });
-  } catch {
+  } catch (error) {
+    // P2025: 存在チェック後に対象ユーザーが削除された場合
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2025'
+    ) {
+      return apiError('ユーザーが見つかりません', 'NOT_FOUND', 404);
+    }
     return apiError('ユーザーの削除に失敗しました', 'INTERNAL_ERROR', 500);
   }
 }
