@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { authenticateApiKey } from '@/lib/api-auth';
 import { apiSuccess, apiError } from '@/lib/api-response';
@@ -125,7 +126,18 @@ export async function POST(request: NextRequest) {
     });
 
     return apiSuccess(newUser, 201);
-  } catch {
+  } catch (error) {
+    // TOCTOU競合などによるメールアドレスの一意制約違反
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      return apiError(
+        'このメールアドレスは既に使用されています',
+        'BAD_REQUEST',
+        400
+      );
+    }
     return apiError('ユーザーの作成に失敗しました', 'INTERNAL_ERROR', 500);
   }
 }
