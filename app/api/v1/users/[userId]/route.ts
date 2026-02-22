@@ -77,11 +77,19 @@ export async function PATCH(
     return apiError('リクエストボディが不正です', 'BAD_REQUEST', 400);
   }
 
-  const { name, email, role } = body as {
+  const {
+    name,
+    email: rawEmail,
+    role,
+  } = body as {
     name?: unknown;
     email?: unknown;
     role?: unknown;
   };
+
+  // メールアドレスを正規化（前後の空白除去・小文字化）
+  const email =
+    typeof rawEmail === 'string' ? rawEmail.trim().toLowerCase() : rawEmail;
 
   // バリデーション
   if (name !== undefined) {
@@ -90,7 +98,11 @@ export async function PATCH(
     }
   }
   if (email !== undefined) {
-    if (typeof email !== 'string' || !email.includes('@')) {
+    if (typeof email !== 'string') {
+      return apiError('有効なemailを入力してください', 'VALIDATION_ERROR', 422);
+    }
+    // @とドメインの.を含む基本フォーマットチェック
+    if (!email.includes('@') || !email.split('@')[1]?.includes('.')) {
       return apiError('有効なemailを入力してください', 'VALIDATION_ERROR', 422);
     }
   }
@@ -124,7 +136,7 @@ export async function PATCH(
       return apiError('ユーザーが見つかりません', 'NOT_FOUND', 404);
     }
 
-    // メールアドレスの重複チェック
+    // メールアドレスの重複チェック（正規化済みの値・自分以外）
     if (email) {
       const existingUser = await prisma.user.findFirst({
         where: { email, NOT: { id: userId } },

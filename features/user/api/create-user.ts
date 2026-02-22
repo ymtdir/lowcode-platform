@@ -32,7 +32,8 @@ export async function createUser(
   }
 
   const name = formData.get('name') as string;
-  const email = formData.get('email') as string;
+  // メールアドレスを正規化（前後の空白除去・小文字化）
+  const email = ((formData.get('email') as string) ?? '').trim().toLowerCase();
   const password = formData.get('password') as string;
   const confirmPassword = formData.get('confirmPassword') as string;
   const role = formData.get('role') as string;
@@ -41,8 +42,13 @@ export async function createUser(
     return { error: '名前を入力してください' };
   }
 
-  if (!email || email.trim() === '') {
+  if (!email) {
     return { error: 'メールアドレスを入力してください' };
+  }
+
+  // @とドメインの.を含む基本フォーマットチェック
+  if (!email.includes('@') || !email.split('@')[1]?.includes('.')) {
+    return { error: '有効なメールアドレスを入力してください' };
   }
 
   if (!password || password.length < 6) {
@@ -59,7 +65,7 @@ export async function createUser(
   }
 
   try {
-    // 既存ユーザーチェック
+    // 既存ユーザーチェック（正規化済みの値で検索）
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
@@ -71,7 +77,7 @@ export async function createUser(
     // パスワードをハッシュ化
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // ユーザー作成
+    // ユーザー作成（正規化済みのemailを保存）
     await prisma.user.create({
       data: {
         name,

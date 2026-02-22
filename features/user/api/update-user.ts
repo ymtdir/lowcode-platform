@@ -19,14 +19,16 @@ export async function updateUserProfile(
   formData: FormData
 ): Promise<FormState> {
   const name = formData.get('name') as string;
-  const email = formData.get('email') as string;
+  // メールアドレスを正規化（前後の空白除去・小文字化）
+  const email = ((formData.get('email') as string) ?? '').trim().toLowerCase();
   const role = formData.get('role') as string;
 
   if (!name || name.trim() === '') {
     return { error: '名前を入力してください' };
   }
 
-  if (!email || !email.includes('@')) {
+  // @とドメインの.を含む基本フォーマットチェック
+  if (!email || !email.includes('@') || !email.split('@')[1]?.includes('.')) {
     return { error: '有効なメールアドレスを入力してください' };
   }
 
@@ -55,7 +57,7 @@ export async function updateUserProfile(
       }
     }
 
-    // メールアドレスの重複チェック（自分以外）
+    // メールアドレスの重複チェック（正規化済みの値・自分以外）
     const existingUser = await prisma.user.findFirst({
       where: {
         email,

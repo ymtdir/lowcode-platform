@@ -62,18 +62,31 @@ export async function POST(request: NextRequest) {
     return apiError('リクエストボディが不正です', 'BAD_REQUEST', 400);
   }
 
-  const { name, email, password, role } = body as {
+  const {
+    name,
+    email: rawEmail,
+    password,
+    role,
+  } = body as {
     name?: unknown;
     email?: unknown;
     password?: unknown;
     role?: unknown;
   };
 
+  // メールアドレスを正規化（前後の空白除去・小文字化）
+  const email =
+    typeof rawEmail === 'string' ? rawEmail.trim().toLowerCase() : rawEmail;
+
   // バリデーション
   if (!name || typeof name !== 'string' || name.trim() === '') {
     return apiError('nameは必須です', 'VALIDATION_ERROR', 422);
   }
-  if (!email || typeof email !== 'string' || !email.includes('@')) {
+  if (!email || typeof email !== 'string') {
+    return apiError('有効なemailを入力してください', 'VALIDATION_ERROR', 422);
+  }
+  // @とドメインの.を含む基本フォーマットチェック
+  if (!email.includes('@') || !email.split('@')[1]?.includes('.')) {
     return apiError('有効なemailを入力してください', 'VALIDATION_ERROR', 422);
   }
   if (!password || typeof password !== 'string' || password.length < 6) {
@@ -95,7 +108,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // メールアドレスの重複チェック
+    // メールアドレスの重複チェック（正規化済みの値で検索）
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return apiError(
