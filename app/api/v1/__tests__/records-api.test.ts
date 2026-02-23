@@ -230,6 +230,58 @@ describe('GET /api/v1/items/[itemId]/records', () => {
       })
     );
   });
+
+  it('filter=status:neq:deleted でNOTラッパーのwhere句が生成される', async () => {
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({ id: 'table-1' });
+    (prisma.record.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.record.count as jest.Mock).mockResolvedValue(0);
+
+    await getRecords(createRequest('?filter=status:neq:deleted'), { params });
+
+    expect(prisma.record.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          tableId: 'table-1',
+          AND: [{ NOT: { data: { path: ['status'], equals: 'deleted' } } }],
+        },
+      })
+    );
+  });
+
+  it('filter=age:lt:30 でlt条件が生成される', async () => {
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({ id: 'table-1' });
+    (prisma.record.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.record.count as jest.Mock).mockResolvedValue(0);
+
+    await getRecords(createRequest('?filter=age:lt:30'), { params });
+
+    expect(prisma.record.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          tableId: 'table-1',
+          AND: [{ data: { path: ['age'], lt: 30 } }],
+        },
+      })
+    );
+  });
+
+  it('filter=age:lte:65 でlte条件が生成される', async () => {
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({ id: 'table-1' });
+    (prisma.record.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.record.count as jest.Mock).mockResolvedValue(0);
+
+    await getRecords(createRequest('?filter=age:lte:65'), { params });
+
+    expect(prisma.record.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          tableId: 'table-1',
+          AND: [{ data: { path: ['age'], lte: 65 } }],
+        },
+      })
+    );
+  });
+
 });
 
 describe('POST /api/v1/items/[itemId]/records', () => {
