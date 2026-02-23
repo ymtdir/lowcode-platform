@@ -118,7 +118,8 @@ export function parseFilter(filterParam: string): FilterParseResult {
  */
 export function buildPrismaFilter(conditions: FilterCondition[]): object[] {
   return conditions.map(({ field, operator, value }) => {
-    const path = ['$', field];
+    // PostgreSQLでのPrisma JSON pathはキー名の配列を使う（'$'プレフィックス不要）
+    const path = [field];
 
     switch (operator) {
       case 'eq':

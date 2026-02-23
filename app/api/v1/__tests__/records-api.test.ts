@@ -128,7 +128,7 @@ describe('GET /api/v1/items/[itemId]/records', () => {
       expect.objectContaining({
         where: {
           tableId: 'table-1',
-          AND: [{ data: { path: ['$', 'col1'], equals: 'hello' } }],
+          AND: [{ data: { path: ['col1'], equals: 'hello' } }],
         },
       })
     );
@@ -145,7 +145,7 @@ describe('GET /api/v1/items/[itemId]/records', () => {
       expect.objectContaining({
         where: {
           tableId: 'table-1',
-          AND: [{ data: { path: ['$', 'age'], gt: 20 } }],
+          AND: [{ data: { path: ['age'], gt: 20 } }],
         },
       })
     );
@@ -163,7 +163,7 @@ describe('GET /api/v1/items/[itemId]/records', () => {
     expect(prisma.record.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          AND: [{ data: { path: ['$', 'name'], string_contains: '田' } }],
+          AND: [{ data: { path: ['name'], string_contains: '田' } }],
         }),
       })
     );
@@ -183,8 +183,8 @@ describe('GET /api/v1/items/[itemId]/records', () => {
         where: {
           tableId: 'table-1',
           AND: [
-            { data: { path: ['$', 'status'], equals: 'active' } },
-            { data: { path: ['$', 'age'], gte: 18 } },
+            { data: { path: ['status'], equals: 'active' } },
+            { data: { path: ['age'], gte: 18 } },
           ],
         },
       })
