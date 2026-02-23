@@ -3,19 +3,21 @@ import { prisma } from '@/lib/prisma';
 import { authenticateApiKey } from '@/lib/api-auth';
 import { apiSuccess, apiSuccessList, apiError } from '@/lib/api-response';
 import { canAccessItem, hasPermission } from '@/lib/permissions';
+import { parseFilter, buildPrismaFilter } from '@/lib/api-filter';
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 100;
 
 /**
  * GET /api/v1/items/[itemId]/records
- * レコード一覧を取得する（ページネーション付き）
+ * レコード一覧を取得する（ページネーション・ソート・フィルタ付き）
  *
  * クエリパラメータ:
  * - page: number (デフォルト: 1)
  * - limit: number (デフォルト: 50, 最大: 100)
  * - sort: string (カラムIDまたは createdAt, updatedAt)
  * - order: asc | desc (デフォルト: desc)
+ * - filter: string (例: "col1:eq:value,col2:gt:100")
  */
 export async function GET(
   request: NextRequest,
@@ -50,12 +52,26 @@ export async function GET(
     );
     const sort = searchParams.get('sort') || 'createdAt';
     const order = searchParams.get('order') === 'asc' ? 'asc' : 'desc';
+    const filterParam = searchParams.get('filter') || '';
+
+    // フィルタのパース
+    const filterResult = parseFilter(filterParam);
+    if (!filterResult.ok) {
+      return apiError(filterResult.error, 'VALIDATION_ERROR', 422);
+    }
 
     const skip = (page - 1) * limit;
 
+    // フィルタ条件をPrismaのwhere句に変換
+    const filterConditions = buildPrismaFilter(filterResult.conditions);
+    const where = {
+      tableId: itemId,
+      ...(filterConditions.length > 0 && { AND: filterConditions }),
+    };
+
     const [records, total] = await Promise.all([
       prisma.record.findMany({
-        where: { tableId: itemId },
+        where,
         orderBy:
           sort === 'createdAt' || sort === 'updatedAt'
             ? { [sort]: order }
@@ -63,7 +79,7 @@ export async function GET(
         skip,
         take: limit,
       }),
-      prisma.record.count({ where: { tableId: itemId } }),
+      prisma.record.count({ where }),
     ]);
 
     return apiSuccessList(records, {
