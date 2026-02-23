@@ -93,11 +93,15 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // 空文字列のparentIdはnullとして扱う
+  const normalizedParentId =
+    typeof parentId === 'string' ? parentId.trim() || null : (parentId ?? null);
+
   try {
     // parentIdが指定された場合は存在チェック
-    if (parentId) {
+    if (normalizedParentId) {
       const parentGroup = await prisma.group.findUnique({
-        where: { id: parentId as string },
+        where: { id: normalizedParentId },
       });
       if (!parentGroup) {
         return apiError('親グループが見つかりません', 'NOT_FOUND', 404);
@@ -109,7 +113,7 @@ export async function POST(request: NextRequest) {
         name: name.trim(),
         description:
           typeof description === 'string' ? description.trim() || null : null,
-        parentId: (parentId as string) || null,
+        parentId: normalizedParentId,
       },
       select: groupSelect,
     });

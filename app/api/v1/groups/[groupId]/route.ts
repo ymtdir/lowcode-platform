@@ -154,6 +154,14 @@ export async function PATCH(
     return apiError('更新するフィールドがありません', 'BAD_REQUEST', 400);
   }
 
+  // 空文字列のparentIdはnullとして扱う
+  const normalizedParentId =
+    parentId === undefined
+      ? undefined
+      : typeof parentId === 'string'
+        ? parentId.trim() || null
+        : null;
+
   try {
     // グループの存在チェック
     const targetGroup = await prisma.group.findUnique({
@@ -164,9 +172,9 @@ export async function PATCH(
     }
 
     // parentId指定時のバリデーション
-    if (parentId) {
+    if (normalizedParentId) {
       // 自分自身を親にしようとしている場合はエラー
-      if (parentId === groupId) {
+      if (normalizedParentId === groupId) {
         return apiError(
           '自分自身を親グループとして設定することはできません',
           'BAD_REQUEST',
@@ -176,7 +184,7 @@ export async function PATCH(
 
       // 親グループの存在チェック
       const parentGroup = await prisma.group.findUnique({
-        where: { id: parentId as string },
+        where: { id: normalizedParentId },
       });
       if (!parentGroup) {
         return apiError('親グループが見つかりません', 'NOT_FOUND', 404);
@@ -185,7 +193,7 @@ export async function PATCH(
       // 循環参照チェック
       const hasCircularRef = await checkCircularReference(
         groupId,
-        parentId as string
+        normalizedParentId
       );
       if (hasCircularRef) {
         return apiError(
@@ -207,7 +215,7 @@ export async function PATCH(
               : (description as string).trim() || null,
         }),
         ...(parentId !== undefined && {
-          parentId: parentId === null ? null : (parentId as string),
+          parentId: normalizedParentId,
         }),
       },
       select: groupSelect,
