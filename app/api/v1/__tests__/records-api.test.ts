@@ -114,6 +114,122 @@ describe('GET /api/v1/items/[itemId]/records', () => {
 
     expect(response.status).toBe(404);
   });
+
+  // ── フィルタ関連 ────────────────────────────────────────────────────
+
+  it('filter=col1:eq:hello でeq条件のwhere句が生成される', async () => {
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({ id: 'table-1' });
+    (prisma.record.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.record.count as jest.Mock).mockResolvedValue(0);
+
+    await getRecords(createRequest('?filter=col1:eq:hello'), { params });
+
+    expect(prisma.record.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          tableId: 'table-1',
+          AND: [{ data: { path: ['$', 'col1'], equals: 'hello' } }],
+        },
+      })
+    );
+  });
+
+  it('filter=age:gt:20 で数値のgt条件が生成される', async () => {
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({ id: 'table-1' });
+    (prisma.record.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.record.count as jest.Mock).mockResolvedValue(0);
+
+    await getRecords(createRequest('?filter=age:gt:20'), { params });
+
+    expect(prisma.record.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          tableId: 'table-1',
+          AND: [{ data: { path: ['$', 'age'], gt: 20 } }],
+        },
+      })
+    );
+  });
+
+  it('filter=name:contains:%E7%94%B0 でcontains条件が生成される', async () => {
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({ id: 'table-1' });
+    (prisma.record.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.record.count as jest.Mock).mockResolvedValue(0);
+
+    await getRecords(createRequest('?filter=name:contains:%E7%94%B0'), {
+      params,
+    });
+
+    expect(prisma.record.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          AND: [{ data: { path: ['$', 'name'], string_contains: '田' } }],
+        }),
+      })
+    );
+  });
+
+  it('複数フィルタ条件をAND結合する', async () => {
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({ id: 'table-1' });
+    (prisma.record.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.record.count as jest.Mock).mockResolvedValue(0);
+
+    await getRecords(createRequest('?filter=status:eq:active,age:gte:18'), {
+      params,
+    });
+
+    expect(prisma.record.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          tableId: 'table-1',
+          AND: [
+            { data: { path: ['$', 'status'], equals: 'active' } },
+            { data: { path: ['$', 'age'], gte: 18 } },
+          ],
+        },
+      })
+    );
+  });
+
+  it('不正なフィルタ構文は422を返す', async () => {
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({ id: 'table-1' });
+
+    const response = await getRecords(
+      createRequest('?filter=invalid_no_operator'),
+      { params }
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(422);
+    expect(body.error.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('未対応の演算子は422を返す', async () => {
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({ id: 'table-1' });
+
+    const response = await getRecords(
+      createRequest('?filter=col1:like:value'),
+      { params }
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(422);
+    expect(body.error.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('filterパラメータなしの場合はフィルタなしで動作する', async () => {
+    (prisma.item.findUnique as jest.Mock).mockResolvedValue({ id: 'table-1' });
+    (prisma.record.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.record.count as jest.Mock).mockResolvedValue(0);
+
+    await getRecords(createRequest(), { params });
+
+    expect(prisma.record.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { tableId: 'table-1' },
+      })
+    );
+  });
 });
 
 describe('POST /api/v1/items/[itemId]/records', () => {
