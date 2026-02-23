@@ -93,13 +93,13 @@ export function parseFilter(filterParam: string): FilterParseResult {
       };
     }
 
-    // 値の型変換（数値文字列は数値に変換）
+    // 値の型変換: 有限の数値文字列のみ数値に変換（スペース・Infinity・16進数は文字列として扱う）
+    const trimmedValue = rawValue.trim();
+    const numericValue = Number(trimmedValue);
     const value =
-      rawValue === ''
-        ? ''
-        : isNaN(Number(rawValue))
-          ? rawValue
-          : Number(rawValue);
+      trimmedValue !== '' && Number.isFinite(numericValue)
+        ? numericValue
+        : rawValue;
 
     conditions.push({
       field,
