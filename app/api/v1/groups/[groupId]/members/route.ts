@@ -98,6 +98,9 @@ export async function POST(
     );
   }
 
+  // 入力内の重複を排除
+  const uniqueUserIds = [...new Set(userIds as string[])];
+
   try {
     // グループの存在チェック
     const group = await prisma.group.findUnique({ where: { id: groupId } });
@@ -107,13 +110,11 @@ export async function POST(
 
     // 既存メンバーをチェックして重複をスキップ
     const existingMembers = await prisma.groupMember.findMany({
-      where: { groupId, userId: { in: userIds as string[] } },
+      where: { groupId, userId: { in: uniqueUserIds } },
       select: { userId: true },
     });
     const existingUserIds = new Set(existingMembers.map((m) => m.userId));
-    const newUserIds = (userIds as string[]).filter(
-      (id) => !existingUserIds.has(id)
-    );
+    const newUserIds = uniqueUserIds.filter((id) => !existingUserIds.has(id));
 
     if (newUserIds.length === 0) {
       return apiError(
@@ -138,12 +139,19 @@ export async function POST(
       201
     );
   } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === 'P2003'
-    ) {
-      // 外部キー制約違反: 存在しないuserId
-      return apiError('指定されたユーザーが存在しません', 'BAD_REQUEST', 400);
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      // P2003: 外部キー制約違反（存在しないuserIdが含まれている場合）
+      if (error.code === 'P2003') {
+        return apiError('指定されたユーザーが存在しません', 'BAD_REQUEST', 400);
+      }
+      // P2002: 一意制約違反（入力重複排除後も念のため）
+      if (error.code === 'P2002') {
+        return apiError(
+          '指定されたユーザーは既にメンバーです',
+          'BAD_REQUEST',
+          400
+        );
+      }
     }
     return apiError('メンバーの追加に失敗しました', 'INTERNAL_ERROR', 500);
   }
