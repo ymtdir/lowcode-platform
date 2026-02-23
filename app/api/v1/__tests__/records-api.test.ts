@@ -281,7 +281,6 @@ describe('GET /api/v1/items/[itemId]/records', () => {
       })
     );
   });
-
 });
 
 describe('POST /api/v1/items/[itemId]/records', () => {
